@@ -72,15 +72,33 @@ When nothing is staged or you want different grouping:
 
 > **Never commit secrets:** Watch for `.env`, `credentials.json`, private keys, or other sensitive files.
 
-### 3. Generate Commit Message
+### 3. Analyze Previous Commit Style
+
+Before generating the message, inspect recent commit history to match the project's conventions:
+
+```bash
+git log --oneline -20
+```
+
+Determine from recent commits:
+
+- **Language** — Match the language used in previous commits (English, Spanish, etc.). If the repo uses Spanish descriptions, write in Spanish. If English, use English. Always follow the existing convention.
+- **Tone and style** — Formal vs informal, abbreviated vs full words, use of emojis, capitalization patterns, etc.
+- **Scope naming** — Follow the same scope naming pattern used in history (e.g., `api`, `auth`, `ui`, `core`).
+- **Description conventions** — Imperative mood, past tense, or whichever pattern is already established in the repo.
+- **Body usage** — Whether commits typically include a body or are single-line only.
+
+> **Consistency is critical.** The new commit must blend in naturally with the existing history. When in doubt, follow the majority pattern.
+
+### 4. Generate Commit Message
 
 Analyze the diff to determine:
 
 - **Type** — What kind of change (from the types table above)
 - **Scope** — What area/module is affected (optional but recommended)
-- **Description** — One-line summary in present tense, imperative mood, under 72 characters
+- **Description** — One-line summary matching the language and style of previous commits, under 72 characters
 
-### 4. Execute Commit
+### 5. Execute Commit
 
 Single-line form:
 
@@ -104,9 +122,11 @@ EOF
 ## Best Practices
 
 - One logical change per commit
-- Present tense imperative mood: "add" not "added" or "adds"
+- Present tense imperative mood: "add" not "added" or "adds" (unless repo history uses a different convention)
 - Reference issues: "Closes #123", "Refs #456"
 - Keep description under 72 characters
+- **No co-authorship trailers** — Never add `Co-authored-by:`, `Generated with`, or any attribution footer referencing Claude, Copilot, AI assistants, or any other tool. Commits must look authored entirely by the human contributor.
+- **Match existing commit style** — Language, tone, formatting, and conventions must be consistent with the repository's commit history (see step 3 above)
 
 ## Git Safety Protocol
 
