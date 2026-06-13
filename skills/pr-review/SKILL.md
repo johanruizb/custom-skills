@@ -1,13 +1,16 @@
 ---
 name: pr-review
 description: |
-  Revisa los cambios de un Pull Request y actualiza su título y su descripción con un resumen estructurado en español (estilo CodeRabbit) listo para revisores humanos.
-  Úsala cuando el usuario pida: revisar un PR y actualizar su título o descripción, generar un resumen estructurado del PR, crear o mejorar el título o la descripción de un PR a partir del diff, aplicar etiquetas al PR, o documentar cambios con resumen, riesgos, checks, issues, PRs relacionados y reviewers sugeridos.
-  No modifica código fuente ni crea commits; solo analiza el PR y edita su título y su descripción.
+  Revisa los cambios de un Pull Request y actualiza su título y su descripción con un resumen estructurado en español (estilo CodeRabbit) listo para revisores humanos. También coordina subagentes especializados (Bug, Performance, Security) que revisan el diff y publican hallazgos accionables como comentarios en el PR.
+  Úsala cuando el usuario pida: revisar un PR y actualizar su título o descripción, generar un resumen estructurado del PR, crear o mejorar el título o la descripción de un PR a partir del diff, aplicar etiquetas al PR, lanzar subagentes de revisión de bugs, rendimiento o seguridad, o publicar hallazgos de revisión como comentarios (inline o generales) en el PR.
+  No modifica código fuente ni crea commits; analiza el PR, edita su título y su descripción, aplica etiquetas y publica comentarios de revisión en el PR.
 license: MIT
 allowed-tools:
   - Bash
   - Read
+  - Grep
+  - Glob
+  - Task
 ---
 
 # Skill: Resumir y actualizar descripción de Pull Request en español
@@ -18,6 +21,8 @@ Usa esta skill para revisar los cambios de un Pull Request y actualizar automát
 
 El título y la descripción finales del PR deben estar completamente en español, deben usar Markdown válido (en el caso de la descripción) y deben quedar listos para publicarse en el Pull Request.
 
+Adicionalmente, esta skill puede coordinar subagentes especializados que revisan el diff del PR desde tres enfoques —Bug, Performance y Security— y publican hallazgos accionables como comentarios en el PR. Consulta "Revisión de código con subagentes especializados".
+
 ## Cuándo usar esta skill
 
 Usa esta skill cuando el usuario pida cualquiera de las siguientes acciones:
@@ -27,8 +32,10 @@ Usa esta skill cuando el usuario pida cualquiera de las siguientes acciones:
 - Crear o mejorar el título o la descripción de un PR con información basada en el diff.
 - Preparar un título y una descripción de PR en español para revisión humana.
 - Analizar cambios de un PR y documentarlos con resumen, riesgos, checks, issues, PRs relacionados y reviewers sugeridos, y aplicar etiquetas al PR.
+- Revisar el diff con subagentes especializados de bug, rendimiento o seguridad.
+- Publicar hallazgos de revisión como comentarios (inline o generales) en el PR.
 
-No uses esta skill para modificar código fuente, generar cambios funcionales, crear commits, ejecutar acciones sugeridas o alterar archivos del repositorio. Esta skill solo debe analizar el Pull Request, editar su título y su descripción, y aplicar etiquetas al PR.
+No uses esta skill para modificar código fuente, generar cambios funcionales, crear commits, ejecutar acciones sugeridas o alterar archivos del repositorio. Esta skill solo debe analizar el Pull Request, editar su título y su descripción, aplicar etiquetas al PR y publicar comentarios de revisión en el PR.
 
 ## Principios obligatorios
 
@@ -177,6 +184,257 @@ Sugiere reviewers únicamente si puedes inferirlos de forma razonable por:
 - Contexto explícito del PR.
 
 Si no hay información suficiente, escribe `No detectado`.
+
+## Revisión de código con subagentes especializados
+
+Además de actualizar el título y la descripción, esta skill puede coordinar **subagentes especializados** que revisan el diff del PR y devuelven hallazgos accionables, que luego se publican como comentarios en el Pull Request.
+
+El objetivo es detectar problemas reales —que afecten producción, seguridad, rendimiento o mantenibilidad— directamente relacionados con los cambios del PR, evitando falsos positivos, hallazgos genéricos, especulativos o duplicados.
+
+Cada subagente revisa el diff desde un enfoque específico, detecta problemas relevantes, evita falsos positivos y devuelve hallazgos claros, accionables y justificados con evidencia del código.
+
+### Flujo de revisión con subagentes
+
+1. Analiza el diff completo del PR (ver "Información que debes analizar").
+2. Identifica qué subagentes conviene lanzar según los archivos modificados y el tipo de cambio.
+3. Lanza los subagentes especializados que correspondan (Bug, Performance, Security), cada uno enfocado en su categoría.
+4. Recibe de cada subagente una lista de hallazgos en el formato definido.
+5. Filtra, deduplica y consolida los hallazgos (ver "Cómo filtrar, deduplicar y consolidar").
+6. Publica los hallazgos validados como comentarios en el PR, prefiriendo comentarios inline sobre líneas específicas.
+7. Genera la sección final "## LLM Prompt: Fix all PR review findings".
+
+### Cuándo lanzar cada subagente
+
+Decide qué subagentes lanzar según los archivos modificados y el tipo de cambio:
+
+- **Bug**: lánzalo casi siempre que haya cambios de lógica, control de flujo, manejo de estado, concurrencia, async/await, validaciones, manejo de errores o estructuras de datos.
+- **Performance**: lánzalo cuando el diff toque bucles, consultas a base de datos, procesamiento de colecciones, I/O, llamadas de red, caching, algoritmos o rutas de alto volumen.
+- **Security**: lánzalo cuando el diff toque autenticación, autorización, entradas del usuario, consultas dinámicas, criptografía, manejo de secretos, URLs o red, sesiones, comparación de credenciales o normalización de datos sensibles (emails, usuarios, dominios).
+
+Reglas:
+
+- Puedes lanzar uno, dos o los tres subagentes. No lances un subagente si no hay superficie real para su categoría.
+- Puedes lanzar los subagentes en paralelo. En PRs grandes, puedes dividir el diff por grupos de archivos relacionados e indicar a cada subagente el subconjunto que debe revisar.
+- No lances subagentes para cambios puramente documentales, de estilo, renombres triviales o configuración sin lógica, salvo que el usuario lo pida.
+- Para cambios mínimos, una sola pasada del subagente Bug suele bastar.
+
+### Cómo invocar a cada subagente
+
+Lanza cada subagente como una tarea independiente (por ejemplo con la herramienta `Task`), entregándole:
+
+- La categoría que debe revisar (Bug, Performance o Security).
+- El diff del PR o el subconjunto relevante. Obtén el diff con `gh pr diff <número>` o `git diff <base>...<head>`.
+- La lista de revisión específica de su categoría (ver abajo).
+- El formato de salida obligatorio: una lista de hallazgos siguiendo el "Formato de comentario por hallazgo".
+- La instrucción explícita de devolver solo hallazgos reales, accionables, no duplicados, de confianza media o alta y con evidencia clara en el diff. Si no hay hallazgos, debe devolver una lista vacía y no inventar problemas.
+
+### Subagente: Bug
+
+Busca problemas funcionales o de lógica introducidos o afectados por el diff:
+
+- Execution breaks: Code throws unhandled exceptions
+- Wrong results: Output doesn't match expected behavior
+- Resource leaks: Unclosed files, connections, memory accumulation
+- State corruption: Invalid object/data states
+- Logic errors: Control flow produces incorrect outcomes
+- Race conditions: Concurrent access causes inconsistent state or duplicates
+- Incorrect measurements: Metrics/timings that don't reflect actual operations
+- Invariant violations: Broken constraints, size limits, uniqueness, etc.
+- Async timing bugs: Variables captured incorrectly in async closures
+- Conditional validation errors: Logic that checks for presence/absence of values using truthiness tests, for example `if dict.get("key")`, that fail with falsy values like `0`, `None`, `False` or `""`, when membership tests like `if "key" in dict` should be used
+- Dead computation: Code that computes/transforms values but never uses the result, instead using the original untransformed value
+- Unbounded growth: Collections such as lists, dicts or sets that grow indefinitely within loops without size limits
+- Duplicate operations: Same operation executed multiple times with identical inputs in sequence
+
+### Subagente: Performance
+
+Busca problemas de rendimiento, eficiencia o escalabilidad introducidos o afectados por el diff:
+
+- Algorithm complexity: O(n²) when O(n) is possible
+- Redundant operations: Duplicate calculations, unnecessary loops, or early returns that force multiple operations when a single operation would suffice
+- Memory waste: Large allocations or leaks over time
+- Blocking operations: Synchronous I/O in critical paths
+- Database inefficiency: N+1, missing indexes, full scans
+- Cache misses: Not leveraging available caching mechanisms
+- Batch processing inefficiency: Validation or processing loops that return on first error instead of collecting all errors, forcing clients to make multiple requests to discover all issues
+
+### Subagente: Security
+
+Busca vulnerabilidades o riesgos de seguridad introducidos o afectados por el diff:
+
+- Injection vulnerabilities: SQL/NoSQL/command/LDAP injection
+- AuthZ/AuthN flaws: Missing checks, privilege escalation
+- Data exposure: Sensitive data in logs, responses, or errors
+- Crypto issues: Weak algorithms, hardcoded keys, improper validation
+- Input validation gaps: Missing sanitization or bounds checks
+- Session management: Predictable tokens or missing expiration
+- Timing attacks: Direct string/value comparison of secrets, tokens, passwords, or authentication credentials that leaks information through execution time; must use constant-time comparison functions
+- Insecure fallback values: Using empty strings, default values, or weak fallbacks for critical security parameters such as encryption keys, secrets or tokens when environment variables are missing; the system should fail fast instead
+- Input validation bypass: User-controlled parameters such as offsets, limits, indices or IDs accepted without validation or with inadequate bounds checking, especially negative values in array slicing or pagination that could bypass access controls
+- SSRF: Using user-controlled URLs in network operations such as open, fetch or HTTP requests without allowlist validation
+- Case-sensitivity bypass: Inconsistent normalization in comparisons of case-insensitive data such as emails, usernames or domains where one side is normalized with `toLowerCase` or `toUpperCase` but the other is not
+
+### Resultado esperado de cada subagente
+
+Cada subagente debe devolver una **lista de hallazgos listos para convertirse en comentarios del PR**. Cada hallazgo debe estar asociado a un problema específico del diff e incluir:
+
+- Categoría del hallazgo (Bug, Performance o Security).
+- Severidad (Critical, High, Medium o Low).
+- Archivo y ubicación (línea, función, método o bloque del diff).
+- Explicación clara del problema.
+- Impacto potencial.
+- Evidencia basada en el diff.
+- Recomendación concreta.
+- Confianza del hallazgo (High, Medium o Low).
+- Una sección **LLM Prompt** con un prompt listo para copiar y pegar en un agente de código (Claude Code, Codex, Cursor, Aider u otro).
+
+Si un subagente no encuentra hallazgos válidos para su categoría, debe devolver una lista vacía.
+
+### Formato de comentario por hallazgo
+
+Cada hallazgo debe generar un comentario con esta estructura exacta:
+
+````md
+### [Severity] [Category]: Short title
+
+**File:** `path/to/file.ext`  
+**Location:** Relevant line, function, method or block  
+**Confidence:** High | Medium | Low
+
+**Issue**  
+Describe clearly what is wrong and why it is related to the current PR diff.
+
+**Impact**  
+Explain what could break, become slower, become insecure, or behave incorrectly.
+
+**Evidence**  
+Reference the relevant code change from the diff and explain why it supports the finding.
+
+**Recommendation**  
+Provide a concrete and minimal fix or improvement.
+
+**LLM Prompt**  
+```text
+You are working on this repository as a coding agent.
+
+Fix the following PR review finding:
+
+Category: Bug | Performance | Security
+Severity: Critical | High | Medium | Low
+File: path/to/file.ext
+Location: relevant line/function/block
+
+Problem:
+[Describe the problem clearly.]
+
+Impact:
+[Explain the risk.]
+
+Expected fix:
+[Describe the desired change.]
+
+Constraints:
+- Keep the existing behavior unless the finding requires changing it.
+- Make the smallest safe change.
+- Add or update tests when applicable.
+- Do not introduce unrelated refactors.
+- Verify the fix before finishing.
+```
+````
+
+### Cómo filtrar, deduplicar y consolidar
+
+Antes de publicar comentarios, procesa los hallazgos de todos los subagentes:
+
+- **Filtra por relación con el diff**: descarta hallazgos que no estén directamente relacionados con las líneas o el comportamiento modificado en el PR. No reportes problemas preexistentes ajenos al cambio, salvo que el cambio los active o agrave.
+- **Filtra por confianza**: descarta hallazgos de baja confianza o especulativos. Conserva los de confianza media y alta con evidencia clara en el diff.
+- **Deduplica**: si dos subagentes reportan el mismo problema (mismo archivo y ubicación, o misma causa raíz), combínalos en un único comentario, eligiendo la categoría y severidad más apropiadas y uniendo la evidencia.
+- **Agrupa por cercanía**: si varios hallazgos afectan la misma línea o bloque, considera consolidarlos en un comentario claro en lugar de múltiples comentarios redundantes.
+- **Prioriza**: ordena por severidad y por impacto real en producción, seguridad, rendimiento o mantenibilidad. Publica primero los más críticos.
+- **Evita ruido**: no publiques hallazgos genéricos, duplicados, sin evidencia o de bajo valor. Si tras filtrar no queda ningún hallazgo válido, indícalo brevemente y no publiques comentarios.
+
+### Cómo publicar los comentarios en el PR
+
+Publica cada hallazgo validado como comentario en el Pull Request. **Prefiere comentarios inline** sobre la línea específica del diff cuando el hallazgo esté claramente asociado a una ubicación. Usa **comentarios generales del PR** solo cuando el hallazgo afecte varias partes del cambio o no pueda asociarse a una única línea.
+
+Comentario inline sobre una línea específica (usa el SHA del head del PR y la ruta/línea del lado `RIGHT` del diff):
+
+```bash
+gh api repos/{owner}/{repo}/pulls/<número>/comments \
+  -f body="$(cat comentario.md)" \
+  -f commit_id="$(gh pr view <número> --json headRefOid -q .headRefOid)" \
+  -f path="ruta/del/archivo.ext" \
+  -F line=42 \
+  -f side="RIGHT"
+```
+
+Comentario general del PR (cuando el hallazgo no se asocia a una sola línea):
+
+```bash
+gh pr comment <número> --body "$(cat comentario.md)"
+```
+
+Reglas:
+
+- Cada comentario debe usar el "Formato de comentario por hallazgo".
+- No publiques comentarios duplicados ni repitas un hallazgo ya comentado.
+- No publiques comentarios sin evidencia clara en el diff.
+- No modifiques el código al comentar: la skill solo añade comentarios de revisión.
+- Después de publicar los comentarios inline o generales, añade la sección consolidada "## LLM Prompt: Fix all PR review findings" como comentario general del PR (o dentro de la descripción si el usuario lo pide).
+
+## LLM Prompt: Fix all PR review findings
+
+Además de los comentarios individuales del PR, genera una sección final que consolide **todos** los hallazgos validados en un único prompt listo para copiar y pegar en cualquier agente de código.
+
+El prompt consolidado debe incluir, por cada hallazgo: categoría, severidad, archivo afectado, ubicación, problema, impacto y resultado esperado; además de instrucciones generales y criterios de validación.
+
+Usa este formato exacto:
+
+````md
+## LLM Prompt: Fix all PR review findings
+
+```text
+You are working on this repository as a coding agent.
+
+Your task is to fix all validated PR review findings listed below.
+
+General instructions:
+- Address only the findings listed here.
+- Do not introduce unrelated refactors.
+- Preserve existing behavior unless a finding explicitly requires changing it.
+- Prefer small, safe, reviewable changes.
+- Add or update tests when applicable.
+- Run the relevant checks, tests, linters, or type checks available in the project.
+- Summarize what you changed after completing the fixes.
+
+Findings:
+
+1. [Severity] [Category] Short title
+   File: path/to/file.ext
+   Location: relevant line/function/block
+   Problem:
+   [Describe the problem.]
+   Impact:
+   [Explain the risk.]
+   Expected fix:
+   [Describe the desired correction.]
+
+2. [Severity] [Category] Short title
+   File: path/to/another-file.ext
+   Location: relevant line/function/block
+   Problem:
+   [Describe the problem.]
+   Impact:
+   [Explain the risk.]
+   Expected fix:
+   [Describe the desired correction.]
+
+Validation:
+- Confirm each finding was addressed.
+- Mention any finding that could not be fixed and explain why.
+- Include tests or verification steps performed.
+```
+````
 
 ## Cómo generar el título del PR
 
@@ -662,6 +920,12 @@ Antes de guardar la descripción final, verifica:
 - [ ] Checks pre-merge no inventan resultados.
 - [ ] Los toques finales son sugerencias y no se ejecutaron automáticamente.
 - [ ] Se preservó información importante existente cuando correspondía.
+- [ ] Se lanzaron los subagentes adecuados (Bug, Performance, Security) según los cambios.
+- [ ] Los hallazgos se filtraron, deduplicaron y consolidaron antes de publicarlos.
+- [ ] Cada hallazgo publicado tiene evidencia clara en el diff y una sección LLM Prompt.
+- [ ] Se prefirieron comentarios inline sobre líneas específicas cuando aplicaba.
+- [ ] Se generó la sección consolidada "## LLM Prompt: Fix all PR review findings".
+- [ ] No se reportaron hallazgos especulativos, duplicados, genéricos o sin evidencia.
 - [ ] No se modificó código fuente.
 - [ ] La salida está lista para publicarse como descripción del PR.
 
@@ -676,3 +940,10 @@ Al finalizar, el título y la descripción del Pull Request deben:
 - Indicar explícitamente datos no detectados o no disponibles.
 - Usar la estructura obligatoria definida en esta skill (en la descripción).
 - Estar listos para publicarse en el título y el cuerpo del PR.
+
+Además, cuando se ejecute la revisión con subagentes, el PR debe quedar con:
+
+- Comentarios de revisión publicados para cada hallazgo validado, preferentemente inline sobre la línea correspondiente del diff.
+- Cada comentario con su categoría, severidad, archivo, ubicación, problema, impacto, evidencia, recomendación, confianza y sección LLM Prompt.
+- Solo hallazgos reales, accionables y relacionados con el diff, sin duplicados ni especulaciones.
+- Una sección consolidada "## LLM Prompt: Fix all PR review findings" con todos los hallazgos.
