@@ -1,9 +1,9 @@
 ---
 name: pr-review
 description: |
-  Revisa los cambios de un Pull Request y actualiza su descripción con un resumen estructurado en español (estilo CodeRabbit) listo para revisores humanos.
-  Úsala cuando el usuario pida: revisar un PR y actualizar su descripción, generar un resumen estructurado del PR, crear o mejorar la descripción de un PR a partir del diff, o documentar cambios con resumen, riesgos, checks, issues, PRs relacionados, labels y reviewers sugeridos.
-  No modifica código fuente ni crea commits; solo analiza el PR y edita su descripción.
+  Revisa los cambios de un Pull Request y actualiza su título y su descripción con un resumen estructurado en español (estilo CodeRabbit) listo para revisores humanos.
+  Úsala cuando el usuario pida: revisar un PR y actualizar su título o descripción, generar un resumen estructurado del PR, crear o mejorar el título o la descripción de un PR a partir del diff, aplicar etiquetas al PR, o documentar cambios con resumen, riesgos, checks, issues, PRs relacionados y reviewers sugeridos.
+  No modifica código fuente ni crea commits; solo analiza el PR y edita su título y su descripción.
 license: MIT
 allowed-tools:
   - Bash
@@ -14,25 +14,26 @@ allowed-tools:
 
 ## Objetivo
 
-Usa esta skill para revisar los cambios de un Pull Request y actualizar automáticamente la descripción del PR con un resumen estructurado, claro y útil para revisores humanos, inspirado en el formato de CodeRabbit.
+Usa esta skill para revisar los cambios de un Pull Request y actualizar automáticamente el título y la descripción del PR con un resumen estructurado, claro y útil para revisores humanos, inspirado en el formato de CodeRabbit.
 
-La descripción final del PR debe estar completamente en español, debe usar Markdown válido y debe quedar lista para publicarse como descripción del Pull Request.
+El título y la descripción finales del PR deben estar completamente en español, deben usar Markdown válido (en el caso de la descripción) y deben quedar listos para publicarse en el Pull Request.
 
 ## Cuándo usar esta skill
 
 Usa esta skill cuando el usuario pida cualquiera de las siguientes acciones:
 
-- Revisar un Pull Request y actualizar su descripción.
+- Revisar un Pull Request y actualizar su título o su descripción.
 - Generar un resumen estructurado del PR.
-- Crear o mejorar la descripción de un PR con información basada en el diff.
-- Preparar una descripción de PR en español para revisión humana.
-- Analizar cambios de un PR y documentarlos con resumen, riesgos, checks, issues, PRs relacionados, labels y reviewers sugeridos.
+- Crear o mejorar el título o la descripción de un PR con información basada en el diff.
+- Preparar un título y una descripción de PR en español para revisión humana.
+- Analizar cambios de un PR y documentarlos con resumen, riesgos, checks, issues, PRs relacionados y reviewers sugeridos, y aplicar etiquetas al PR.
 
-No uses esta skill para modificar código fuente, generar cambios funcionales, crear commits, ejecutar acciones sugeridas o alterar archivos del repositorio. Esta skill solo debe analizar el Pull Request y editar su descripción.
+No uses esta skill para modificar código fuente, generar cambios funcionales, crear commits, ejecutar acciones sugeridas o alterar archivos del repositorio. Esta skill solo debe analizar el Pull Request, editar su título y su descripción, y aplicar etiquetas al PR.
 
 ## Principios obligatorios
 
-- Toda la descripción final del PR debe estar en español.
+- El título y toda la descripción final del PR deben estar en español.
+- El título debe reflejar fielmente el cambio principal del PR, ser conciso y no inventar alcance.
 - Mantén un tono claro, profesional y útil para revisores humanos.
 - No inventes información.
 - Si algún dato no se puede verificar, escribe `No detectado` o `No disponible`, según corresponda.
@@ -137,26 +138,32 @@ Busca PRs relacionados cuando haya evidencia razonable, por ejemplo:
 
 No inventes PRs relacionados. Si no hay evidencia suficiente, escribe `No detectado`.
 
-### 8. Labels
+### 8. Labels (etiquetas a aplicar)
 
-Sugiere labels relevantes según el contenido real del PR.
+Determina las etiquetas relevantes según el contenido real del PR para aplicarlas directamente al Pull Request (no como sección de la descripción).
 
-Ejemplos de labels permitidos, si aplican:
+Usa únicamente etiquetas estándar de la industria. No inventes etiquetas. El conjunto de referencia son las etiquetas por defecto que GitHub crea en todo repositorio nuevo:
 
-- `bug`
-- `frontend`
-- `backend`
-- `docs`
-- `refactor`
-- `tests`
-- `security`
-- `database`
-- `ci`
-- `api`
-- `performance`
-- `dependencies`
+| Etiqueta | Significado | Cuándo aplicarla al PR |
+| -------- | ----------- | ---------------------- |
+| `bug` | Algo no funciona. | El PR corrige un comportamiento incorrecto o defecto. |
+| `documentation` | Mejoras o adiciones a la documentación. | El PR cambia principalmente documentación (README, docs, comentarios). |
+| `duplicate` | Ya existe un issue o PR equivalente. | El PR duplica trabajo ya existente. |
+| `enhancement` | Nueva funcionalidad o mejora. | El PR agrega o mejora una funcionalidad. |
+| `good first issue` | Bueno para personas nuevas. | El cambio es sencillo y adecuado para contribuyentes nuevos. |
+| `help wanted` | Se necesita atención o ayuda extra. | El PR requiere ayuda o revisión adicional. |
+| `invalid` | Parece que algo no está bien. | El PR es incorrecto o no aplica. |
+| `question` | Se requiere más información. | El PR está abierto a discusión o necesita aclaración. |
+| `wontfix` | No se va a trabajar. | El cambio se decide no continuar. |
 
-Los labels son sugerencias. No afirmes que ya existen en el repositorio salvo que puedas verificarlo.
+Reglas:
+
+- Limítate a este conjunto estándar; no crees nombres de etiquetas propios.
+- Las etiquetas deben basarse en el diff real, no en suposiciones.
+- Aplica únicamente etiquetas que ya existan en el repositorio. Verifícalo con `gh label list`.
+- En la práctica, lo más común es aplicar `bug` para correcciones, `enhancement` para nuevas funcionalidades y `documentation` para cambios de docs.
+- Si una etiqueta estándar útil no existe en el repositorio, no la inventes ni la apliques; menciónala al usuario como sugerencia y ofrece crearla solo con su confirmación.
+- La aplicación de etiquetas se describe en la sección "Cómo aplicar las etiquetas al PR".
 
 ### 9. Reviewers
 
@@ -171,9 +178,27 @@ Sugiere reviewers únicamente si puedes inferirlos de forma razonable por:
 
 Si no hay información suficiente, escribe `No detectado`.
 
-## Cómo actualizar la descripción del PR
+## Cómo generar el título del PR
 
-1. Lee la descripción actual del PR.
+El título debe resumir el cambio principal del PR en una sola línea, en español, clara y concisa.
+
+Reglas:
+
+- Sigue el formato de Conventional Commits cuando el repositorio lo use: `tipo(scope): descripción` (por ejemplo `feat(auth): validar tokens antes de procesar solicitudes`).
+  - Tipos comunes: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `build`, `ci`.
+  - Detecta el formato observando el título actual del PR, los mensajes de commit o el nombre de la rama. Si el repositorio no usa Conventional Commits, escribe un título descriptivo simple en español.
+- El título debe basarse en el diff real y en el cambio principal del PR, no en suposiciones.
+- Mantén el `tipo` y el `scope` en inglés (convención técnica) y la descripción en español.
+- Sé conciso: idealmente no más de ~72 caracteres. Evita puntos finales.
+- No incluyas números de issue ni PR en el título salvo que ya estuvieran y sigan siendo correctos.
+- Si el PR agrupa varios cambios, prioriza el más relevante o usa un título general representativo.
+- Preserva el título actual si ya es correcto, claro y representa fielmente el PR; en ese caso no lo cambies.
+
+Si no puedes determinar un título mejor que el actual a partir del diff, conserva el título existente.
+
+## Cómo actualizar el título y la descripción del PR
+
+1. Lee el título y la descripción actuales del PR.
 2. Detecta información importante existente que deba preservarse, como:
    - Contexto del problema.
    - Links relevantes.
@@ -183,11 +208,33 @@ Si no hay información suficiente, escribe `No detectado`.
    - Breaking changes.
    - Checklists manuales.
 3. Elimina o reemplaza información obsoleta, duplicada o contradictoria.
-4. Genera una nueva descripción usando exactamente la estructura definida en esta skill.
-5. Integra la información importante preservada dentro de las secciones adecuadas.
-6. Actualiza únicamente el cuerpo o descripción del PR.
-7. No modifiques código, commits, ramas, archivos fuente ni configuración del repositorio.
-8. No ejecutes sugerencias de “Toques finales” sin confirmación explícita del usuario.
+4. Genera un nuevo título siguiendo las reglas de la sección "Cómo generar el título del PR".
+5. Genera una nueva descripción usando exactamente la estructura definida en esta skill.
+6. Integra la información importante preservada dentro de las secciones adecuadas.
+7. Actualiza únicamente el título y el cuerpo o descripción del PR (por ejemplo con `gh pr edit <número> --title "..." --body "..."`).
+8. Aplica las etiquetas relevantes al PR siguiendo la sección "Cómo aplicar las etiquetas al PR".
+9. No modifiques código, commits, ramas, archivos fuente ni configuración del repositorio.
+10. No ejecutes sugerencias de “Toques finales” sin confirmación explícita del usuario.
+
+## Cómo aplicar las etiquetas al PR
+
+A diferencia de issues, PRs relacionados o reviewers (que solo se sugieren en la descripción), las etiquetas sí se aplican directamente al Pull Request.
+
+Pasos:
+
+1. Determina las etiquetas relevantes según la sección "8. Labels (etiquetas a aplicar)".
+2. Lista las etiquetas existentes en el repositorio con `gh label list` para confirmar cuáles puedes aplicar.
+3. Aplica solo las etiquetas existentes que correspondan al PR con:
+
+   ```bash
+   gh pr edit <número> --add-label "bug" --add-label "documentation"
+   ```
+
+4. No elimines etiquetas existentes del PR salvo que el usuario lo pida o sean claramente incorrectas según el diff.
+5. Si una etiqueta útil no existe en el repositorio, no la apliques ni la crees automáticamente. Indícaselo al usuario y crea la etiqueta solo con su confirmación (por ejemplo con `gh label create`).
+6. No inventes etiquetas. Si no hay etiquetas razonables para el PR, no apliques ninguna e indícalo brevemente.
+
+Al terminar, informa al usuario qué etiquetas se aplicaron y cuáles se sugirieron pero no se aplicaron por no existir.
 
 ## Estructura obligatoria de la descripción del PR
 
@@ -238,17 +285,6 @@ No detectado.
 Si no se detectan, escribir:
 
 No detectado.
-
-# Labels sugeridos
-
-* bug
-* frontend
-* backend
-* docs
-* refactor
-* tests
-* security
-* database
 
 # Reviewers sugeridos
 
@@ -447,28 +483,6 @@ Si no se detectan, escribe exactamente:
 No detectado.
 ```
 
-### `# Labels sugeridos`
-
-Sugiere labels relevantes según el contenido del PR.
-
-Ejemplo:
-
-```markdown
-* backend
-* tests
-* security
-```
-
-Reglas:
-
-- Sugiere solo labels razonables según el diff.
-- No afirmes que los labels existen si no puedes verificarlo.
-- Si no hay datos suficientes para sugerir labels útiles, escribe:
-
-```markdown
-No detectado.
-```
-
 ### `# Reviewers sugeridos`
 
 Sugiere reviewers únicamente si hay base razonable.
@@ -634,7 +648,8 @@ Si usas Mermaid:
 
 Antes de guardar la descripción final, verifica:
 
-- [ ] La descripción completa está en español.
+- [ ] El título y la descripción completa están en español.
+- [ ] El título resume fielmente el cambio principal y sigue la convención del repositorio.
 - [ ] El resumen explica propósito, impacto y cambios clave.
 - [ ] El recorrido general es breve y claro.
 - [ ] La tabla de cambios usa rutas reales o grupos verificables.
@@ -642,7 +657,7 @@ Antes de guardar la descripción final, verifica:
 - [ ] El esfuerzo estimado sigue el formato requerido.
 - [ ] Issues relacionados no fueron inventados.
 - [ ] PRs relacionados no fueron inventados.
-- [ ] Labels sugeridos son razonables para el contenido del PR.
+- [ ] Las etiquetas aplicadas al PR son razonables, existen en el repositorio y se basan en el diff.
 - [ ] Reviewers sugeridos tienen base verificable o razonable.
 - [ ] Checks pre-merge no inventan resultados.
 - [ ] Los toques finales son sugerencias y no se ejecutaron automáticamente.
@@ -652,11 +667,12 @@ Antes de guardar la descripción final, verifica:
 
 ## Resultado esperado
 
-Al finalizar, la descripción del Pull Request debe:
+Al finalizar, el título y la descripción del Pull Request deben:
 
 - Estar en español.
-- Ser clara y útil para revisores humanos.
+- Tener un título conciso que refleje fielmente el cambio principal y siga la convención del repositorio.
+- Ser claros y útiles para revisores humanos.
 - Reflejar fielmente el diff y la información disponible.
 - Indicar explícitamente datos no detectados o no disponibles.
-- Usar la estructura obligatoria definida en esta skill.
-- Estar lista para publicarse en el cuerpo del PR.
+- Usar la estructura obligatoria definida en esta skill (en la descripción).
+- Estar listos para publicarse en el título y el cuerpo del PR.
