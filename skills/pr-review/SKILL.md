@@ -1,3 +1,15 @@
+---
+name: pr-review
+description: |
+  Revisa los cambios de un Pull Request y actualiza su descripción con un resumen estructurado en español (estilo CodeRabbit) listo para revisores humanos.
+  Úsala cuando el usuario pida: revisar un PR y actualizar su descripción, generar un resumen estructurado del PR, crear o mejorar la descripción de un PR a partir del diff, o documentar cambios con resumen, riesgos, checks, issues, PRs relacionados, labels y reviewers sugeridos.
+  No modifica código fuente ni crea commits; solo analiza el PR y edita su descripción.
+license: MIT
+allowed-tools:
+  - Bash
+  - Read
+---
+
 # Skill: Resumir y actualizar descripción de Pull Request en español
 
 ## Objetivo
