@@ -1,12 +1,13 @@
 ---
 name: git-commit
 description: |
-  Execute git commit with conventional commit message analysis, intelligent staging, and message generation.
+  Execute git commit autonomously with conventional commit message analysis, atomic logical grouping, and message generation.
+  Operates on the current working directory (cwd) without asking the user for paths or confirmation.
   Supports:
   (1) Auto-detecting type and scope from changes
   (2) Generating conventional commit messages from diff
-  (3) Interactive commit with optional type/scope/description overrides
-  (4) Intelligent file staging for logical grouping
+  (3) Autonomous commit without user confirmation (Safety Protocol exceptions still require explicit request)
+  (4) Splitting changes into multiple atomic commits grouped by logical type/scope
 license: MIT
 allowed-tools:
   - Bash
@@ -15,6 +16,14 @@ allowed-tools:
 # git-commit
 
 Create standardized, semantic git commits using the Conventional Commits specification by analyzing the actual code diff to determine the appropriate type, scope, and message content.
+
+## Autonomy, Atomicity, and Path
+
+These three rules govern every execution and override the legacy "interactive" behavior:
+
+1. **No questions — proceed autonomously.** Never ask the user to confirm a normal commit, choose a type/scope, approve a message, or select files. Detect everything from the diff and commit directly. The only permitted questions are the explicit Safety Protocol exceptions listed in the *Git Safety Protocol* section (`--force`, hard reset, `--no-verify`), which always require an explicit user request.
+2. **Prefer more, atomic commits.** Split changes into multiple commits — one per logical type/scope (e.g., `feat`, `fix`, `docs`, `refactor`) — instead of a single commit. Group files that belong to the same logical change together; do not split one logical change across commits. If the entire change is a single logical type, one commit is correct — never force an artificial split.
+3. **Operate on the current path (cwd).** Run every `git` command in the current working directory. Never `cd` into another path, never ask the user for a path, and never assume a repo root elsewhere. Subdirectories of the repo are staged normally (`git add <path>` relative to cwd).
 
 ## Conventional Commit Format
 
@@ -57,22 +66,26 @@ BREAKING CHANGE: `extends` key in config file is now used for extending other co
 
 ## Workflow
 
-### 1. Analyze Diff
+### 1. Analyze Diff (in cwd)
 
 - If files are staged: `git diff --staged` to see staged changes
 - If nothing staged: `git diff` plus `git status --porcelain` to see working tree changes
+- Run all commands in the current working directory — no `cd`, no asking the user for a path
 
-### 2. Stage Files (if needed)
+### 2. Group Changes into Logical Commits
 
-When nothing is staged or you want different grouping:
+Before staging, partition the changed files into one group per logical type/scope (e.g., `feat`, `fix`, `docs`, `refactor`). Each group becomes one atomic commit. If all changes share a single logical type, there is one group — do not split artificially.
 
-- Stage specific files: `git add path/to/file1 path/to/file2`
+### 3. Stage Files (if needed)
+
+For each logical group, stage exactly the files that belong to it:
+
+- Stage specific files: `git add path/to/file1 path/to/file2` (paths relative to cwd)
 - Stage by pattern: `git add *.test.*` or `git add src/components/*`
-- Interactive staging: `git add -p`
 
 > **Never commit secrets:** Watch for `.env`, `credentials.json`, private keys, or other sensitive files.
 
-### 3. Analyze Previous Commit Style
+### 4. Analyze Previous Commit Style
 
 Before generating the message, inspect recent commit history to match the project's conventions:
 
@@ -90,7 +103,7 @@ Determine from recent commits:
 
 > **Consistency is critical.** The new commit must blend in naturally with the existing history. When in doubt, follow the majority pattern.
 
-### 4. Generate Commit Message
+### 5. Generate Commit Message
 
 Analyze the diff to determine:
 
@@ -98,7 +111,9 @@ Analyze the diff to determine:
 - **Scope** — What area/module is affected (optional but recommended)
 - **Description** — One-line summary matching the language and style of previous commits, under 72 characters
 
-### 5. Execute Commit
+### 6. Execute Commit (autonomously, once per logical group)
+
+Proceed without asking the user for confirmation. Run one commit per logical group staged in step 3.
 
 Single-line form:
 
@@ -121,6 +136,7 @@ EOF
 
 ## Best Practices
 
+- **Prefer multiple atomic commits over one large commit** — one commit per logical type/scope (see *Autonomy, Atomicity, and Path* above). Do not bundle unrelated types into a single commit.
 - One logical change per commit
 - Present tense imperative mood: "add" not "added" or "adds" (unless repo history uses a different convention)
 - Reference issues: "Closes #123", "Refs #456"
@@ -129,6 +145,8 @@ EOF
 - **Match existing commit style** — Language, tone, formatting, and conventions must be consistent with the repository's commit history (see step 3 above)
 
 ## Git Safety Protocol
+
+These rules are the **only exceptions** to the autonomous no-questions rule. They always require an explicit user request before execution; never run them autonomously.
 
 1. NEVER update git config
 2. NEVER run destructive commands (`--force`, `hard reset`) without explicit user request
