@@ -34,6 +34,20 @@ npx skills add johanruizb/custom-skills --skill pr-review
 
 **Usage:** Run the skill from Claude Code's command input. It will analyze the PR diff, update the title and description in Spanish, apply relevant labels, and post validated review findings as comments on the PR.
 
+### deep-interview
+
+Structured Socratic requirements interview for vague ideas before planning or implementation.
+
+Asks one targeted question at a time, scores ambiguity across weighted clarity dimensions, confirms the top-level scope, inspects brownfield code before asking repository questions, and produces a pending-approval specification before any execution.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill deep-interview
+```
+
+**Usage:** Run the skill when a request is vague or high-risk, for example "deep interview this feature idea", "interview me before coding", or "no quiero que asumas". It will clarify requirements and generate a spec before implementation.
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
@@ -42,3 +56,4 @@ npx skills add johanruizb/custom-skills --skill pr-review
 ## Credits
 
 - [github/awesome-copilot](https://github.com/github/awesome-copilot) — original git-commit skill (MIT)
+- [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) — inspiration for deep-interview (MIT)
