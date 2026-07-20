@@ -1,0 +1,23 @@
+{
+  "id": "CATEGORY-###",
+  "title": "Short descriptive title",
+  "category": "performance | bugs | security",
+  "severity": "critical | high | medium | low | info",
+  "priority": "P0 | P1 | P2 | P3",
+  "confidence": "confirmed | probable | hypothesis",
+  "status": "open | fixing | fixed | wontfix | skipped",
+  "module": "Module or subsystem name",
+  "file": "src/path/to/file.ext",
+  "lines": "42-58",
+  "description": "What the issue is",
+  "evidence": "Exact code snippet showing the problem",
+  "reasoning": "Why this is a problem",
+  "impact": "What could go wrong if unfixed",
+  "reproduction": "Steps to reproduce (when applicable)",
+  "recommendation": "How to fix it",
+  "fix_risk": "low | medium | high",
+  "tests_needed": "What tests should validate the fix",
+  "dependencies": ["ID-001"],
+  "source": "Technical reference / doc / CVE (when applicable)",
+  "detected_by": "Tool or agent that found it"
+}

@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Codebase Audit State",
+  "description": "Persistent state for a codebase audit. Written to .audit-state.json for resumption.",
+  "type": "object",
+  "required": ["metadata", "capabilities", "project_map", "config"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["repo_root", "started_at", "last_updated", "harness", "adapter"],
+      "properties": {
+        "repo_root": {"type": "string"},
+        "started_at": {"type": "string", "format": "date-time"},
+        "last_updated": {"type": "string", "format": "date-time"},
+        "harness": {"type": "string", "description": "Detected harness: hermes, claude-code, opencode, generic"},
+        "adapter": {"type": "string", "description": "Adapter used"}
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "description": "Capability map: capability -> {available: bool, tool: string, notes: string}",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "available": {"type": "boolean"},
+          "tool": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "project_map": {
+      "type": "object",
+      "required": ["technologies", "modules", "entry_points", "test_dirs", "exclusions"],
+      "properties": {
+        "technologies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "version": {"type": "string"},
+              "role": {"type": "string", "description": "framework, language, library, tool, infra"}
+            }
+          }
+        },
+        "modules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "path": {"type": "string"},
+              "files": {"type": "array", "items": {"type": "string"}},
+              "status": {"type": "string", "enum": ["pending", "analyzing", "analyzed", "skipped"]}
+            }
+          }
+        },
+        "entry_points": {"type": "array", "items": {"type": "string"}},
+        "test_dirs": {"type": "array", "items": {"type": "string"}},
+        "exclusions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "config": {
+      "type": "object",
+      "required": ["areas", "scope", "depth", "mode", "html_report"],
+      "properties": {
+        "areas": {"type": "array", "items": {"type": "string", "enum": ["performance", "bugs", "security"]}},
+        "scope": {"type": "string", "description": "entire-repo, or comma-separated paths"},
+        "depth": {"type": "string", "enum": ["quick", "standard", "exhaustive"]},
+        "mode": {"type": "string", "enum": ["audit-only", "audit-select", "audit-auto"]},
+        "html_report": {"type": "boolean"},
+        "use_subagents": {"type": "boolean"},
+        "exclusions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "version_risks": {
+      "type": "array",
+      "description": "Version-specific risk profile from Phase 4",
+      "items": {
+        "type": "object",
+        "properties": {
+          "technology": {"type": "string"},
+          "version": {"type": "string"},
+          "risks": {"type": "array", "items": {"type": "string"}},
+          "sources": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "description": "All findings from the audit",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "category", "severity", "priority", "confidence", "status", "module", "file", "lines", "description", "evidence", "reasoning", "impact", "recommendation", "fix_risk", "tests_needed", "dependencies", "detected_by"]
+      }
+    },
+    "fixes_applied": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "finding_id": {"type": "string"},
+          "files_modified": {"type": "array", "items": {"type": "string"}},
+          "diff": {"type": "string"},
+          "applied_at": {"type": "string", "format": "date-time"},
+          "tests_added": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "result": {"type": "string", "enum": ["passed", "failed", "partial", "not_run", "impossible"]},
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "result": {"type": "string", "enum": ["passed", "failed", "not_run", "unavailable"]},
+              "output": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "sources_consulted": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "limitations": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["discovery", "planning", "research", "audit", "consolidation", "report", "fixing", "validation", "done"],
+      "description": "Current phase for resumption"
+    }
+  }
+}
