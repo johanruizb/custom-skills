@@ -15,145 +15,76 @@ allowed-tools:
 
 # git-commit
 
-Create standardized, semantic git commits using the Conventional Commits specification by analyzing the actual code diff to determine the appropriate type, scope, and message content.
-
-## Autonomy, Atomicity, and Path
-
-These three rules govern every execution and override the legacy "interactive" behavior:
-
-1. **No questions — proceed autonomously.** Never ask the user to confirm a normal commit, choose a type/scope, approve a message, or select files. Detect everything from the diff and commit directly. The only permitted questions are the explicit Safety Protocol exceptions listed in the *Git Safety Protocol* section (`--force`, hard reset, `--no-verify`), which always require an explicit user request.
-2. **Prefer more, atomic commits.** Split changes into multiple commits — one per logical type/scope (e.g., `feat`, `fix`, `docs`, `refactor`) — instead of a single commit. Group files that belong to the same logical change together; do not split one logical change across commits. If the entire change is a single logical type, one commit is correct — never force an artificial split.
-3. **Operate on the current path (cwd).** Run every `git` command in the current working directory. Never `cd` into another path, never ask the user for a path, and never assume a repo root elsewhere. Subdirectories of the repo are staged normally (`git add <path>` relative to cwd).
-
-## Conventional Commit Format
-
-```
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-### Commit Types
-
-| Type       | Purpose                        |
-| ---------- | ------------------------------ |
-| `feat`     | New feature                    |
-| `fix`      | Bug fix                        |
-| `docs`     | Documentation only             |
-| `style`    | Formatting/style (no logic)    |
-| `refactor` | Code refactor (no feature/fix) |
-| `perf`     | Performance improvement        |
-| `test`     | Add/update tests               |
-| `build`    | Build system/dependencies      |
-| `ci`       | CI/config changes              |
-| `chore`    | Maintenance/misc               |
-| `revert`   | Revert commit                  |
-
-### Breaking Changes
-
-Two supported formats:
-
-1. Exclamation mark after type/scope: `feat!: remove deprecated endpoint`
-2. BREAKING CHANGE footer:
-
-```
-feat: allow provided config object to extend other configs
-
-BREAKING CHANGE: `extends` key in config file is now used for extending other config files
-```
+Create standardized, semantic git commits using Conventional Commits. A script handles the mechanical data collection; the LLM handles the semantic decisions.
 
 ## Workflow
 
-### 1. Analyze Diff (in cwd)
-
-- If files are staged: `git diff --staged` to see staged changes
-- If nothing staged: `git diff` plus `git status --porcelain` to see working tree changes
-- Run all commands in the current working directory — no `cd`, no asking the user for a path
-
-### 2. Group Changes into Logical Commits
-
-Before staging, partition the changed files into one group per logical type/scope (e.g., `feat`, `fix`, `docs`, `refactor`). Each group becomes one atomic commit. If all changes share a single logical type, there is one group — do not split artificially.
-
-### 3. Stage Files (if needed)
-
-For each logical group, stage exactly the files that belong to it:
-
-- Stage specific files: `git add path/to/file1 path/to/file2` (paths relative to cwd)
-- Stage by pattern: `git add *.test.*` or `git add src/components/*`
-
-> **Never commit secrets:** Watch for `.env`, `credentials.json`, private keys, or other sensitive files.
-
-### 4. Analyze Previous Commit Style
-
-Before generating the message, inspect recent commit history to match the project's conventions:
+### 1. Collect data (script)
 
 ```bash
-git log --oneline -20
+bash scripts/prepare_commit.sh
 ```
 
-Determine from recent commits:
+Optional flags: `--staged` (staged only), `--unstaged` (unstaged only).
 
-- **Language** — Match the language used in previous commits (English, Spanish, etc.). If the repo uses Spanish descriptions, write in Spanish. If English, use English. Always follow the existing convention.
-- **Tone and style** — Formal vs informal, abbreviated vs full words, use of emojis, capitalization patterns, etc.
-- **Scope naming** — Follow the same scope naming pattern used in history (e.g., `api`, `auth`, `ui`, `core`).
-- **Description conventions** — Imperative mood, past tense, or whichever pattern is already established in the repo.
-- **Body usage** — Whether commits typically include a body or are single-line only.
+The script outputs: status, diff, recent commit history (style reference), secret detection, and heuristic type hints per file.
 
-> **Consistency is critical.** The new commit must blend in naturally with the existing history. When in doubt, follow the majority pattern.
+### 2. Group changes into atomic commits
 
-### 5. Generate Commit Message
+Partition changed files into one group per logical type/scope. Each group becomes one commit. If all changes share a single logical type, one commit is correct — do not split artificially.
 
-Analyze the diff to determine:
+### 3. Determine type and scope
 
-- **Type** — What kind of change (from the types table above)
-- **Scope** — What area/module is affected (optional but recommended)
-- **Description** — One-line summary matching the language and style of previous commits, under 72 characters
+Use the type hints from the script as a starting point, then read the actual diff to confirm. See `references/conventional-commits.md` for the full type table and format.
 
-### 6. Execute Commit (autonomously, once per logical group)
+### 4. Match existing commit style
 
-Proceed without asking the user for confirmation. Run one commit per logical group staged in step 3.
+Read the recent commits from the script output. Match:
+- **Language** — Spanish, English, etc. (follow the majority)
+- **Tone** — formal/informal, abbreviated/full, emojis, capitalization
+- **Scope naming** — `api`, `auth`, `ui`, etc.
+- **Body usage** — single-line vs multi-line
 
-Single-line form:
+### 5. Generate message and commit (autonomously)
+
+No questions. Commit directly once per logical group.
 
 ```bash
+git add <files for this group>
 git commit -m "<type>[scope]: <description>"
 ```
 
-Multi-line with body/footer:
-
+Multi-line:
 ```bash
 git commit -m "$(cat <<'EOF'
 <type>[scope]: <description>
 
 <optional body>
-
-<optional footer>
 EOF
 )"
 ```
 
-## Best Practices
+## Rules
 
-- **Prefer multiple atomic commits over one large commit** — one commit per logical type/scope (see *Autonomy, Atomicity, and Path* above). Do not bundle unrelated types into a single commit.
-- One logical change per commit
-- Present tense imperative mood: "add" not "added" or "adds" (unless repo history uses a different convention)
-- Reference issues: "Closes #123", "Refs #456"
-- Keep description under 72 characters
-- **No co-authorship trailers** — Never add `Co-authored-by:`, `Generated with`, or any attribution footer referencing Claude, Copilot, AI assistants, or any other tool. Commits must look authored entirely by the human contributor.
-- **Match existing commit style** — Language, tone, formatting, and conventions must be consistent with the repository's commit history (see step 3 above)
+- **Autonomous:** Never ask the user to confirm a normal commit, choose a type/scope, approve a message, or select files. Detect everything from the diff.
+- **Atomic:** Prefer more, atomic commits — one per logical type/scope. Do not bundle unrelated types.
+- **cwd only:** Run all git commands in the current working directory. Never `cd`, never ask for a path.
+- **No secrets:** If the script flags sensitive files, do NOT commit them without explicit user confirmation.
+- **No co-authorship trailers:** Never add `Co-authored-by:`, `Generated with`, or any AI attribution.
+- **Description < 72 characters.** Imperative mood unless repo history uses a different convention.
+- **Consistency:** The commit must blend with existing history.
 
-## Git Safety Protocol
+## Safety Protocol
 
-These rules are the **only exceptions** to the autonomous no-questions rule. They always require an explicit user request before execution; never run them autonomously.
+These are the ONLY exceptions to autonomous execution. Always require explicit user request:
 
 1. NEVER update git config
-2. NEVER run destructive commands (`--force`, `hard reset`) without explicit user request
-3. NEVER skip hooks (`--no-verify`) unless the user asks
+2. NEVER run `--force` or hard reset without explicit request
+3. NEVER use `--no-verify` unless the user asks
 4. NEVER force push to main/master
 5. If a commit fails due to hooks, fix the issue and create a NEW commit — do not amend
 
----
+## Reference Files
 
-*Forked from [github/awesome-copilot](https://github.com/github/awesome-copilot). MIT licensed.*
+- `references/conventional-commits.md` — Type table, format, breaking changes, decision guide
+- `scripts/prepare_commit.sh` — Data collection script (status, diff, log, secret scan, type hints)

@@ -8,9 +8,15 @@ Personal collection of Claude Code skills, installable via [skills.sh](https://s
 
 ### git-commit
 
-Standardized git commits using Conventional Commits specification with intelligent diff analysis and autonomous message generation.
+Standardized git commits using Conventional Commits with autonomous message generation. A bash script handles mechanical data collection (diff, status, log, secret detection, type hints); the LLM handles semantic decisions (grouping, type, message).
 
-Auto-detects commit type and scope from staged changes, commits autonomously without confirmation prompts, and splits changes into atomic commits grouped by logical type/scope. Operates on the current working directory.
+Auto-detects commit type and scope from changes, commits autonomously without confirmation prompts, and splits changes into atomic commits grouped by logical type/scope. Operates on the current working directory.
+
+**Structure:**
+
+- `SKILL.md` — Workflow rules and safety protocol
+- `scripts/prepare_commit.sh` — Data collection (diff, status, log, secret scan, type hints)
+- `references/conventional-commits.md` — Type table, format, breaking changes reference
 
 **Install:**
 
@@ -18,21 +24,7 @@ Auto-detects commit type and scope from staged changes, commits autonomously wit
 npx skills add johanruizb/custom-skills --skill git-commit
 ```
 
-**Usage:** Run the skill from Claude Code's command input. It will analyze your staged changes, suggest a conventional commit message, and guide you through the commit process.
-
-### pr-review
-
-Reviews a Pull Request and updates its title and description with a structured Spanish summary (CodeRabbit-style) ready for human reviewers, applies standard GitHub labels, and coordinates Bug, Performance, and Security subagents that publish actionable review comments on the PR.
-
-Does not modify source code or create commits; it analyzes the PR diff, edits title and description, applies labels, and posts inline or general review comments.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill pr-review
-```
-
-**Usage:** Run the skill from Claude Code's command input. It will analyze the PR diff, update the title and description in Spanish, apply relevant labels, and post validated review findings as comments on the PR.
+**Usage:** Run the skill from Claude Code's command input. It will run the data collection script, analyze the output, group changes into atomic commits, and commit each group with a conventional commit message.
 
 ### deep-interview
 
