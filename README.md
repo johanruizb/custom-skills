@@ -100,6 +100,16 @@ Review an entire codebase with three focused subagent reviewers running in paral
 npx skills add johanruizb/custom-skills --skill simplify-code
 ```
 
+### prompt-enhancer
+
+Rewrite and improve prompts to make them clear, actionable, and useful for ChatGPT, coding agents, design tools, product analysis, or any AI. Turns vague ideas, quick notes, or poorly written prompts into well-structured, ready-to-use instructions while preserving the original intent and technical terms.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill prompt-enhancer
+```
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
