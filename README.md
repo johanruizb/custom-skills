@@ -40,6 +40,56 @@ npx skills add johanruizb/custom-skills --skill deep-interview
 
 **Usage:** Run the skill when a request is vague or high-risk, for example "deep interview this feature idea", "interview me before coding", or "no quiero que asumas". It will clarify requirements and generate a spec before implementation.
 
+### code-documentation
+
+Generate, update, or regenerate inline documentation (docstrings, JSDoc, comments) across a codebase. Analyzes project structure, detects language/framework conventions, offers incremental or full-regeneration modes, and validates that docs match the code without changing behavior.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill code-documentation
+```
+
+### codebase-audit
+
+Deep audit of an entire codebase for performance, bugs, and/or security issues. Reviews all source code (not just diffs), discovers available tools at runtime, adapts to any harness, and optionally fixes selected findings.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill codebase-audit
+```
+
+### init-deep
+
+Deep repository-context initialization. Analyzes the repository and generates or updates a useful hierarchy of `AGENTS.md` files for coding agents based on actual repository architecture and conventions. 
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill init-deep
+```
+
+### screaming-architecture-refactor
+
+Reorganize a specific subpath of a project to Screaming Architecture + feature-based folders. Designed to run repeatedly over different paths of the same project for incremental, consistent, and safe migration.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill screaming-architecture-refactor
+```
+
+### test-suite-improver
+
+Audit a project's test suite, evaluate the quality of every existing test, then improve the suite by writing valuable tests, fixing broken ones, and removing ones that add no value. Harness-agnostic.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill test-suite-improver
+```
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
