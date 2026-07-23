@@ -92,7 +92,7 @@ npx skills add johanruizb/custom-skills --skill test-suite-improver
 
 ### simplify-code
 
-Review recent code changes with three focused subagent reviewers running in parallel (reuse, quality, efficiency), aggregate their findings, and apply the best fixes.
+Review an entire codebase with three focused subagent reviewers running in parallel (reuse, quality, efficiency), aggregate their findings, and apply the best fixes. Maps the project structure, discovers conventions and technologies, then scans all source code for duplication, quality issues, and inefficiencies.
 
 **Install:**
 
