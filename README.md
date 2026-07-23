@@ -90,6 +90,16 @@ Audit a project's test suite, evaluate the quality of every existing test, then 
 npx skills add johanruizb/custom-skills --skill test-suite-improver
 ```
 
+### simplify-code
+
+Review recent code changes with three focused subagent reviewers running in parallel (reuse, quality, efficiency), aggregate their findings, and apply the best fixes.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill simplify-code
+```
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
