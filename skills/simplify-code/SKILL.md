@@ -1,19 +1,19 @@
 ---
 name: simplify-code
-description: "Parallel 3-agent cleanup of recent code changes."
-version: 1.0.0
+description: "Parallel 3-agent cleanup of an entire codebase."
+version: 2.0.0
 author: Hermes Agent (inspired by Claude Code /simplify)
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
-    tags: [code-review, cleanup, refactor, delegation, subagent, parallel, simplify]
-    related_skills: [requesting-code-review, test-driven-development, plan]
+    tags: [code-review, cleanup, refactor, delegation, subagent, parallel, simplify, codebase]
+    related_skills: [codebase-audit, requesting-code-review, test-driven-development, plan]
 ---
 
-# Simplify Code — Parallel Review & Cleanup
+# Simplify Code — Parallel Full-Codebase Review & Cleanup
 
-Review your recent code changes with three focused reviewers running in
+Review an entire codebase with three focused reviewers running in
 parallel, aggregate their findings, and apply the fixes worth applying.
 
 **Core principle:** Three narrow reviewers beat one broad reviewer. Each one
@@ -25,8 +25,9 @@ concurrently, so you pay the latency of one review, not three.
 
 Trigger this skill when the user says any of:
 
-- "simplify" / "simplify my changes" / "simplify these changes"
-- "review my code" / "review my recent changes" / "clean up my changes"
+- "simplify" / "simplify the codebase" / "simplify this project"
+- "review the codebase" / "clean up the codebase" / "clean up the project"
+- "audit for over-engineering" / "reduce complexity"
 - "/simplify" (if they're carrying the Claude Code habit over)
 
 Optional modifiers the user may add — honor them:
@@ -36,57 +37,58 @@ Optional modifiers the user may add — honor them:
   `quality`, `efficiency`.
 - **Dry run:** "simplify but don't change anything" / "just report" → run the
   three reviewers, present findings, apply NOTHING. Ask before applying.
-- **Scope:** "simplify the last commit" / "simplify staged" / "simplify
-  src/foo.py" → narrow the diff source accordingly (see Phase 1).
+- **Scope:** "simplify src/" / "simplify the auth module" / "simplify
+  frontend only" → narrow the codebase scope accordingly (see Phase 2).
 
-Do NOT auto-run this after every edit. It costs three subagents' worth of
-tokens — invoke it only when the user explicitly asks.
+Do NOT auto-run this. It costs three subagents' worth of tokens scanning the
+full codebase — invoke it only when the user explicitly asks.
 
 ## The Process
 
-### Phase 1 — Identify the changes
+### Phase 1 — Project Discovery
 
-Capture the diff to review. Pick the source by what the user asked for, in
-this default order:
+Map the codebase before launching reviewers:
 
-```bash
-# 1. Default: uncommitted working-tree changes (tracked files)
-git diff
+1. Find the repository root (look for `.git`, `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, etc.).
+2. Map the directory structure. Exclude: `node_modules`, `vendor`, `dist`, `build`, `.git`, `__pycache__`, `.venv`, `venv`, `target`, `.next`, `coverage`, `migrations`, generated code, lockfiles, and binary assets.
+3. Identify languages, frameworks, build tools, test runners, and linter/formatter configs from dependency manifests and config files.
+4. Identify entry points, source directories, test directories, and logical module boundaries.
+5. Read any project-level conventions files: `AGENTS.md`, `CLAUDE.md`, `HERMES.md`, `.editorconfig`, linter configs.
 
-# 2. If that's empty, include staged changes
-git diff HEAD
+Capture the module list, source paths, test paths, and conventions as structured context for the reviewers.
 
-# 3. Scoped variants the user may request:
-git diff --staged                 # "staged changes"
-git diff HEAD~1                    # "the last commit"
-git diff main...HEAD              # "this branch" / "my PR"
-git diff -- src/foo.py            # specific file(s)
-```
+### Phase 2 — Scope & Configuration
 
-If `git diff` and `git diff HEAD` are both empty and there's no git repo or no
-changes, fall back to the files the user explicitly named or that were
-recently created/edited in this session. If you genuinely can't find any
-changed code, say so and stop — there's nothing to simplify.
+Ask the user for:
 
-Capture the full diff text. Note its size: if it's very large (say >2000
-changed lines), warn the user that three subagents each carrying the full diff
-will be token-heavy, and offer to scope it down (per-directory, per-commit)
-before proceeding.
+1. **Scope**: entire codebase (default), specific directories, or specific modules.
+2. **Areas**: reuse, quality, efficiency, or all (default: all).
+3. **Depth**: quick (surface patterns via grep/search), standard (deep read of key files per module), or exhaustive (every source file). Default: standard.
+4. **Execution mode**:
+   - `simplify-only` — report findings, no changes.
+   - `simplify-select` — review, then user picks fixes interactively.
+   - `simplify-auto` — review, then auto-fix all SAFE-tier findings.
+   Default: `simplify-select`.
 
-### Phase 2 — Launch three reviewers in parallel
+Present the plan (scope, modules, areas, depth, mode) for confirmation. For large codebases (>50 source files), warn the user about token cost and offer to scope down per module or area.
+
+### Phase 3 — Launch three reviewers in parallel
 
 Use `delegate_task` **batch mode** — pass all three tasks in one `tasks`
-array so they run concurrently. Three is the right fan-out for this pattern;
-it's well within the `delegation.max_concurrent_children` budget on any
-default install.
+array so they run concurrently. Three is the right fan-out; it's well within
+the `delegation.max_concurrent_children` budget on any default install.
 
-Give **every** reviewer the **complete diff** (not fragments — cross-file
-issues hide in the gaps) plus the absolute repo path so they can search the
-wider codebase. Each reviewer gets `terminal`, `file`, and `search`
-toolsets (so they can `git`, `read_file`, and `search_files`/grep).
+Give **every** reviewer:
+
+- The **full project map** (module list, source paths, entry points, conventions, language/framework info from Phase 1).
+- The **scope** the user selected (entire codebase, specific dirs, or modules).
+- The **depth** instruction (quick/standard/exhaustive).
+- Tools: `terminal`, `file_read`, `file_search`/`grep`, `file_find`/`glob`.
 
 Tell each reviewer to:
-- Search the existing codebase for evidence (don't reason from the diff alone).
+
+- **Read actual source files** — don't reason from file names or assumptions.
+- **Search the full codebase** for evidence across modules (cross-file issues only show up with broad searching).
 - **Apply Chesterton's Fence:** before flagging anything for removal, run
   `git blame` on the line to understand why it exists. If you can't determine
   the original purpose, mark it `confidence: low` — don't guess.
@@ -95,43 +97,44 @@ Tell each reviewer to:
   file:line → problem → suggested fix | confidence: high/medium/low | risk: SAFE/CAREFUL/RISKY
   ```
   - **SAFE** = proven not to affect behavior (unused imports, commented-out
-    code, pass-through wrappers). Auto-apply these.
+    code, dead code with zero references, pass-through wrappers). Auto-apply these.
   - **CAREFUL** = improves without changing semantics (rename local variable,
-    flatten nested ternary, extract helper). Apply with test verification.
+    flatten nested ternary, extract helper, consolidate dupes). Apply with test verification.
   - **RISKY** = may change behavior or breaks public contracts (N+1
     restructuring, public API rename, memory lifecycle change). Flag for
     human review — do NOT auto-apply.
 - Skip nits and style-only churn. Only flag things that materially improve
   the code.
 
-Pass these three goals (drop any the user's focus excludes):
+Pass these three goals (drop any the user's area selection excludes):
 
 **Reviewer 1 — Code Reuse**
-> Review this diff for code that duplicates functionality already in the
-> codebase. Search utility modules, shared helpers, and adjacent files
-> (use search_files / grep) for existing functions, constants, or patterns
-> the new code could call instead of reimplementing. Flag: new functions
-> that duplicate existing ones; hand-rolled logic that an existing utility
-> already does (manual string/path manipulation, custom env checks, ad-hoc
-> type guards, re-implemented parsing). For each, name the existing thing to
-> use and where it lives.
+> Review this codebase for code that duplicates functionality elsewhere.
+> Search the entire codebase (use file_search/grep) for existing functions,
+> constants, or patterns that duplicate each other. Flag: functions defined
+> in multiple places that do the same thing; hand-rolled logic that an
+> existing utility already does (manual string/path manipulation, custom env
+> checks, ad-hoc type guards, re-implemented parsing); near-identical modules
+> or files. For each, name the definitive version to keep and where all
+> duplicates live. If a duplicate exists for good reason (different
+> dependency contexts, intentional fork), note it and skip.
 
 **Reviewer 2 — Code Quality**
-> Review this diff for quality problems. Look for: redundant state (values
-> that duplicate or could be derived from existing state; caches that don't
-> need to exist); parameter sprawl (new params bolted on where the function
-> should have been restructured); copy-paste-with-variation (near-duplicate
+> Review this codebase for quality problems. Look for: redundant state
+> (values that duplicate or could be derived from existing state; caches
+> that don't need to exist); parameter sprawl (functions with too many params
+> that should be restructured); copy-paste-with-variation (near-duplicate
 > blocks that should share an abstraction); leaky abstractions (exposing
-> internals, breaking an existing encapsulation boundary); stringly-typed
-> code (raw strings where a constant/enum/registry already exists — check the
-> canonical registries before flagging); AI-generated slop patterns (extra
-> comments restating obvious code like `// increment counter` above `count++`;
+> internals, breaking encapsulation boundaries); stringly-typed code (raw
+> strings where a constant/enum/registry already exists — check canonical
+> registries before flagging); AI-generated slop patterns (extra comments
+> restating obvious code like `// increment counter` above `count++`;
 > unnecessary defensive null-checks on already-validated inputs; `as any`
 > casts that bypass the type system; patterns inconsistent with the rest of
-> the file). For each, give the concrete refactor.
+> the project). For each, give the concrete refactor.
 
 **Reviewer 3 — Efficiency**
-> Review this diff for efficiency problems. Look for: unnecessary work
+> Review this codebase for efficiency problems. Look for: unnecessary work
 > (redundant computation, repeated file reads, duplicate API calls, N+1
 > access patterns); missed concurrency (independent ops run sequentially);
 > hot-path bloat (heavy/blocking work on startup or per-request paths);
@@ -143,7 +146,7 @@ Pass these three goals (drop any the user's focus excludes):
 > propagation gaps — these hide bugs and should at minimum log before
 > swallowing). For each, give the concrete fix and why it's faster or safer.
 
-### Phase 3 — Aggregate and apply
+### Phase 4 — Aggregate and apply
 
 Wait for all three to return (batch mode returns them together).
 
@@ -158,41 +161,64 @@ Wait for all three to return (batch mode returns them together).
    the one that touches less code and note the alternative.
 4. **Apply in risk-tier order:**
    - **SAFE first** (auto-apply): unused imports, commented-out code,
-     pass-through wrappers, redundant type assertions. Run tests after.
+     pass-through wrappers, redundant type assertions, dead code with zero
+     references. Run tests after.
    - **CAREFUL next** (apply with verification, one file at a time): rename
      locals, flatten ternaries, extract helpers, consolidate dupes. Run tests
      after each file. Revert any that break.
    - **RISKY last** (flag for review — do NOT auto-apply): N+1 restructuring,
      public API changes, concurrency fixes, error-handling changes. Present
      each with risk description and test coverage status.
-   If the user opted for a dry run, present all three tiers and apply nothing.
-5. **Verify** you didn't break anything: run the project's targeted tests for
-   the touched files (not the full suite), and re-run any linter/type check the
+   If the user opted for a dry run or `simplify-only` mode, present all three
+   tiers and apply nothing.
+5. **Verify** you didn't break anything: run the project's tests (targeted to
+   touched files first, then broader), and re-run any linter/type check the
    repo uses. If a fix breaks a test, revert that one fix and report it.
 6. **Summarize** what you changed: a short list of applied fixes grouped by
    reviewer category and risk tier, plus any findings you deliberately skipped
    and why.
+
+### Phase 5 — Report
+
+Generate a summary containing:
+
+- Scope analyzed (files, modules, lines).
+- Findings grouped by category (reuse/quality/efficiency) and risk tier.
+- Fixes applied with file:line references.
+- Findings skipped with reasons.
+- Recommendations for RISKY-tier findings the user should review manually.
+- Limitations (areas not covered, tools unavailable).
+
+## Context Management for Large Codebases
+
+- Process modules in batches, never load the entire codebase at once.
+- Give reviewers the project map and scope, not every source file. They search
+  and read files on demand.
+- For repos >100 source files, scope down to specific modules or directories
+  per run. A full-codebase simplify on a large repo should be split across
+  multiple sessions, one module group at a time.
+- Re-read a file before applying a fix (it may have changed).
 
 ## Pitfalls
 
 - **Don't fan out wider than ~3.** More reviewers means more cost and more
   conflicting suggestions to reconcile, not better coverage. Three categories
   cover the space.
-- **Give the WHOLE diff to each reviewer.** Splitting the diff across reviewers
-  defeats the design — cross-file duplication and N+1s only show up with the
-  full picture.
+- **Give the FULL project map to each reviewer.** Splitting the codebase across
+  reviewers defeats the design — cross-module duplication and N+1s only show up
+  with the full picture.
 - **Reviewers search, they don't guess.** A reuse finding with no pointer to
   the existing utility ("there's probably a helper for this") is noise. Require
   `file:line` evidence; drop findings that lack it.
-- **Apply ≠ rewrite.** This is cleanup of the user's recent changes, not a
-  license to refactor the whole module. Keep edits scoped to what the diff
-  touched plus the minimal surrounding change a fix requires.
+- **Apply ≠ rewrite.** This is cleanup, not a license to refactor the whole
+  project. Keep edits scoped to the specific problem plus the minimal
+  surrounding change a fix requires.
 - **Respect project conventions.** If the repo has AGENTS.md / CLAUDE.md /
   HERMES.md or a linter config, fold those rules into the reviewer prompts so
   suggestions match house style instead of fighting it.
-- **Large diffs blow context.** If the diff is huge, scope it down before
-  delegating — three subagents each carrying a 5000-line diff is expensive and
-  may truncate.
+- **Large codebases blow context.** For repos with hundreds of source files,
+  scope down before delegating. Split the run into multiple sessions, one
+  module group at a time.
 - **Over-trusting dead code tools.** `knip`, `ts-prune`, and `depcheck` flag
   exports that ARE used dynamically (string-based imports, reflection). Always
   grep for the symbol name before removing — a clean tool report is not proof.
@@ -203,10 +229,23 @@ Wait for all three to return (batch mode returns them together).
 - **Removing "unnecessary" error handling.** An empty catch block or ignored
   error might be intentional — the error is expected and benign in that
   context. Flag it, don't remove it; let the human decide.
+- **Not excluding generated/vendor code.** `node_modules`, `dist`, `vendor`,
+  lockfiles, `migrations`, and generated code should be excluded. Analyzing
+  them wastes context and produces noise.
+
+## Restrictions
+
+- Do NOT apply any fix without explicit user authorization (except in `simplify-auto` mode for SAFE-tier findings).
+- Do NOT modify production code beyond the minimal safe fix.
+- Do NOT refactor unrelated code during a fix.
+- Do NOT claim tests passed if they weren't run.
+- Do NOT raise findings without concrete evidence (file + line + code snippet).
 
 ## Related
 
 If your install has the `subagent-driven-development` skill (optional), it
 covers the complementary case: parallel review *during* implementation, per
 task. This skill is the standalone *after-the-fact* cleanup pass. Use
-`requesting-code-review` for the pre-commit security/quality gate.
+`codebase-audit` for security/bug/performance-focused audits with deeper
+research and version-specific analysis. Use `requesting-code-review` for the
+pre-commit security/quality gate on recent changes only.
