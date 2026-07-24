@@ -120,6 +120,16 @@ Use before ANY code modification. Forces an investigation phase that inspects th
 npx skills add johanruizb/custom-skills --skill investigate-before-edit
 ```
 
+### issue-enrichment
+
+Use when a GitHub issue or feature request is too brief to implement and needs to be enriched with technical context from the codebase before implementation. Investigates the project, finds affected code, and rewrites the issue with the context a developer needs — without expanding scope.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill issue-enrichment
+```
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
