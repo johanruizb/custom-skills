@@ -110,6 +110,16 @@ Rewrite and improve prompts to make them clear, actionable, and useful for ChatG
 npx skills add johanruizb/custom-skills --skill prompt-enhancer
 ```
 
+### investigate-before-edit
+
+Use before ANY code modification. Forces an investigation phase that inspects the codebase with harness tools before editing, so decisions are backed by evidence rather than assumptions. Presents a research summary and waits for confirmation on destructive or ambiguous changes.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill investigate-before-edit
+```
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
