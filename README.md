@@ -130,6 +130,16 @@ Use when a GitHub issue or feature request is too brief to implement and needs t
 npx skills add johanruizb/custom-skills --skill issue-enrichment
 ```
 
+### pr-test-checklist
+
+Analyze changes in one or more Pull Requests and generate a manual testing checklist for the application. Reviews the actual diff and source code to produce actionable, traceable tests free of assumptions. Does not perform full regression — only validates what changed and its direct side effects.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill pr-test-checklist
+```
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
