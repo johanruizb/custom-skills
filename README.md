@@ -90,14 +90,14 @@ Audit a project's test suite, evaluate the quality of every existing test, then 
 npx skills add johanruizb/custom-skills --skill test-suite-improver
 ```
 
-### simplify-code
+### simplify-codebase
 
-Review an entire codebase with three focused subagent reviewers running in parallel (reuse, quality, efficiency), aggregate their findings, and apply the best fixes. Maps the project structure, discovers conventions and technologies, then scans all source code for duplication, quality issues, and inefficiencies.
+Analyze an entire codebase for accidental complexity — duplication, unnecessary abstractions, redundant dependencies, dead code, inconsistent patterns — then propose and apply a prioritized simplification plan. Harness-agnostic: discovers available tools at runtime and adapts.
 
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill simplify-code
+npx skills add johanruizb/custom-skills --skill simplify-codebase
 ```
 
 ### prompt-enhancer
