@@ -26,20 +26,6 @@ npx skills add johanruizb/custom-skills --skill git-commit
 
 **Usage:** Explicitly ask Claude Code to commit the current changes. The skill reuses task context, inspects only when needed, and commits the staged set or explicit task paths without rereading the entire diff.
 
-### deep-interview
-
-Structured Socratic requirements interview for vague ideas before planning or implementation.
-
-Asks one targeted question at a time, scores ambiguity across weighted clarity dimensions, confirms the top-level scope, inspects brownfield code before asking repository questions, and produces a pending-approval specification before any execution.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill deep-interview
-```
-
-**Usage:** Run the skill when a request is vague or high-risk, for example "deep interview this feature idea", "interview me before coding", or "no quiero que asumas". It will clarify requirements and generate a spec before implementation.
-
 ### code-documentation
 
 Generate, update, or regenerate inline documentation (docstrings, JSDoc, comments) across a codebase. Analyzes project structure, detects language/framework conventions, offers incremental or full-regeneration modes, and validates that docs match the code without changing behavior.
@@ -58,56 +44,6 @@ Deep audit of an entire codebase for performance, bugs, and/or security issues. 
 
 ```bash
 npx skills add johanruizb/custom-skills --skill codebase-audit
-```
-
-### init-deep
-
-Deep repository-context initialization. Analyzes the repository and generates or updates a useful hierarchy of `AGENTS.md` files for coding agents based on actual repository architecture and conventions. 
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill init-deep
-```
-
-### screaming-architecture-refactor
-
-Reorganize a specific subpath of a project to Screaming Architecture + feature-based folders. Designed to run repeatedly over different paths of the same project for incremental, consistent, and safe migration.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill screaming-architecture-refactor
-```
-
-### test-suite-improver
-
-Audit a project's test suite, evaluate the quality of every existing test, then improve the suite by writing valuable tests, fixing broken ones, and removing ones that add no value. Harness-agnostic.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill test-suite-improver
-```
-
-### simplify-codebase
-
-Analyze an entire codebase for accidental complexity — duplication, unnecessary abstractions, redundant dependencies, dead code, inconsistent patterns — then propose and apply a prioritized simplification plan. Harness-agnostic: discovers available tools at runtime and adapts.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill simplify-codebase
-```
-
-### prompt-enhancer
-
-Rewrite and improve prompts to make them clear, actionable, and useful for ChatGPT, coding agents, design tools, product analysis, or any AI. Turns vague ideas, quick notes, or poorly written prompts into well-structured, ready-to-use instructions while preserving the original intent and technical terms.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill prompt-enhancer
 ```
 
 ### investigate-before-edit
@@ -140,6 +76,46 @@ Analyze changes in one or more Pull Requests and generate a manual testing check
 npx skills add johanruizb/custom-skills --skill pr-test-checklist
 ```
 
+### prompt-enhancer
+
+Rewrite and improve prompts to make them clear, actionable, and useful for ChatGPT, coding agents, design tools, product analysis, or any AI. Turns vague ideas, quick notes, or poorly written prompts into well-structured, ready-to-use instructions while preserving the original intent and technical terms.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill prompt-enhancer
+```
+
+### screaming-architecture-refactor
+
+Reorganize a specific subpath of a project to Screaming Architecture + feature-based folders. Designed to run repeatedly over different paths of the same project for incremental, consistent, and safe migration.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill screaming-architecture-refactor
+```
+
+### simplify-codebase
+
+Analyze an entire codebase for accidental complexity — duplication, unnecessary abstractions, redundant dependencies, dead code, inconsistent patterns — then propose and apply a prioritized simplification plan. Harness-agnostic: discovers available tools at runtime and adapts.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill simplify-codebase
+```
+
+### test-suite-improver
+
+Audit a project's test suite, evaluate the quality of every existing test, then improve the suite by writing valuable tests, fixing broken ones, and removing ones that add no value. Harness-agnostic.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill test-suite-improver
+```
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
@@ -148,4 +124,4 @@ npx skills add johanruizb/custom-skills --skill pr-test-checklist
 ## Credits
 
 - [github/awesome-copilot](https://github.com/github/awesome-copilot) — original git-commit skill (MIT)
-- [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) — inspiration for deep-interview (MIT)
+- [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) — inspiration for custom skills workflows (MIT)
