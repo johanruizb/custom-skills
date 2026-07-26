@@ -62,7 +62,7 @@ Rules:
 
 Limit candidate directories to depth `N`.
 
-Default: `3`
+Default: `6`
 
 Examples:
 
