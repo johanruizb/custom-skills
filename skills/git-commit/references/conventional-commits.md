@@ -12,10 +12,10 @@ Format: `type(scope): description`
 | `docs` | Documentation only | `docs: update API usage examples in README` |
 | `test` | Adding or updating tests | `test(auth): add integration tests for token refresh` |
 | `ci` | CI/CD configuration | `ci: add Python 3.12 to test matrix` |
-| `chore` | Maintenance, dependencies, tooling | `chore: upgrade pytest to 8.x` |
+| `chore` | Repository maintenance unrelated to runtime/build output | `chore: clean obsolete fixtures` |
 | `perf` | Performance improvement | `perf(search): add index on users.email column` |
 | `style` | Formatting, whitespace, semicolons | `style: run black formatter on src/` |
-| `build` | Build system or external deps | `build: switch from setuptools to hatch` |
+| `build` | Build system or dependency changes | `build: upgrade pytest to 8.x` |
 | `revert` | Reverts a previous commit | `revert: revert "feat(auth): add OAuth2 login flow"` |
 
 ## Scope (optional)
@@ -54,5 +54,6 @@ Closes #42
 - Only touched tests? → `test`
 - Only touched docs? → `docs`
 - Updated CI/CD pipelines? → `ci`
-- Updated dependencies or tooling? → `chore`
+- Updated dependencies or build tooling? → `build`
+- Routine repository maintenance? → `chore`
 - Made something faster? → `perf`
