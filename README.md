@@ -46,6 +46,16 @@ Deep audit of an entire codebase for performance, bugs, and/or security issues. 
 npx skills add johanruizb/custom-skills --skill codebase-audit
 ```
 
+### init-deep
+
+Deep repository-context initialization. Analyzes the repository and generates or updates a useful hierarchy of `AGENTS.md` files for coding agents based on actual repository architecture and conventions.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill init-deep
+```
+
 ### investigate-before-edit
 
 Use before ANY code modification. Forces an investigation phase that inspects the codebase with harness tools before editing, so decisions are backed by evidence rather than assumptions. Presents a research summary and waits for confirmation on destructive or ambiguous changes.
