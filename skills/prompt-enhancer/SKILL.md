@@ -1,8 +1,8 @@
 ---
 name: prompt-enhancer
-description: "Reescribe y mejora prompts para hacerlos claros, accionables y útiles para ChatGPT, agentes de código, herramientas de diseño, análisis de producto o cualquier IA. Usa cuando el usuario pida mejorar, reescribir, clarificar o pulir un prompt."
-version: 1.0.0
-author: Hermes Agent
+description: "Mejora prompts para claridad, estructura y accionabilidad."
+version: 1.2.0
+author: johanruizb, Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
@@ -11,11 +11,9 @@ metadata:
     related_skills: []
 ---
 
-# Prompt Enhancer
+# Prompt Enhancer Skill
 
-## Overview
-
-Esta skill transforma ideas, notas rápidas o prompts mal redactados en prompts claros, accionables y útiles para cualquier IA. No cambia la intención original, solo mejora la claridad, estructura y precisión.
+Transforma ideas, notas rápidas o prompts mal redactados en prompts claros, accionables y útiles para cualquier IA. No cambia la intención original — solo mejora claridad, estructura y precisión. No corrige gramática pura ni traduce prompts.
 
 ## When to Use
 
@@ -30,47 +28,50 @@ Don't use for:
 
 ## Core Rules
 
-Antes de generar cualquier salida, aplicar estas reglas en orden:
+Aplicar en orden antes de generar cualquier salida:
 
-1. **Entender la intención principal.** Extraer qué quiere lograr el usuario con el prompt original. Si la intención es ambigua a pesar del contexto, elegir la interpretación más probable y anotarlo en Suposiciones.
+1. **Entender la intención principal.** Extraer qué quiere lograr el usuario. Si la intención es ambigua, elegir la interpretación más probable y anotarlo en Suposiciones.
 
-2. **Conservar el significado.** No inventar requisitos, no añadir funcionalidad que el usuario no pidió, no cambiar el objetivo. Lo que el usuario no dijo, no se asume.
+2. **Conservar el significado.** No inventar requisitos, no añadir funcionalidad no pedida, no cambiar el objetivo. Lo que el usuario no dijo, no se asume.
 
 3. **Mejorar claridad y precisión.** Eliminar ambigüedad, frases redundantes, rodeos. Cada oración debe aportar información accionable.
 
-4. **Convertir vaguedades en instrucciones.** "Hazlo bonito" → "Usa una paleta monocromática con sombras sutiles, espaciado de 16px y tipografía sans-serif". "Que funcione bien" → "Debe manejar hasta 1000 registros sin degradación, responder en <200ms y mostrar un estado de carga mientras procesa".
+4. **Convertir vaguedades en instrucciones concretas.** "Hazlo bonito" → "Usa paleta monocromática con sombras sutiles, espaciado de 16px y tipografía sans-serif". "Que funcione bien" → "Debe manejar hasta 1000 registros sin degradación, responder en <200ms y mostrar un estado de carga".
 
-5. **Estructurar en secciones cuando ayude.** Para prompts complejos, usar secciones como: Objetivo, Contexto, Requisitos, Restricciones, Criterios de aceptación, Entregables. Para prompts simples, una versión directa sin secciones es mejor.
+5. **Estructurar en secciones cuando ayude.** Para prompts complejos: Objetivo, Contexto, Requisitos, Restricciones, Criterios de aceptación, Entregables. Para prompts simples, una versión directa sin secciones es mejor.
 
 6. **Ajustar el tono según contexto:**
    - **Desarrollo de software:** técnico, preciso, con restricciones, alcance y criterios de aceptación.
-   - **UI/UX:** enfocado en consistencia visual, jerarquía, espaciado, alineación, interacción y coherencia con el sistema existente.
-   - **Análisis:** enfocado en objetivos, contexto, pasos de revisión y entregables esperados.
+   - **UI/UX:** consistencia visual, jerarquía, espaciado, alineación, interacción, coherencia con el sistema existente.
+   - **Análisis:** objetivos, contexto, pasos de revisión y entregables esperados.
    - **Creativo/General:** tono natural, descriptivo, con margen para interpretación.
 
-7. **No sobrecomplicar.** Si el prompt original ya es claro con 3 líneas, no lo conviertas en 20. La versión simple es válida.
+7. **No sobrecomplicar.** Si el prompt original ya es claro con 3 líneas, no lo conviertas en 20.
 
-8. **Preservar términos técnicos.** Nombres de componentes, rutas, variables, IDs, referencias, URLs, comandos — se conservan exactamente como el usuario los escribió.
+8. **Preservar términos técnicos.** Nombres de componentes, rutas, variables, IDs, URLs, comandos — se conservan exactamente como el usuario los escribió.
 
-9. **Manejar ambigüedad sin bloquear.** Si falta información importante, agregar una sección breve de "Suposiciones" al final del prompt, sin detener la entrega. Si la ambigüedad es crítica y hay múltiples interpretaciones razonables, incluir "Preguntas opcionales" para que el usuario refine.
+9. **Resolver ambigüedad con herramientas antes de entregar.** Si falta información importante, agregar "Suposiciones" al final. Si hay múltiples interpretaciones razonables y la ambigüedad es crítica (cambia el resultado de forma significativa), usar la herramienta `clarify` para preguntar al usuario antes de entregar. Si `clarify` no está disponible o el usuario pide entrega inmediata, incluir "Preguntas opcionales" para que refine después.
 
 10. **Entregar listo para copiar y pegar.** El resultado debe ser autocontenido, sin necesidad de edición adicional.
 
+## Tool Usage
+
+- Usar `clarify` cuando la ambigüedad del prompt original sea crítica y haya múltiples interpretaciones razonables que cambian el resultado.
+- No usar `clarify` para ambigüedades menores que se resuelven con una suposición documentada.
+- Si `clarify` no está disponible, documentar Suposiciones y Preguntas opcionales en la respuesta.
+
 ## Response Format
 
-Entregar el resultado en este orden:
+Entregar en este orden:
 
-1. **Versión mejorada** — el prompt reescrito y pulido, listo para usar.
-
-2. **Versión alternativa** (si aplica) — una segunda versión más directa, más técnica, o con un enfoque distinto. Si el prompt original ya es óptimo en un solo enfoque, omitir.
-
-3. **Suposiciones** (si aplica) — breve lista de lo que se asumió para resolver ambigüedades.
-
+1. **Versión mejorada** — el prompt reescrito, listo para usar.
+2. **Versión alternativa** (si aplica) — más directa, más técnica, o con enfoque distinto. Omitir si el original ya es óptimo en un solo enfoque.
+3. **Suposiciones** (si aplica) — breve lista de lo asumido para resolver ambigüedades.
 4. **Preguntas opcionales** (si aplica) — preguntas concretas cuya respuesta mejoraría el prompt significativamente.
 
 Regla de idioma: si el prompt original está en español, responder en español. Si está en inglés, responder en inglés.
 
-## Ejemplo
+## Example
 
 **Prompt original:**
 > necesito un script que lea csv y haga gráficos
@@ -97,9 +98,16 @@ Regla de idioma: si el prompt original está en español, responder en español.
 > - Se asume Python como lenguaje (por ser el más común para datos).
 > - Se asume gráficos de líneas/barras. Si se requieren otros tipos (dispersión, pastel), especificar.
 
----
+## Pitfalls
 
-## Verification Checklist
+- **Over-engineering prompts simples.** Un prompt de 3 líneas no necesita 5 secciones. Si la versión directa es clara, entrégala sin más.
+- **Inventar requisitos por "ayudar".** Añadir features, tecnologías o criterios que el usuario no mencionó cambia la intención. Lo que no dijo, no se asume.
+- **Asumir demasiado en lugar de preguntar.** Si la ambigüedad cambia el resultado de forma significativa, usar `clarify` en vez de elegir una interpretación y seguir. Las suposiciones son para ambigüedades menores, no para decisiones de diseño.
+- **Stripping jargon que parece vago pero es preciso.** Términos domain-specific que el usuario usó pueden ser exactamente correctos en su contexto — preservarlos.
+- **Ignorar el idioma del original.** Responder en inglés cuando el prompt estaba en español (o viceversa) rompe la utilidad para el usuario.
+- **Sobre-especificar hasta hacer el prompt single-use.** Si el usuario quería una plantilla reutilizable, no la conviertas en un prompt que solo sirve para un escenario narrow.
+
+## Verification
 
 - [ ] Intención principal del prompt original entendida y conservada.
 - [ ] Sin requisitos inventados.
@@ -108,5 +116,6 @@ Regla de idioma: si el prompt original está en español, responder en español.
 - [ ] Tono ajustado al contexto (técnico, diseño, análisis, general).
 - [ ] Versión alternativa incluida si aporta valor.
 - [ ] Suposiciones documentadas si hubo ambigüedad.
+- [ ] `clarify` usado cuando la ambigüedad era crítica (o se documentó por qué no).
 - [ ] Resultado listo para copiar y pegar.
 - [ ] Idioma de respuesta coincide con idioma del prompt original.
