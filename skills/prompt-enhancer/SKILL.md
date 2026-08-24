@@ -1,7 +1,7 @@
 ---
 name: prompt-enhancer
 description: "Mejora prompts para claridad, estructura y accionabilidad."
-version: 1.2.0
+version: 1.3.0
 author: johanruizb, Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -52,7 +52,7 @@ Aplicar en orden antes de generar cualquier salida:
 
 9. **Resolver ambigüedad con herramientas antes de entregar.** Si falta información importante, agregar "Suposiciones" al final. Si hay múltiples interpretaciones razonables y la ambigüedad es crítica (cambia el resultado de forma significativa), usar la herramienta `clarify` para preguntar al usuario antes de entregar. Si `clarify` no está disponible o el usuario pide entrega inmediata, incluir "Preguntas opcionales" para que refine después.
 
-10. **Entregar listo para copiar y pegar.** El resultado debe ser autocontenido, sin necesidad de edición adicional.
+10. **Entregar listo para copiar y pegar.** El prompt debe ir dentro de un bloque de código markdown (```) para que el usuario lo copie con un solo clic. El texto fuera del bloque es explicación; el prompt usable va dentro del bloque.
 
 ## Tool Usage
 
@@ -64,39 +64,50 @@ Aplicar en orden antes de generar cualquier salida:
 
 Entregar en este orden:
 
-1. **Versión mejorada** — el prompt reescrito, listo para usar.
-2. **Versión alternativa** (si aplica) — más directa, más técnica, o con enfoque distinto. Omitir si el original ya es óptimo en un solo enfoque.
-3. **Suposiciones** (si aplica) — breve lista de lo asumido para resolver ambigüedades.
-4. **Preguntas opcionales** (si aplica) — preguntas concretas cuya respuesta mejoraría el prompt significativamente.
+1. **Versión mejorada** — el prompt reescrito dentro de un bloque de código markdown (```). Listo para copiar con un solo clic.
+2. **Versión alternativa** (si aplica) — segunda versión dentro de su propio bloque de código. Omitir si el original ya es óptimo en un solo enfoque.
+3. **Suposiciones** (si aplica) — breve lista de lo asumido para resolver ambigüedades. Texto normal, sin code block.
+4. **Preguntas opcionales** (si aplica) — preguntas concretas cuya respuesta mejoraría el prompt significativamente. Texto normal, sin code block.
 
 Regla de idioma: si el prompt original está en español, responder en español. Si está en inglés, responder en inglés.
 
 ## Example
 
 **Prompt original:**
+
 > necesito un script que lea csv y haga gráficos
 
 **Versión mejorada:**
-> Escribe un script en Python que lea un archivo CSV y genere gráficos a partir de sus datos.
->
-> **Requisitos:**
-> - Leer el archivo desde una ruta proporcionada como argumento.
-> - Detectar automáticamente las columnas numéricas.
-> - Generar un gráfico de líneas o barras por cada columna numérica.
-> - Guardar los gráficos como PNG en un directorio `output/`.
-> - Usar pandas y matplotlib.
->
-> **Criterios de aceptación:**
-> - Manejar archivos CSV con encoding UTF-8 y Latin-1.
-> - Manejar valores nulos saltándolos sin romper.
-> - Mostrar barra de progreso si el archivo tiene más de 1000 filas.
+
+```
+Escribe un script en Python que lea un archivo CSV y genere gráficos a partir de sus datos.
+
+Requisitos:
+- Leer el archivo desde una ruta proporcionada como argumento.
+- Detectar automáticamente las columnas numéricas.
+- Generar un gráfico de líneas o barras por cada columna numérica.
+- Guardar los gráficos como PNG en un directorio `output/`.
+- Usar pandas y matplotlib.
+
+Criterios de aceptación:
+- Manejar archivos CSV con encoding UTF-8 y Latin-1.
+- Manejar valores nulos saltándolos sin romper.
+- Mostrar barra de progreso si el archivo tiene más de 1000 filas.
+```
 
 **Versión más técnica:**
-> Python CLI script. Args: `--input <path>`, `--output <dir>`, `--format png|svg`. Lee CSV con pandas, columnas numéricas → matplotlib lineplot/barplot. Encoding: UTF-8 con fallback a Latin-1. Nulls → dropna por columna. >1000 filas → tqdm progress bar. Salida: PNG/SVG en output dir.
+
+```
+Python CLI script. Args: --input <path>, --output <dir>, --format png|svg.
+Lee CSV con pandas, columnas numéricas → matplotlib lineplot/barplot.
+Encoding: UTF-8 con fallback a Latin-1. Nulls → dropna por columna.
+>1000 filas → tqdm progress bar. Salida: PNG/SVG en output dir.
+```
 
 **Suposiciones:**
-> - Se asume Python como lenguaje (por ser el más común para datos).
-> - Se asume gráficos de líneas/barras. Si se requieren otros tipos (dispersión, pastel), especificar.
+
+- Se asume Python como lenguaje (por ser el más común para datos).
+- Se asume gráficos de líneas/barras. Si se requieren otros tipos (dispersión, pastel), especificar.
 
 ## Pitfalls
 
@@ -105,6 +116,7 @@ Regla de idioma: si el prompt original está en español, responder en español.
 - **Asumir demasiado en lugar de preguntar.** Si la ambigüedad cambia el resultado de forma significativa, usar `clarify` en vez de elegir una interpretación y seguir. Las suposiciones son para ambigüedades menores, no para decisiones de diseño.
 - **Stripping jargon que parece vago pero es preciso.** Términos domain-specific que el usuario usó pueden ser exactamente correctos en su contexto — preservarlos.
 - **Ignorar el idioma del original.** Responder en inglés cuando el prompt estaba en español (o viceversa) rompe la utilidad para el usuario.
+- **Entregar el prompt como texto plano sin code block.** Un prompt multi-línea fuera de un bloque de código es difícil de copiar — el usuario tiene que seleccionar a mano. Siempre dentro de ``` para copia con un clic.
 - **Sobre-especificar hasta hacer el prompt single-use.** Si el usuario quería una plantilla reutilizable, no la conviertas en un prompt que solo sirve para un escenario narrow.
 
 ## Verification
@@ -117,5 +129,6 @@ Regla de idioma: si el prompt original está en español, responder en español.
 - [ ] Versión alternativa incluida si aporta valor.
 - [ ] Suposiciones documentadas si hubo ambigüedad.
 - [ ] `clarify` usado cuando la ambigüedad era crítica (o se documentó por qué no).
+- [ ] Prompt entregado dentro de un bloque de código markdown para copia fácil.
 - [ ] Resultado listo para copiar y pegar.
 - [ ] Idioma de respuesta coincide con idioma del prompt original.
