@@ -21,7 +21,7 @@ Commits the existing staged set as authoritative. When nothing is staged, it sta
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill git-commit
+npx skills add johanruizb/custom-skills --skill git-commit --global
 ```
 
 **Usage:** Explicitly ask Claude Code to commit the current changes. The skill reuses task context, inspects only when needed, and commits the staged set or explicit task paths without rereading the entire diff.
@@ -33,7 +33,7 @@ Generate, update, or regenerate inline documentation (docstrings, JSDoc, comment
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill code-documentation
+npx skills add johanruizb/custom-skills --skill code-documentation --global
 ```
 
 ### codebase-audit
@@ -43,7 +43,7 @@ Deep audit of an entire codebase for performance, bugs, and/or security issues. 
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill codebase-audit
+npx skills add johanruizb/custom-skills --skill codebase-audit --global
 ```
 
 ### init-deep
@@ -53,7 +53,7 @@ Deep repository-context initialization. Analyzes the repository and generates or
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill init-deep
+npx skills add johanruizb/custom-skills --skill init-deep --global
 ```
 
 ### investigate-before-edit
@@ -63,7 +63,7 @@ Use before ANY code modification. Forces an investigation phase that inspects th
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill investigate-before-edit
+npx skills add johanruizb/custom-skills --skill investigate-before-edit --global
 ```
 
 ### issue-enrichment
@@ -73,7 +73,7 @@ Use when a GitHub issue or feature request is too brief to implement and needs t
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill issue-enrichment
+npx skills add johanruizb/custom-skills --skill issue-enrichment --global
 ```
 
 ### pr-test-checklist
@@ -83,7 +83,7 @@ Analyze changes in one or more Pull Requests and generate a manual testing check
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill pr-test-checklist
+npx skills add johanruizb/custom-skills --skill pr-test-checklist --global
 ```
 
 ### prompt-enhancer
@@ -93,7 +93,7 @@ Rewrite and improve prompts to make them clear, actionable, and useful for ChatG
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill prompt-enhancer
+npx skills add johanruizb/custom-skills --skill prompt-enhancer --global
 ```
 
 ### screaming-architecture-refactor
@@ -103,7 +103,7 @@ Reorganize a specific subpath of a project to Screaming Architecture + feature-b
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill screaming-architecture-refactor
+npx skills add johanruizb/custom-skills --skill screaming-architecture-refactor --global
 ```
 
 ### simplify-codebase
@@ -113,7 +113,7 @@ Analyze an entire codebase for accidental complexity — duplication, unnecessar
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill simplify-codebase
+npx skills add johanruizb/custom-skills --skill simplify-codebase --global
 ```
 
 ### test-suite-improver
@@ -123,7 +123,7 @@ Audit a project's test suite, evaluate the quality of every existing test, then 
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill test-suite-improver
+npx skills add johanruizb/custom-skills --skill test-suite-improver --global
 ```
 
 ## Requirements
