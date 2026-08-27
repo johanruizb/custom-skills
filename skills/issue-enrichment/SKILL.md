@@ -1,14 +1,14 @@
 ---
 name: issue-enrichment
 description: "Use when a GitHub issue or feature request is too brief to implement and needs to be enriched with technical context from the codebase before implementation. Investigates the project, finds affected code, and rewrites the issue with the context a developer needs — without expanding scope."
-version: 1.1.0
+version: 1.2.0
 author: Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [github, issues, enrichment, investigation, codebase-analysis, specification, triage]
-    related_skills: [github-issues, investigate-before-edit, feature-implementation, codebase-audit]
+    related_skills: [investigate-before-edit, codebase-audit]
 ---
 
 # Issue Enrichment
@@ -27,14 +27,14 @@ The deliverable is a rewritten issue body — readable by a person, not a techni
 
 Don't use for:
 - Issues that already contain full context and acceptance criteria.
-- Tasks that ask you to fix or implement the issue (use `feature-implementation` or `investigate-before-edit`).
-- Pure bug reproduction (use `systematic-debugging`).
+- Tasks that ask you to fix or implement the issue (use `investigate-before-edit`).
+- Pure bug reproduction — investigate and debug it directly instead.
 
 ## Input
 
 Accept the issue from one of these sources, in priority order:
 
-1. **GitHub issue number** — `gh issue view N` or the curl fallback from `github-issues`.
+1. **GitHub issue number** — `gh issue view N` (or the GitHub API / web page as a fallback).
 2. **Issue URL** — fetch with `web_extract` or `gh issue view`.
 3. **Local text** — pasted by the user or in a file path.
 
@@ -101,19 +101,19 @@ Rewrite the issue body. Every claim about current behavior must be backed by evi
 Keep it simple. This is a well-written issue, not a report:
 
 ```markdown
-## Objetivo
+## Objective
 
 <One or two sentences. What the issue asks for, in plain language. Preserves original scope.>
 
-## Contexto
+## Context
 
 <How the affected functionality works today and why the change is needed. Written in plain prose, not bullet lists. Cite file paths inline like `module/views.py:142` so the developer knows where to look. 2-4 short paragraphs maximum.>
 
-## Cambio solicitado
+## Requested change
 
 <What needs to change, in precise technical terms grounded in the code. The delta between current and desired behavior — not a solution design.>
 
-## Criterios de aceptación
+## Acceptance criteria
 
 - [ ] <Only if clearly inferable from the original requirement + code evidence.>
 - [ ] <If none can be clearly inferred, omit this entire section.>
@@ -123,7 +123,7 @@ That's it. Four sections at most. If a section adds no value, leave it out.
 
 ### Language
 
-Match the project's domain language and the user's language. If the project uses Spanish domain terms (e.g. IglesiaApp), use them. If the user writes in Spanish, output in Spanish.
+Write the enriched issue — text AND section headings — in the user's language and the project's domain language. The template above shows English headings; translate them to match the output language (e.g., a Spanish-language issue uses `Objetivo`, `Contexto`, `Cambio solicitado`, `Criterios de aceptación`). If the project uses Spanish domain terms (e.g. IglesiaApp), use them. If the user writes in Spanish, output in Spanish.
 
 ### Scope Discipline (critical)
 
@@ -144,7 +144,7 @@ The enriched issue MUST:
 ## Delivery
 
 1. Show the enriched issue to the user for review.
-2. If the user approves, update GitHub with `gh issue edit N --body "..."` or the curl fallback from `github-issues`.
+2. If the user approves, update GitHub with `gh issue edit N --body "..."` (or the GitHub API as a fallback).
 3. If local, write to a file or display, as the user prefers.
 
 Do not push to GitHub without user confirmation.
@@ -155,7 +155,7 @@ Do not push to GitHub without user confirmation.
 
 2. **Expanding scope.** The investigation reveals adjacent functionality and the enriched issue starts describing changes the original never asked for. Cut anything the original didn't request.
 
-3. **Padding with generic content.** "El código debe seguir las buenas prácticas" is noise. Every sentence must carry specific information from the investigation.
+3. **Padding with generic content.** "El código debe seguir las buenas prácticas" ("the code should follow good practices") is noise. Every sentence must carry specific information from the investigation.
 
 4. **Making it read like a report.** The output is an issue a developer reads and understands quickly. If it reads like a technical audit document, simplify. Plain prose, short paragraphs, only what helps implementation.
 
@@ -165,7 +165,7 @@ Do not push to GitHub without user confirmation.
 
 7. **Overwriting GitHub without confirmation.** Always show the enriched version first.
 
-9. **Skipping issue comments.** The issue body is not the full picture — comments often contain additional requirements, UX feedback, or scope refinements. Always read all comments before investigating. The user will correct you if you miss them.
+8. **Skipping issue comments.** The issue body is not the full picture — comments often contain additional requirements, UX feedback, or scope refinements. Always read all comments before investigating. The user will correct you if you miss them.
 
 ## Verification Checklist
 

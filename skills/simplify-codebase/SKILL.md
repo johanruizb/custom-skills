@@ -1,13 +1,13 @@
 ---
 name: simplify-codebase
-description: "Analyze an entire codebase for accidental complexity — duplication, unnecessary abstractions, redundant dependencies, dead code, inconsistent patterns — then propose and apply a prioritized simplification plan. Harness-agnostic: discovers available tools at runtime and adapts."
-version: 1.0.0
+description: "Use when the user asks to simplify a codebase, reduce complexity, deduplicate code, clean up the whole project, or remove dead code. Analyzes an entire codebase for accidental complexity — duplication, unnecessary abstractions, redundant dependencies, dead code, inconsistent patterns — then proposes and applies a prioritized simplification plan. Harness-agnostic: discovers available tools at runtime and adapts."
+version: 1.1.0
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
     tags: [simplification, deduplication, complexity, refactoring, codebase-analysis, harness-agnostic]
-    related_skills: [improve-codebase-architecture, codebase-audit, investigate-before-edit, simplify-code, codebase-design]
+    related_skills: [codebase-audit, investigate-before-edit]
 ---
 
 # Simplify Codebase
@@ -24,9 +24,9 @@ Analyze an entire codebase to find and reduce accidental complexity — the kind
 - User wants a prioritized simplification plan before making changes.
 
 Don't use for:
-- Cleaning up only recent git changes (use `simplify-code` instead).
+- Cleaning up only recent git changes — use a diff-scoped cleanup instead.
 - Finding bugs, security issues, or performance problems (use `codebase-audit` instead).
-- Deepening shallow modules into deep ones (use `improve-codebase-architecture` instead).
+- Deepening shallow modules into deep ones — use an architecture/design workflow instead.
 - Investigating before a single edit (use `investigate-before-edit` instead).
 
 ## Harness Adaptation
@@ -76,6 +76,8 @@ For each module, look for the categories described in `references/analysis-check
 - Similar utility functions scattered across modules.
 - Re-implemented standard library / framework functionality.
 - Parallel implementations of the same concept (e.g., two validators, two formatters, two API callers for the same service).
+
+To pre-screen mechanically before the manual review, run `scripts/detect-duplicates.py <root_dir>` — it prints groups of near-duplicate blocks with `file:line` references. Treat its output as leads to verify, not findings.
 
 ### 2.2 Unnecessary Abstractions
 - Wrappers that add no value (single-call wrappers, pass-through layers).
@@ -301,7 +303,7 @@ For each applied change:
 ### 7.6 Opportunities Pending
 - Findings not addressed (lower priority, RISKY without confirmation, or requiring more context).
 - Recommended next steps.
-- Areas that would benefit from deeper analysis (e.g., with `improve-codebase-architecture` or `codebase-audit`).
+- Areas that would benefit from deeper analysis (e.g., with `codebase-audit` or an architecture-design pass).
 
 **Completion criterion**: the user has received the full report.
 

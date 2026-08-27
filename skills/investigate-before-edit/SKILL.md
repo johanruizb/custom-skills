@@ -1,14 +1,14 @@
 ---
 name: investigate-before-edit
 description: "Use before ANY code modification. Forces an investigation phase that inspects the codebase with harness tools before editing, so decisions are backed by evidence rather than assumptions. Presents a research summary and waits for confirmation on destructive or ambiguous changes."
-version: 1.0.0
+version: 1.1.0
 author: Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [investigation, pre-edit, root-cause, codebase-analysis, evidence-driven, harness-agnostic]
-    related_skills: [systematic-debugging, codebase-audit, feature-implementation, plan]
+    related_skills: [codebase-audit]
 ---
 
 # Investigate Before Edit
@@ -113,7 +113,7 @@ Locate the tests that cover the affected area. Identify the exact command to run
 
 When the task is a bug fix, do not stop at the first suspicious line. Trace the symptom to its origin. Check sibling call paths for the same flaw. A symptom fix that leaves the root cause in place will recur.
 
-Use the `systematic-debugging` skill for any non-trivial bug: build a tight feedback loop, form ranked hypotheses, test minimally.
+For any non-trivial bug, work systematically: build a tight feedback loop, form ranked hypotheses, and test each one minimally before touching code.
 
 **Completion criterion:** the root cause is stated with evidence (file:line + code snippet), not a guess. Sibling paths with the same flaw are checked.
 
@@ -221,6 +221,16 @@ Main agent responsibilities when using subagents:
 - Subagent summaries are self-reports, not verified facts. For operations with external side-effects, verify the handle (URL, file path, ID) yourself.
 - Never let a subagent apply edits during the investigation phase — investigation only.
 
+## Project-Specific References
+
+Case-study references extracted from real investigations. Consult the one matching the task area before or during the Investigation Phase:
+
+- `references/django-drf-multitenant-permissions.md` — middleware ordering, DRF authentication timing, and custom permission classes (complements pitfall 15).
+- `references/django-env-var-cleanup.md` — investigation pattern for cleaning up `.env.example`, dead environment variables, and Docker Compose/settings config.
+- `references/iglesiaapp-ui-patterns.md` — established frontend UI layout and MUI component patterns to follow when the change touches UI in that style of project.
+- `references/mui-listitembutton-nested-link.md` — full pattern for the nested `<a>` ListItemButton bug (pitfall 26).
+- `references/spanish-english-permission-names.md` — inventory of affected files for the permission-key mismatch (pitfall 27).
+
 ## Common Pitfalls
 
 1. **Skipping the investigation because the fix "looks obvious."** Obvious fixes mask root causes. Run the phase anyway; it's fast for simple tasks and prevents rework.
@@ -262,7 +272,7 @@ Main agent responsibilities when using subagents:
     - A middleware in `process_request` cannot rely on `request.user.is_authenticated` being correct for JWT/token auth.
     - If the middleware needs the authenticated user, it must either: (a) run in `process_view` instead (after DRF's `APIView.dispatch` has run authentication), or (b) handle the `AnonymousUser` case gracefully and let the DRF permission class (`HasPermission`) do the real check later.
     - The `HasPermission` permission class (used in DRF views) runs AFTER authentication, so it's the right place for permission checks. The middleware should only set context (like `_effective_permissions`), not gate access.
-    - Common symptom: a middleware that sets `_effective_permissions = set()` for `AnonymousUser` in `process_request` will cache an empty set even for valid JWT users, causing 403s on every endpoint. The fix is to not set `_effective_permissions` for `AnonymousUser` in `process_request` — let the permission class resolve it later.
+    - Common symptom: a middleware that sets `_effective_permissions = set()` for `AnonymousUser` in `process_request` will cache an empty set even for valid JWT users, causing 403s on every endpoint. The fix is to not set `_effective_permissions` for `AnonymousUser` in `process_request` — let the permission class resolve it later. See `references/django-drf-multitenant-permissions.md` for the full permission-system pattern.
 
 16. **Don't invent data from training data — verify from the actual source.** When the user reports a behavior (e.g., "these roles don't exist" or "the data looks wrong"), do NOT assume the data from your training corpus is correct. Your training data may contain plausible-looking data that doesn't exist in the actual database. Always:
     - Query the actual database or API endpoint to verify what data exists.
@@ -285,7 +295,7 @@ Main agent responsibilities when using subagents:
     - Verify that the migration didn't skip records it shouldn't have (e.g., global records with `id_church=None`).
     - Check that the migration updated ALL relevant records, not just the first match per group.
 
-19. **Check for data loss when a CharField is replaced by a FK.** When a migration drops a CharField and adds a FK (`RemoveField` + `AddField`), verify there's a `RunPython` operation BETWEEN them that migrates the data. Without it, all existing values are permanently lost. The `RunPython` must come BEFORE `RemoveField` — the old field is only accessible in the historical model at that point. If the migration has already been applied and the data is lost, the only recovery path is a hardcoded mapping of known values (see `iglesiaapp` skill's `references/migration-data-loss-recovery.md` for the full pattern).
+19. **Check for data loss when a CharField is replaced by a FK.** When a migration drops a CharField and adds a FK (`RemoveField` + `AddField`), verify there's a `RunPython` operation BETWEEN them that migrates the data. Without it, all existing values are permanently lost. The `RunPython` must come BEFORE `RemoveField` — the old field is only accessible in the historical model at that point. If the migration has already been applied and the data is lost, the only recovery path is a hardcoded mapping of known values.
 
 20. **Data format mismatch between frontend and backend.** When the frontend shows empty data, "undefined", or renders nothing but the backend returns 200, the most common cause is a mismatch between the data format the backend sends and what the frontend expects. Investigation order:
     - **First:** Curl the endpoint and inspect the raw JSON response structure. Note the top-level keys and nesting.
@@ -297,11 +307,11 @@ Main agent responsibilities when using subagents:
     - Common pattern: backend returns `[{key, label, resources}, ...]` but frontend accesses `catalog.modules` — the fix is to use `catalog` directly, not `catalog.modules`.
     - Common pattern: `getProxy().get(...)` where `getProxy()` returns a string (not an Axios instance); `makeAPIRequest` with wrong argument order; missing `.then(res => res.data)` on Axios response.
 
-20. **Callback that ignores the payload.** When a parent component passes an `onSave` callback to a child form, verify that the callback actually uses the payload it receives. Common anti-pattern: `onSave={() => setSelectedId(null)}` — the callback clears state but never calls the API. The child calls `onSave(payload)` expecting the parent to persist it. Always check: does the parent's `onSave` implementation call the backend API with the payload, or does it just reset UI state? This applies to `onSave`, `onSubmit`, `onDelete`, and any callback that should trigger a side effect.
+21. **Callback that ignores the payload.** When a parent component passes an `onSave` callback to a child form, verify that the callback actually uses the payload it receives. Common anti-pattern: `onSave={() => setSelectedId(null)}` — the callback clears state but never calls the API. The child calls `onSave(payload)` expecting the parent to persist it. Always check: does the parent's `onSave` implementation call the backend API with the payload, or does it just reset UI state? This applies to `onSave`, `onSubmit`, `onDelete`, and any callback that should trigger a side effect.
 
-21. **`is_superuser` not exposed to the frontend.** When the frontend needs to know if a user is a superuser (e.g., to show/hide admin features), verify the login/session serializer includes `is_superuser` in its output. Django's `User.is_superuser` is a model field, but serializers often omit it. Add `is_superuser = serializers.BooleanField()` to the serializer — do NOT use `source="is_superuser"` (DRF rejects this with `KeyError` when the field name matches the source; just use `BooleanField()` without `source`).
+22. **`is_superuser` not exposed to the frontend.** When the frontend needs to know if a user is a superuser (e.g., to show/hide admin features), verify the login/session serializer includes `is_superuser` in its output. Django's `User.is_superuser` is a model field, but serializers often omit it. Add `is_superuser = serializers.BooleanField()` to the serializer — do NOT use `source="is_superuser"` (DRF rejects this with `KeyError` when the field name matches the source; just use `BooleanField()` without `source`).
 
-22. **Browser debugging is the LAST resort, not the first.** When the user reports a UI bug (e.g., "clicking a group does nothing"), the investigation order MUST be:
+23. **Browser debugging is the LAST resort, not the first.** When the user reports a UI bug (e.g., "clicking a group does nothing"), the investigation order MUST be:
     - **First:** Read the relevant source code. The code is the source of truth. The browser shows symptoms, not causes.
     - **Second:** Check git log for recent commits that may have introduced the bug.
     - **Third:** Only if the code logic is correct and the symptom persists, use the browser to verify the runtime state (console, network tab, DOM inspection).
@@ -313,17 +323,17 @@ Main agent responsibilities when using subagents:
     - **User override signal:** If the user says anything like "deja de perder el tiempo en el navegador", "dejate de mamadas", "deja de perder el tiempo y malgastar los tokens", "por que pierdes 40 minutos navegando en la pagina si tienes el codigo base", "eres un inutil", "acaso te estoy hablando en chino", "por que putas no me haces caso", "estas agotando mi paciencia", "estas alucinando", or any equivalent frustration about browser debugging — STOP IMMEDIATELY. Do not make another browser call. Do not restart Vite. Do not check the console again. Read the code. The user is telling you the root cause is in the code, not the browser. Every browser call after this signal is actively wasting the user's patience and tokens. If you already made browser calls and didn't find the cause, the answer is in the code — read it.
     - **HARD RULE:** After the user says "deja de perder el tiempo" or any equivalent, you get exactly ONE more action: read the relevant source file. If you don't find the root cause in that one read, you missed something in your earlier code reading. Re-read the file more carefully. Do NOT make another browser call under any circumstances.
 
-22. **Select-all button wiring: the parent must pass `onToggleAll`.** When a child component (like `PermissionCatalogList`) exposes a select-all callback via `onAllSelectedChange({ allSelected, toggleAll })`, the parent must pass `onToggleAll(perms, checked)` to the child for the toggle to actually do anything. Common bug: the parent renders the select-all button in its own `action` prop but never passes `onToggleAll` to the child — the button renders, the user clicks it, nothing happens. Always check both directions: (a) the child receives `onToggleAll`, and (b) the parent's `toggleAll` callback (from `onAllSelectedChange`) actually calls `onToggleAll` with the right arguments.
+24. **Select-all button wiring: the parent must pass `onToggleAll`.** When a child component (like `PermissionCatalogList`) exposes a select-all callback via `onAllSelectedChange({ allSelected, toggleAll })`, the parent must pass `onToggleAll(perms, checked)` to the child for the toggle to actually do anything. Common bug: the parent renders the select-all button in its own `action` prop but never passes `onToggleAll` to the child — the button renders, the user clicks it, nothing happens. Always check both directions: (a) the child receives `onToggleAll`, and (b) the parent's `toggleAll` callback (from `onAllSelectedChange`) actually calls `onToggleAll` with the right arguments.
 
-23. **Subagent implementation verification.** When delegating implementation to a subagent (orchestrator), the subagent may not commit its changes. After the subagent finishes, you MUST: (a) verify the changes are present on disk by re-reading key files, (b) run lint + build + relevant tests, (c) commit yourself. Do not assume the subagent left the working tree clean or the code in a passing state. Re-read key files to confirm the subagent's changes match the design decisions. This is especially important for multi-file changes where the subagent may have missed a file or left stale imports.
+25. **Subagent implementation verification.** When delegating implementation to a subagent (orchestrator), the subagent may not commit its changes. After the subagent finishes, you MUST: (a) verify the changes are present on disk by re-reading key files, (b) run lint + build + relevant tests, (c) commit yourself. Do not assume the subagent left the working tree clean or the code in a passing state. Re-read key files to confirm the subagent's changes match the design decisions. This is especially important for multi-file changes where the subagent may have missed a file or left stale imports.
 
-25. **MUI ListItemButton + nested `<a>` elements.** When a `ListItemButton` contains `secondaryAction` with `IconButton` elements that use `LinkComponent={Link}`, the ListItemButton itself CANNOT use `component={Link}`. This creates nested `<a>` elements (HTML invalid), and the browser ignores the outer `<a>`, making the ListItemButton unclickable for navigation. The fix is to use `onClick` with `useNavigate()` instead of `component={Link}` on the ListItemButton. The inner IconButtons keep their `LinkComponent={Link}` independently. This is a MUI-specific constraint: `ListItemButton` renders as `<div>` by default, and `component={Link}` makes it `<a>`, but the `secondaryAction` IconButtons also render as `<a>` — the browser cannot handle `<a>` inside `<a>`.
+26. **MUI ListItemButton + nested `<a>` elements.** When a `ListItemButton` contains `secondaryAction` with `IconButton` elements that use `LinkComponent={Link}`, the ListItemButton itself CANNOT use `component={Link}`. This creates nested `<a>` elements (HTML invalid), and the browser ignores the outer `<a>`, making the ListItemButton unclickable for navigation. The fix is to use `onClick` with `useNavigate()` instead of `component={Link}` on the ListItemButton. The inner IconButtons keep their `LinkComponent={Link}` independently. This is a MUI-specific constraint: `ListItemButton` renders as `<div>` by default, and `component={Link}` makes it `<a>`, but the `secondaryAction` IconButtons also render as `<a>` — the browser cannot handle `<a>` inside `<a>`.
 
     **Symptoms:** clicking a ListItemButton does nothing, even though `component={Link}` and `to` are correctly set. The element has no `href` in the DOM (the browser strips it from nested `<a>`). Console shows no errors. The `secondaryAction` buttons (edit, delete) work fine because they are the innermost `<a>`.
 
     **Fix:** Replace `component={Link}` with `onClick={() => navigate(path)}` on the ListItemButton. Keep `LinkComponent={Link}` on the inner IconButtons. See `references/mui-listitembutton-nested-link.md` for the full pattern.
 
-26. **Spanish/English permission key mismatch (`view` vs `ver`).** In this project, `getModelPermissions()` in `useRol.jsx` returns permission keys. The hook MUST use Spanish keys (`ver`, `crear`, `editar`, `eliminar`, `exportar`, `administrar`) because all 12+ components that consume these keys use Spanish (`permissions.ver`, `permissions.crear`, etc.). If the hook uses English keys (`view`), every component that reads `permissions.ver` gets `undefined` — which is falsy — causing navigation links to not render, conditional UI to be hidden, and "no permissions" fallbacks to trigger.
+27. **Spanish/English permission key mismatch (`view` vs `ver`).** In this project, `getModelPermissions()` in `useRol.jsx` returns permission keys. The hook MUST use Spanish keys (`ver`, `crear`, `editar`, `eliminar`, `exportar`, `administrar`) because all 12+ components that consume these keys use Spanish (`permissions.ver`, `permissions.crear`, etc.). If the hook uses English keys (`view`), every component that reads `permissions.ver` gets `undefined` — which is falsy — causing navigation links to not render, conditional UI to be hidden, and "no permissions" fallbacks to trigger.
 
     **Symptoms:** superuser can't click on groups, can't see sections they should have access to, "no permissions" shown despite being admin. No JS errors in console. The backend returns `is_superuser: true` and all permissions correctly.
 

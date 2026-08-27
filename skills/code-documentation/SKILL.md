@@ -1,14 +1,14 @@
 ---
 name: code-documentation
 description: "Use when the user asks to generate, update, or regenerate inline documentation (docstrings, JSDoc, comments) across a codebase. Analyzes project structure, detects language/framework conventions, offers incremental or full-regeneration modes, and validates that docs match the code without changing behavior."
-version: 1.0.0
+version: 1.1.0
 author: Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [documentation, docstrings, jsdoc, comments, code-quality, maintenance]
-    related_skills: [codebase-audit, requesting-code-review, plan]
+    related_skills: [codebase-audit]
 ---
 
 # Code Documentation Generator
@@ -27,18 +27,18 @@ It works in two modes (incremental update or full regeneration), follows languag
 - User needs documentation audits (find obsolete, incorrect, or redundant docs).
 
 Don't use for:
-- Generating external docs (README, wiki, API site) — use `markdown-document-enhancement` or similar.
+- Generating external docs (README, wiki, API site) — use a dedicated docs-generation workflow instead.
 - Single-file quick edits — just do it directly, no need for the full workflow.
 - Generating docs for generated/vendored/third-party code.
 
 ## Pre-flight: Mode Selection
 
-Before modifying anything, ask the user which mode to use via `clarify`:
+Before modifying anything, ask the user which mode to use via `clarify` (in the user's language):
 
-**Question:** "¿Qué modo de documentación prefieres?"
+**Question:** "Which documentation mode do you prefer?"
 **Choices:**
-1. "Actualización incremental — conserva documentación válida, corrige la incompleta, elimina solo la que no aporta valor"
-2. "Regeneración completa — elimina y reescribe toda la documentación (requiere confirmación antes de eliminar)"
+1. "Incremental update — keep valid documentation, fix the incomplete, remove only what adds no value"
+2. "Full regeneration — remove and rewrite all documentation (requires confirmation before deleting)"
 
 If the user already specified the mode in their request, skip this step.
 
@@ -155,6 +155,8 @@ AVOID:
 - PRESERVE indispensable comments: design decisions, warnings, constraints, non-obvious behavior, historical context, security notes, TODO/FIXME with rationale
 - When unsure whether a comment is indispensable, keep it
 
+When deciding whether to preserve or remove an existing comment, classify it with `references/critical-comment-detection.md` — it has concrete preserve/remove/judgment-call examples for both modes.
+
 ### Subagent delegation
 
 For large projects (50+ source files), use `delegate_task` to parallelize:
@@ -213,7 +215,7 @@ After all modifications:
 
 ## Phase 5: Final Summary
 
-Deliver a report with:
+Deliver a report following the structure of `templates/final-report.md`. It must include:
 
 | Category | Details |
 |---|---|
@@ -235,7 +237,7 @@ If git is available, show `git diff --stat` for a quick overview.
 
 1. **Documenting trivial code.** A one-line getter does not need a docstring. Skip it. Documentation should add insight, not volume.
 
-2. **Removing critical comments in full-regen mode.** Comments about race conditions, security constraints, "we tried X and it failed because Y" are indispensable. When in doubt, keep the comment.
+2. **Removing critical comments in full-regen mode.** Comments about race conditions, security constraints, "we tried X and it failed because Y" are indispensable. When in doubt, keep the comment. Use `references/critical-comment-detection.md` to classify borderline comments.
 
 3. **Inventing behavior.** If you cannot verify a behavior from the code, do not document it. State "behavior not verifiable from code" rather than guessing.
 

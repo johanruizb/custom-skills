@@ -1,13 +1,13 @@
 ---
 name: codebase-audit
 description: "Use when the user wants a deep audit of an entire codebase for performance, bugs, and/or security issues. Discovers available tools at runtime, adapts to any harness (Hermes, Claude Code, OpenCode, etc.), reviews all source code (not just diffs), and optionally fixes selected findings."
-version: 1.0.0
+version: 1.1.0
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
     tags: [audit, performance, bugs, security, codebase, review, harness-agnostic]
-    related_skills: [requesting-code-review, systematic-debugging, improve-codebase-architecture, test-suite-improver]
+    related_skills: [test-suite-improver]
 ---
 
 # Codebase Audit
@@ -22,9 +22,9 @@ Deep audit of an entire codebase for performance, bugs, and/or security. Reviews
 - User wants a performance review of the entire codebase, not just changed files.
 
 Don't use for:
-- Reviewing only recent git changes (use `requesting-code-review` instead).
-- Debugging a specific known bug (use `systematic-debugging` instead).
-- Architecture-level refactoring decisions (use `improve-codebase-architecture` instead).
+- Reviewing only recent git changes — use a diff-based code review instead.
+- Debugging a specific known bug — investigate and fix it directly instead.
+- Architecture-level refactoring decisions — use an architecture/design workflow instead.
 
 ## Architecture: Core + Adapters
 
@@ -196,7 +196,7 @@ source:      Technical reference / doc / CVE (when applicable)
 detected_by: Tool or agent that found it
 ```
 
-See `references/finding-schema.md` for JSON examples.
+See `references/finding-schema.md` for JSON examples and `templates/finding-template.json` for the ready-to-fill JSON template.
 
 ## Selection of Fixes
 
@@ -319,7 +319,7 @@ When `state_persist` is unavailable: keep findings in context and summarize prog
 
 1. **Assuming tools exist.** Always discover first. A missing `cmd_exec` means no linters run. A missing `web_search` means lower confidence on version-specific findings. Record the limitation, don't hide it.
 
-2. **Auditing only changed files.** This is a full-codebase audit. If the user wants only diffs, point them to `requesting-code-review`.
+2. **Auditing only changed files.** This is a full-codebase audit. If the user wants only diffs, run a diff-based code review instead.
 
 3. **Speculative findings without evidence.** If you cannot point to specific file + line + code, do not raise the finding. Mark uncertain items as `hypothesis` with `confidence: low`.
 

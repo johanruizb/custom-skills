@@ -1,13 +1,13 @@
 ---
 name: test-suite-improver
 description: "Use when the user wants to audit a project's test suite and improve it — analyze codebase + tests, evaluate quality, select a work mode, plan, write/fix/delete tests, and validate. Harness-agnostic: discovers available tools at runtime and adapts."
-version: 1.0.0
+version: 1.1.0
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
     tags: [testing, test-suite, quality, audit, harness-agnostic, refactoring]
-    related_skills: [codebase-audit, test-driven-development, requesting-code-review, systematic-debugging]
+    related_skills: [codebase-audit]
 ---
 
 # Test Suite Improver
@@ -22,9 +22,9 @@ Audit a project's test suite, evaluate the quality of every existing test, then 
 - User wants a testing strategy for a project with weak or missing tests.
 
 Don't use for:
-- Writing a single test for a known bug (use `test-driven-development` instead).
-- Reviewing only git diffs (use `requesting-code-review` instead).
-- Debugging a specific failing test (use `systematic-debugging` instead).
+- Writing a single test for a known bug — write it test-first, directly.
+- Reviewing only git diffs — use a diff-based code review instead.
+- Debugging a specific failing test — debug it directly instead.
 - Full codebase security/performance audit (use `codebase-audit` instead).
 
 ## Architecture: Core + Adapters

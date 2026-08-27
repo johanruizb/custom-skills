@@ -1,14 +1,14 @@
 ---
 name: screaming-architecture-refactor
 description: "Use when reorganizing a specific subpath of a project to Screaming Architecture + feature-based folders. Receives project root, target path, and mode (analyze | apply | verify). Designed to run repeatedly over different paths of the same project for incremental, consistent, safe migration."
-version: 1.0.0
+version: 1.1.0
 author: Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [architecture, refactoring, screaming-architecture, feature-folders, restructuring, imports, migration]
-    related_skills: [module-redesign-workflow, simplify-code, plan, systematic-debugging]
+    related_skills: []
 ---
 
 # Screaming Architecture Refactor
@@ -23,7 +23,7 @@ Reorganize a specific subpath of a project so that top-level directories express
 - Incremental migration: user is converting a project folder-by-folder and wants each run to respect prior runs.
 
 Don't use for:
-- Whole-codebase greenfield scaffolding (use the `plan` skill instead).
+- Whole-codebase greenfield scaffolding — scope that as a separate planning task first.
 - Single-file moves or renames with no architectural intent.
 - Framework-imposed layouts that cannot be changed (e.g. Next.js `app/` routes, Django app internals) unless the user explicitly wants to override them.
 
@@ -89,7 +89,7 @@ For every file, determine what it actually does — not what its name suggests. 
 1. **Pass 1 — Gather metadata in bulk.** Use `execute_code` to read the first ~60 lines + imports/exports of every file in one batch. Store results in a JSON file. This gives you the head (first meaningful lines), exports list, and import list for every file in a single tool call.
 2. **Pass 2 — Classify from the metadata.** Iterate over the stored metadata and assign capability + role to each file. Only re-read a file individually when the head + exports are insufficient to classify.
 
-This approach handles 196 files in ~2 tool calls instead of 196. Read more only when classification is ambiguous.
+This approach handles 196 files in ~2 tool calls instead of 196. Read more only when classification is ambiguous. See `references/batch-scan-strategy.md` for the full two-pass procedure with example code.
 
 **Handling AGENTS.md / SECURITY.md / collocated docs:** These are documentation files that describe a capability folder. They are NOT stays-in-place — they move with their capability folder as collocated docs. Classify them as `meta` capability, `doc` role. In the move map, they move alongside the code they document.
 

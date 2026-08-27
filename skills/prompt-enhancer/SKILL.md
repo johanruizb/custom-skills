@@ -1,7 +1,7 @@
 ---
 name: prompt-enhancer
-description: "Mejora prompts para claridad, estructura y accionabilidad."
-version: 1.3.0
+description: "Use when the user asks to improve, rewrite, or polish a prompt ('mejora este prompt', 'reescribe este prompt', 'hazlo más claro', 'pulir este prompt') or sends a raw idea, note, or rough draft to turn into a clear, actionable prompt. Transforms vague ideas into well-structured, ready-to-use prompts for any AI — ChatGPT, coding agents, design tools — preserving the original intent and technical terms."
+version: 1.4.0
 author: johanruizb, Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -13,122 +13,122 @@ metadata:
 
 # Prompt Enhancer Skill
 
-Transforma ideas, notas rápidas o prompts mal redactados en prompts claros, accionables y útiles para cualquier IA. No cambia la intención original — solo mejora claridad, estructura y precisión. No corrige gramática pura ni traduce prompts.
+Transforms raw ideas, quick notes, or poorly written prompts into clear, actionable, useful prompts for any AI. It does not change the original intent — it only improves clarity, structure, and precision. It does not do pure grammar fixes and does not translate prompts.
 
 ## When to Use
 
-- User asks to "mejorar este prompt", "reescribir prompt", "hacer más claro", "pulir prompt".
+- User asks to "mejora este prompt", "reescribir prompt", "hacer más claro", "pulir prompt", or the English equivalents ("improve this prompt", "rewrite this prompt").
 - User sends a raw idea, note, or rough draft and wants it turned into a usable prompt.
 - User needs variations of a prompt (more direct, more technical, more detailed).
 
 Don't use for:
-- Corrección gramatical pura sin mejora de estructura.
-- Traducción de prompts.
-- Generación de contenido que no sea un prompt.
+- Pure grammar correction with no structural improvement.
+- Translating prompts.
+- Generating content that is not a prompt.
 
 ## Core Rules
 
-Aplicar en orden antes de generar cualquier salida:
+Apply in order before generating any output:
 
-1. **Entender la intención principal.** Extraer qué quiere lograr el usuario. Si la intención es ambigua, elegir la interpretación más probable y anotarlo en Suposiciones.
+1. **Understand the main intent.** Extract what the user wants to achieve. If the intent is ambiguous, choose the most probable interpretation and note it under Assumptions.
 
-2. **Conservar el significado.** No inventar requisitos, no añadir funcionalidad no pedida, no cambiar el objetivo. Lo que el usuario no dijo, no se asume.
+2. **Preserve meaning.** Do not invent requirements, do not add unrequested functionality, do not change the goal. What the user did not say, do not assume.
 
-3. **Mejorar claridad y precisión.** Eliminar ambigüedad, frases redundantes, rodeos. Cada oración debe aportar información accionable.
+3. **Improve clarity and precision.** Remove ambiguity, redundant phrases, and detours. Every sentence must carry actionable information.
 
-4. **Convertir vaguedades en instrucciones concretas.** "Hazlo bonito" → "Usa paleta monocromática con sombras sutiles, espaciado de 16px y tipografía sans-serif". "Que funcione bien" → "Debe manejar hasta 1000 registros sin degradación, responder en <200ms y mostrar un estado de carga".
+4. **Turn vague statements into concrete instructions.** "Hazlo bonito" ("make it pretty") → "Usa paleta monocromática con sombras sutiles, espaciado de 16px y tipografía sans-serif". "Que funcione bien" ("make it work well") → "Debe manejar hasta 1000 registros sin degradación, responder en <200ms y mostrar un estado de carga".
 
-5. **Estructurar en secciones cuando ayude.** Para prompts complejos: Objetivo, Contexto, Requisitos, Restricciones, Criterios de aceptación, Entregables. Para prompts simples, una versión directa sin secciones es mejor.
+5. **Structure into sections when it helps.** For complex prompts: Objective, Context, Requirements, Constraints, Acceptance criteria, Deliverables. For simple prompts, a direct one-piece version is better.
 
-6. **Ajustar el tono según contexto:**
-   - **Desarrollo de software:** técnico, preciso, con restricciones, alcance y criterios de aceptación.
-   - **UI/UX:** consistencia visual, jerarquía, espaciado, alineación, interacción, coherencia con el sistema existente.
-   - **Análisis:** objetivos, contexto, pasos de revisión y entregables esperados.
-   - **Creativo/General:** tono natural, descriptivo, con margen para interpretación.
+6. **Adjust tone to context:**
+   - **Software development:** technical, precise, with constraints, scope, and acceptance criteria.
+   - **UI/UX:** visual consistency, hierarchy, spacing, alignment, interaction, coherence with the existing system.
+   - **Analysis:** objectives, context, review steps, and expected deliverables.
+   - **Creative/General:** natural, descriptive tone with room for interpretation.
 
-7. **No sobrecomplicar.** Si el prompt original ya es claro con 3 líneas, no lo conviertas en 20.
+7. **Don't overcomplicate.** If the original prompt is already clear in 3 lines, don't turn it into 20.
 
-8. **Preservar términos técnicos.** Nombres de componentes, rutas, variables, IDs, URLs, comandos — se conservan exactamente como el usuario los escribió.
+8. **Preserve technical terms.** Component names, paths, variables, IDs, URLs, commands — keep them exactly as the user wrote them.
 
-9. **Resolver ambigüedad con herramientas antes de entregar.** Si falta información importante, agregar "Suposiciones" al final. Si hay múltiples interpretaciones razonables y la ambigüedad es crítica (cambia el resultado de forma significativa), usar la herramienta `clarify` para preguntar al usuario antes de entregar. Si `clarify` no está disponible o el usuario pide entrega inmediata, incluir "Preguntas opcionales" para que refine después.
+9. **Resolve ambiguity with tools before delivering.** If important information is missing, add "Assumptions" at the end. If there are multiple reasonable interpretations and the ambiguity is critical (it changes the outcome significantly), use the `clarify` tool to ask the user before delivering. If `clarify` is not available or the user asks for immediate delivery, include "Optional questions" so they can refine later.
 
-10. **Entregar listo para copiar y pegar.** El prompt debe ir dentro de un bloque de código markdown (```) para que el usuario lo copie con un solo clic. El texto fuera del bloque es explicación; el prompt usable va dentro del bloque.
+10. **Deliver ready to copy and paste.** The prompt must go inside a markdown code block (```) so the user can copy it with a single click. Text outside the block is explanation; the usable prompt goes inside the block.
 
 ## Tool Usage
 
-- Usar `clarify` cuando la ambigüedad del prompt original sea crítica y haya múltiples interpretaciones razonables que cambian el resultado.
-- No usar `clarify` para ambigüedades menores que se resuelven con una suposición documentada.
-- Si `clarify` no está disponible, documentar Suposiciones y Preguntas opcionales en la respuesta.
+- Use `clarify` when the original prompt's ambiguity is critical and there are multiple reasonable interpretations that change the result.
+- Do not use `clarify` for minor ambiguities that can be resolved with a documented assumption.
+- If `clarify` is not available, document Assumptions and Optional questions in the response.
 
 ## Response Format
 
-Entregar en este orden:
+Deliver in this order:
 
-1. **Versión mejorada** — el prompt reescrito dentro de un bloque de código markdown (```). Listo para copiar con un solo clic.
-2. **Versión alternativa** (si aplica) — segunda versión dentro de su propio bloque de código. Omitir si el original ya es óptimo en un solo enfoque.
-3. **Suposiciones** (si aplica) — breve lista de lo asumido para resolver ambigüedades. Texto normal, sin code block.
-4. **Preguntas opcionales** (si aplica) — preguntas concretas cuya respuesta mejoraría el prompt significativamente. Texto normal, sin code block.
+1. **Improved version** — the rewritten prompt inside a markdown code block (```). Ready to copy with a single click.
+2. **Alternative version** (if applicable) — a second version inside its own code block. Omit if the original is already optimal in a single approach.
+3. **Assumptions** (if applicable) — brief list of what was assumed to resolve ambiguities. Plain text, no code block.
+4. **Optional questions** (if applicable) — concrete questions whose answers would significantly improve the prompt. Plain text, no code block.
 
-Regla de idioma: si el prompt original está en español, responder en español. Si está en inglés, responder en inglés.
+Language rule: if the original prompt is in Spanish, respond in Spanish. If it is in English, respond in English.
 
 ## Example
 
-**Prompt original:**
+**Original prompt:**
 
 > necesito un script que lea csv y haga gráficos
 
-**Versión mejorada:**
+**Improved version:**
 
 ```
-Escribe un script en Python que lea un archivo CSV y genere gráficos a partir de sus datos.
+Write a Python script that reads a CSV file and generates charts from its data.
 
-Requisitos:
-- Leer el archivo desde una ruta proporcionada como argumento.
-- Detectar automáticamente las columnas numéricas.
-- Generar un gráfico de líneas o barras por cada columna numérica.
-- Guardar los gráficos como PNG en un directorio `output/`.
-- Usar pandas y matplotlib.
+Requirements:
+- Read the file from a path provided as an argument.
+- Automatically detect the numeric columns.
+- Generate a line or bar chart for each numeric column.
+- Save the charts as PNG files in an `output/` directory.
+- Use pandas and matplotlib.
 
-Criterios de aceptación:
-- Manejar archivos CSV con encoding UTF-8 y Latin-1.
-- Manejar valores nulos saltándolos sin romper.
-- Mostrar barra de progreso si el archivo tiene más de 1000 filas.
+Acceptance criteria:
+- Handle CSV files with UTF-8 and Latin-1 encodings.
+- Handle null values by skipping them without breaking.
+- Show a progress bar if the file has more than 1000 rows.
 ```
 
-**Versión más técnica:**
+**More technical version:**
 
 ```
 Python CLI script. Args: --input <path>, --output <dir>, --format png|svg.
-Lee CSV con pandas, columnas numéricas → matplotlib lineplot/barplot.
-Encoding: UTF-8 con fallback a Latin-1. Nulls → dropna por columna.
->1000 filas → tqdm progress bar. Salida: PNG/SVG en output dir.
+Read CSV with pandas, numeric columns → matplotlib lineplot/barplot.
+Encoding: UTF-8 with Latin-1 fallback. Nulls → dropna per column.
+>1000 rows → tqdm progress bar. Output: PNG/SVG in output dir.
 ```
 
-**Suposiciones:**
+**Assumptions:**
 
-- Se asume Python como lenguaje (por ser el más común para datos).
-- Se asume gráficos de líneas/barras. Si se requieren otros tipos (dispersión, pastel), especificar.
+- Python is assumed as the language (the most common for data work).
+- Line/bar charts are assumed. If other chart types are needed (scatter, pie), specify.
 
 ## Pitfalls
 
-- **Over-engineering prompts simples.** Un prompt de 3 líneas no necesita 5 secciones. Si la versión directa es clara, entrégala sin más.
-- **Inventar requisitos por "ayudar".** Añadir features, tecnologías o criterios que el usuario no mencionó cambia la intención. Lo que no dijo, no se asume.
-- **Asumir demasiado en lugar de preguntar.** Si la ambigüedad cambia el resultado de forma significativa, usar `clarify` en vez de elegir una interpretación y seguir. Las suposiciones son para ambigüedades menores, no para decisiones de diseño.
-- **Stripping jargon que parece vago pero es preciso.** Términos domain-specific que el usuario usó pueden ser exactamente correctos en su contexto — preservarlos.
-- **Ignorar el idioma del original.** Responder en inglés cuando el prompt estaba en español (o viceversa) rompe la utilidad para el usuario.
-- **Entregar el prompt como texto plano sin code block.** Un prompt multi-línea fuera de un bloque de código es difícil de copiar — el usuario tiene que seleccionar a mano. Siempre dentro de ``` para copia con un clic.
-- **Sobre-especificar hasta hacer el prompt single-use.** Si el usuario quería una plantilla reutilizable, no la conviertas en un prompt que solo sirve para un escenario narrow.
+- **Over-engineering simple prompts.** A 3-line prompt does not need 5 sections. If the direct version is clear, deliver it and move on.
+- **Inventing requirements to "help".** Adding features, technologies, or criteria the user never mentioned changes the intent. What they did not say, do not assume.
+- **Assuming too much instead of asking.** If the ambiguity changes the outcome significantly, use `clarify` instead of picking an interpretation and moving on. Assumptions are for minor ambiguities, not design decisions.
+- **Stripping jargon that looks vague but is precise.** Domain-specific terms the user used may be exactly right in their context — preserve them.
+- **Ignoring the language of the original.** Responding in English when the prompt was in Spanish (or vice versa) breaks the skill's usefulness for the user.
+- **Delivering the prompt as plain text without a code block.** A multi-line prompt outside a code block is hard to copy — the user has to select it by hand. Always inside ``` for one-click copy.
+- **Over-specifying until the prompt is single-use.** If the user wanted a reusable template, don't turn it into a prompt that only works for one narrow scenario.
 
 ## Verification
 
-- [ ] Intención principal del prompt original entendida y conservada.
-- [ ] Sin requisitos inventados.
-- [ ] Términos técnicos preservados tal cual.
-- [ ] Estructura con secciones solo si aporta claridad.
-- [ ] Tono ajustado al contexto (técnico, diseño, análisis, general).
-- [ ] Versión alternativa incluida si aporta valor.
-- [ ] Suposiciones documentadas si hubo ambigüedad.
-- [ ] `clarify` usado cuando la ambigüedad era crítica (o se documentó por qué no).
-- [ ] Prompt entregado dentro de un bloque de código markdown para copia fácil.
-- [ ] Resultado listo para copiar y pegar.
-- [ ] Idioma de respuesta coincide con idioma del prompt original.
+- [ ] Main intent of the original prompt understood and preserved.
+- [ ] No invented requirements.
+- [ ] Technical terms preserved exactly as written.
+- [ ] Section structure only when it adds clarity.
+- [ ] Tone adjusted to context (technical, design, analysis, general).
+- [ ] Alternative version included when it adds value.
+- [ ] Assumptions documented if there was ambiguity.
+- [ ] `clarify` used when the ambiguity was critical (or the reason documented).
+- [ ] Prompt delivered inside a markdown code block for easy copying.
+- [ ] Result ready to copy and paste.
+- [ ] Response language matches the original prompt's language.
