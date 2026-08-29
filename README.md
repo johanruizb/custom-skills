@@ -126,6 +126,21 @@ Audit a project's test suite, evaluate the quality of every existing test, then 
 npx skills add johanruizb/custom-skills --skill test-suite-improver --global
 ```
 
+### web-perf-tuning
+
+Restore fluidity to a web app that feels slow, heavy, or janky in normal use. For mature apps of any stack: records a measured baseline first, classifies findings into three layers (load, main thread, render churn), fixes one dominant bottleneck per lap using per-stack playbooks (React/Next, Vue/Nuxt, Angular, Svelte, vanilla), and verifies every fix with before/after numbers — reverting anything that doesn't measurably improve.
+
+**Structure:**
+
+- `SKILL.md` — The three layers, the lap method (orient → baseline → diagnose → fix → verify), the ledger report format
+- `references/<stack>.md` — One playbook per stack: profiling recipes, static code sweeps, ranked bottlenecks. `references/vanilla.md` also holds the DOM/CSS layer shared by all stacks
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill web-perf-tuning --global
+```
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
