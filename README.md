@@ -46,6 +46,20 @@ Deep audit of an entire codebase for performance, bugs, and/or security issues. 
 npx skills add johanruizb/custom-skills --skill codebase-audit --global
 ```
 
+### release-to-github
+
+Cut a standardized release for any repository. A survey step reads each project's conventions first (version file, changelog, tag style, publish target, release tooling), so the same skill fits every project without per-repo configuration.
+
+Derives the next version from the commits since the last tag (Conventional Commits → SemVer, with `0.x` handling), writes a Keep a Changelog section phrased for users instead of committers, and finishes with a release commit and annotated tag. The irreversible steps (push, GitHub release, package publish) run last, after the release notes have been reviewed.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill release-to-github --global
+```
+
+**Usage:** Invoke `/release-to-github` in the project you want to release. Approve the proposed version, review the changelog section, and approve each publish step.
+
 ### init-deep
 
 Deep repository-context initialization. Analyzes the repository and generates or updates a useful hierarchy of `AGENTS.md` files for coding agents based on actual repository architecture and conventions.
