@@ -1,6 +1,6 @@
 ---
 name: release-to-github
-description: Cut a standardized release for the current repository: bump the version, write the changelog, commit, tag, and branch. Invoke with /release-to-github.
+description: "Cut a standardized release for the current repository: bump the version, write the changelog, commit, tag, and branch. Invoke with /release-to-github."
 license: MIT
 disable-model-invocation: true
 allowed-tools:
