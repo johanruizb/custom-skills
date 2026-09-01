@@ -50,7 +50,7 @@ npx skills add johanruizb/custom-skills --skill codebase-audit --global
 
 Cut a standardized release for any repository. A survey step reads each project's conventions first (version file, changelog, tag style, publish target, release tooling), so the same skill fits every project without per-repo configuration.
 
-Derives the next version from the commits since the last tag (Conventional Commits → SemVer, with `0.x` handling), writes a Keep a Changelog section phrased for users instead of committers, and finishes with a release commit and annotated tag. The irreversible steps (push, GitHub release, package publish) run last, after the release notes have been reviewed.
+Derives the next version from the commits since the last tag (Conventional Commits → SemVer, with `0.x` handling), writes a Keep a Changelog section phrased for users instead of committers — passing all entries through the unslop skill and ending with a full-changelog comparison link — and finishes with a release commit, annotated tag, and a version branch (`release/vX.Y.Z`) for backporting fixes. The irreversible steps (push, GitHub release, package publish) run last, after the release notes have been reviewed.
 
 **Install:**
 
