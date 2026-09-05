@@ -1,9 +1,8 @@
 ---
 name: git-commit
 description: |
-  Execute a local Git commit quickly and autonomously in the current repository.
-  Use when the user explicitly asks to commit changes, run git commit, or invokes /git-commit.
-  For message-only requests, use a commit-message skill instead.
+  Commit the current changes autonomously. Use when the user explicitly asks to commit
+  or invokes /git-commit. For message-only requests, use a commit-message skill instead.
 license: MIT
 allowed-tools:
   - Bash(git:*)
@@ -24,13 +23,13 @@ Commit from the current task context. Preserve every change outside the intended
 5. If the index is empty, stage only known task paths:
    `bash <helper> commit --message "type(scope): summary" -- path...`.
 
-Do not ask for normal confirmation, type, scope, message, or file selection.
-The helper validates the message, selected filenames, repository state, and
+Choose type, scope, message, and file selection yourself; commit without asking for
+confirmation. The helper validates the message, selected filenames, repository state, and
 `git diff --cached --check` before committing.
 
 ## Scope and message
 
-- Treat an existing staged set as authoritative. Never add unstaged files to it.
+- Treat an existing staged set as authoritative.
 - Default to one cohesive commit. Keep implementation, tests, docs, config, and lockfiles
   together when they serve one intent.
 - Split only changes with independent intent that can be reverted independently. Never split
@@ -42,9 +41,14 @@ The helper validates the message, selected filenames, repository state, and
 
 ## Inspect only when needed
 
-For pre-existing, mixed, unknown, or unexpectedly large changes, run `bash <helper> inspect`,
+For pre-existing, mixed, or unexpectedly large changes, run `bash <helper> inspect`,
 then read only targeted diffs needed to determine intent. Read
 `references/conventional-commits.md` only when the type or breaking-change format is unclear.
+
+## If a hook fails
+
+Report the hook's output. Retry a normal commit only after an in-scope fix, revalidation,
+and confirmation that the failed attempt did not create a commit.
 
 ## Safety
 
@@ -56,5 +60,3 @@ then read only targeted diffs needed to determine intent. Read
   never infer that permission.
 - Never update Git config, amend, reset, push, force, bypass hooks, or discard unrelated
   work as part of this skill. Never add co-author or AI attribution.
-- If a hook fails, report its output. Retry a normal commit only after an in-scope fix,
-  revalidation, and confirmation that the failed attempt did not create a commit.
