@@ -155,6 +155,18 @@ Restore fluidity to a web app that feels slow, heavy, or janky in normal use. Fo
 npx skills add johanruizb/custom-skills --skill web-perf-tuning --global
 ```
 
+### anglicize-repo
+
+Translate a repository fully to English in one ordered pass: a glossary of domain terms fixed before any edit, then prose, then identifiers and file names, ending with a grep sweep and a test run. A preserve list keeps tests, wire formats, and locale files untouched. Use on repos that mix another language with English.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill anglicize-repo --global
+```
+
+**Usage:** Ask for the full translation or scope it to prose only. The glossary gets reviewed before any file changes, and the identifier pass runs the test suite before the skill reports done.
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
