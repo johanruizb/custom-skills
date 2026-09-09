@@ -1,10 +1,9 @@
 ---
 name: release-to-github
-description: "Cut a standardized release for the current repository: bump the version, write the changelog, commit, tag, and branch. Invoke with /release-to-github."
+description: "Cut a standardized release for the current repository: bump the version, write the changelog, commit, tag, and branch."
 license: MIT
 disable-model-invocation: true
 allowed-tools:
-  - Bash(git:*)
   - Bash(bash:*)
   - Read
   - Edit
@@ -33,15 +32,26 @@ Read the conventions before writing anything:
 - Publish target: release workflow in `.github/workflows`, `publishConfig`, package
   registry config. Local-only when none is found.
 - Release tooling: an existing `npm version` / `cargo release` / script. When present,
-  run it and skip the manual bump.
+  run it and skip the manual bump. Note whether it also commits and tags; if it does,
+  Ship skips those steps too.
 
-Done when each convention traces to a file or `git` output, and you can name the bump
-mechanism you will use (tool, or manual edit).
+Pre-flight checks, before any write:
+
+- Working tree clean (`git status --porcelain`).
+- No prior tag with the next version; no existing `release/v<version>` branch.
+- `gh auth status` passes when the repo has a GitHub release workflow or the human wants
+  a GitHub release.
+- No previous tag at all: a first release. The commit range starts at the root commit,
+  the changelog omits the full-changelog line, and Version classifies every commit.
+
+Done when each convention traces to a file or `git` output, you can name the bump
+mechanism you will use (tool, or manual edit), and every pre-flight check passes or has
+a decision from the human.
 
 ## Version
 
-List the commits since the last tag (`git describe --tags --abbrev=0`), then derive the
-bump from those commits:
+List the commits since the last tag (`git describe --tags --abbrev=0`; on a first
+release, the root commit), then derive the bump from those commits:
 
 - `fix` → patch; `feat` → minor; `!` or a `BREAKING CHANGE` footer → major.
 - On `0.x`: breaking bumps minor, `feat` bumps patch.
@@ -63,6 +73,7 @@ rewrite old sections:
 ### Changed
 ### Fixed
 ### Removed
+### Deprecated
 ### Security
 ```
 
@@ -71,21 +82,31 @@ rewrite old sections:
   the section.
 - Phrase each entry for the user of the project, not for the committer: what changed
   in behavior, not which commit did it.
-- Cover every user-facing change since the last tag. Internal chores, CI and docs
-  commits may be omitted; that omission is itself a check you ran, not an oversight.
-- End the section with a full-changelog line:
+- End the section with a full-changelog line, unless this is the first release:
   `**Full changelog:** https://github.com/<owner>/<repo>/compare/vA...vB`. Build it from
   the previous tag, the new one, and `git remote get-url origin`. When the file keeps its
   links in a reference block at the bottom, put the URL there instead of inline.
 
+Done when every user-facing change since the last tag has an entry, and every omission
+(internal chores, CI, docs) was decided, not missed.
+
 ## Ship
+
+When the release tooling already committed and tagged (see Survey), skip steps 1-2.
 
 1. Commit the version file(s) and the changelog together:
    `chore(release): v<version>`.
-2. Tag: annotated, message equal to one summary line of the new changelog section.
+2. Tag: annotated, first changelog entry as the subject, the whole new section as the
+   body (`git tag -a v<version> -m "<subject>" -m "<body>"`).
 3. Branch: `release/v<version>` pointing at the release commit, so every version keeps
    a branch to backport fixes onto. Reuse the prefix only when one already exists in the
    repo; default to `release/`.
-4. Show the human the version, tag, branch, and changelog section. Then push the current
-   branch, the tag, and the release branch, create a GitHub release when the repo uses
-   them, and publish to the package registry. One step per approval.
+
+Then one approval per step, in this order. Nothing irreversible runs before its
+approval:
+
+4. Show the human the version, tag, branch, and changelog section.
+5. Push: current branch, the tag, and the release branch.
+6. GitHub release, when the repo uses them:
+   `gh release create v<version> --title v<version> --notes-from-tag`.
+7. Publish to the package registry, per the publish target found in Survey.
