@@ -7,7 +7,7 @@ Personal collection of coding-agent skills, installable via [skills.sh](https://
 ## Install all skills
 
 ```bash
-npx skills add johanruizb/custom-skills --all --global
+npx skills add johanruizb/custom-skills --global
 ```
 
 Each skill can also be installed on its own; the command is listed under every entry below.
