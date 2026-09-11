@@ -1,6 +1,6 @@
 ---
 name: release-to-github
-description: "Cut a standardized release for the current repository: bump the version, write the changelog, commit, tag, and branch."
+description: "Cut a standardized release: bump the version, write the changelog, commit, tag, and branch. Use when the user asks to release, publish, or tag a new version."
 license: MIT
 allowed-tools: Bash(git:*)
 ---

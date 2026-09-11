@@ -1,6 +1,6 @@
 ---
 name: simplify-codebase
-description: "Use when the user asks to simplify a codebase, reduce complexity, deduplicate code, clean up the whole project, or remove dead code. Analyzes an entire codebase for accidental complexity — duplication, unnecessary abstractions, redundant dependencies, dead code, inconsistent patterns — then proposes and applies a prioritized simplification plan. Harness-agnostic: discovers available tools at runtime and adapts."
+description: "Use when the user asks to simplify a codebase, reduce complexity, deduplicate code, clean up the whole project, or remove dead code. Analyzes an entire codebase for accidental complexity: duplication, unnecessary abstractions, redundant dependencies, dead code, inconsistent patterns. Then proposes and applies a prioritized simplification plan."
 license: MIT
 metadata:
   author: Hermes Agent

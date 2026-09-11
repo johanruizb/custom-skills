@@ -17,13 +17,13 @@ Deep repository-context initialization. Analyze the repository and create a usef
 
 ## Non-negotiable rules
 
-- Generate or update `AGENTS.md` files only.
+- Write only `AGENTS.md` files: the root file plus subtree files for strong candidates.
 - Never create or modify `CLAUDE.md`.
-- You may read existing `CLAUDE.md` files only as source material for migration or preservation.
+- Treat existing `CLAUDE.md` files as read-only source material for migration or preservation.
 - If both `AGENTS.md` and `CLAUDE.md` exist, treat `AGENTS.md` as the canonical target.
-- Do not create noisy, generic, redundant, or boilerplate context files.
+- Write context files that are specific, non-redundant, and free of boilerplate.
 - Prefer fewer, more useful `AGENTS.md` files over many shallow ones.
-- Do not invent commands, architecture, or conventions. Derive them from repository files.
+- Derive every command, architecture note, and convention from repository files.
 
 ## Purpose
 

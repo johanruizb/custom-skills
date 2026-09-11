@@ -1,6 +1,6 @@
 ---
 name: issue-enrichment
-description: "Use when a GitHub issue or feature request is too brief to implement. Investigates the codebase and rewrites the issue with the technical context a developer needs, preserving the original scope."
+description: "Use when a GitHub issue or feature request is too brief to implement; enriches it with `file:line`-grounded context before rewriting, preserving the original scope."
 license: MIT
 metadata:
   author: Hermes Agent

@@ -1,6 +1,6 @@
 ---
 name: code-documentation
-description: "Use when the user asks to generate, update, or regenerate inline documentation (docstrings, JSDoc, comments) across a codebase. Analyzes project structure, detects language/framework conventions, offers incremental or full-regeneration modes, and validates that docs match the code without changing behavior."
+description: "Use when the user asks to generate, update, or regenerate inline documentation (docstrings, JSDoc, comments) across a codebase, in incremental or full-regeneration mode. Validates that docs match the code without changing behavior."
 license: MIT
 metadata:
   author: Hermes Agent
@@ -58,7 +58,7 @@ Goal: understand the project before touching anything.
    - Ruby: `Gemfile`
    - C#: `.csproj`, `.sln`
 
-3. **Identify exclusion targets.** Mark these as DO NOT MODIFY:
+3. **Identify exclusion targets.** Exclude these paths from modification:
    - `node_modules/`, `vendor/`, `dist/`, `build/`, `__pycache__/`, `.venv/`
    - Generated code (protobuf stubs, OpenAPI generated clients, migration files)
    - Lock files (`package-lock.json`, `poetry.lock`, `Cargo.lock`)
@@ -129,10 +129,10 @@ For each file, generate documentation that prioritizes:
 - **Design decisions** — non-obvious choices, trade-offs, historical context
 - **Public contracts** — interfaces, extension points, API stability
 
-AVOID:
-- Restating what code already expresses (`// sets x to 5` for `x = 5`)
-- Commenting every line
-- Generic boilerplate blocks repeated across files
+Write documentation that adds insight:
+- Explain the purpose, behavior, and contracts the code does not express
+- Document units where the logic is non-obvious
+- Give each file specific detail instead of generic boilerplate
 
 ### Incremental mode rules
 
@@ -141,14 +141,14 @@ AVOID:
 - Expand superficial docs to add real insight
 - Remove only value-less comments (pure restatement, obvious labels)
 - Add missing docs where complexity warrants
-- NEVER remove comments that document decisions, warnings, constraints, or historical context
+- Keep comments that document decisions, warnings, constraints, and historical context
 
 ### Full regeneration mode rules
 
 - Requires explicit user confirmation (already obtained in pre-flight)
 - Remove replaceable comments (restatements, obvious labels, generic blocks)
 - Regenerate all documentation from scratch using code analysis
-- PRESERVE indispensable comments: design decisions, warnings, constraints, non-obvious behavior, historical context, security notes, TODO/FIXME with rationale
+- Preserve indispensable comments: design decisions, warnings, constraints, non-obvious behavior, historical context, security notes, TODO/FIXME with rationale
 - When unsure whether a comment is indispensable, keep it
 
 When deciding whether to preserve or remove an existing comment, classify it with `references/critical-comment-detection.md` — it has concrete preserve/remove/judgment-call examples for both modes.

@@ -13,17 +13,17 @@ Commit from the current task context. Preserve every change outside the intended
 
 ## Fast path
 
-1. Reuse the task intent and paths already known. Do not reread a diff you just created.
+1. Reuse the task intent and paths already known. Reuse the diff you just created.
 2. Resolve `scripts/prepare_commit.sh` relative to this `SKILL.md`; keep the repository `cwd`.
 3. If Git state is unknown, run `bash <helper> inspect`.
-4. If the index has changes, commit exactly that staged set:
+4. If the index has changes, commit exactly that staged set without confirmation unless a
+   Safety stop condition applies:
    `bash <helper> commit --message "type(scope): summary"`.
 5. If the index is empty, stage only known task paths:
    `bash <helper> commit --message "type(scope): summary" -- path...`.
 
-Choose type, scope, message, and file selection yourself; commit without asking for
-confirmation. The helper validates the message, selected filenames, repository state, and
-`git diff --cached --check` before committing.
+Choose type, scope, message, and file selection yourself. The helper enforces the message,
+path, and repository-state checks.
 
 ## Scope and message
 
@@ -34,6 +34,7 @@ confirmation. The helper validates the message, selected filenames, repository s
   by file kind or Conventional Commit type alone.
 - Use `type(scope): imperative summary`; scope is optional and the subject must be at most
   72 characters. Match the repository language and established scope names.
+- Unclear type or breaking-change format: read `references/conventional-commits.md`.
 - Add a body only for non-obvious rationale, breaking changes, migrations, security,
   reverts, or issue references.
 
@@ -56,5 +57,5 @@ and confirmation that the failed attempt did not create a commit.
   the repository is on a detached `HEAD`, or ownership of uncommitted work cannot be
   determined safely. After confirmation, pass the corresponding explicit override;
   never infer that permission.
-- Never update Git config, amend, reset, push, force, bypass hooks, or discard unrelated
-  work as part of this skill. Never add co-author or AI attribution.
+- Keep history append-only: create one new commit and leave amend/reset/push/force/config
+  changes to an explicit user request. Never add co-author or AI attribution.

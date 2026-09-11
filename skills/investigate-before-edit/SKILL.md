@@ -1,6 +1,6 @@
 ---
 name: investigate-before-edit
-description: "Use before ANY code modification. Forces an investigation phase that inspects the codebase with harness tools before editing, so decisions are backed by evidence rather than assumptions. Presents a research summary and waits for confirmation on destructive or ambiguous changes."
+description: "Use before any code modification. Forces an investigation phase that inspects the codebase with harness tools before editing, so decisions are backed by evidence rather than assumptions. Presents a research summary and asks for confirmation on destructive or ambiguous changes."
 license: MIT
 metadata:
   author: Hermes Agent
@@ -20,10 +20,10 @@ Every code change carries risk. Assumptions about technologies, patterns, APIs, 
 **Iron law:**
 
 ```
-NO EDITS WITHOUT INVESTIGATION FIRST
+Edit only after the investigation summary is presented.
 ```
 
-If you have not completed the Investigation Phase, you cannot propose or apply changes. This applies to bug fixes, feature work, refactors, config changes, and migrations alike.
+Complete the Investigation Phase before proposing or applying any change. This applies to bug fixes, feature work, refactors, config changes, and migrations alike.
 
 ## When to Use
 
@@ -159,12 +159,12 @@ Once the summary is acknowledged:
 ## Restrictions
 
 - **No modifications during the investigation phase.** Read and search only. The first file edit or file-creating shell command must come after the summary.
-- **No solution without reviewing the directly related files.** Naming a file is not enough — read it.
-- **No parallel implementation if a reusable abstraction exists.** Reuse it, or justify in writing why a new one is needed.
-- **No replacing an existing solution with a generic alternative without justification.** The project's pattern wins over your default.
-- **No quick patches when the problem is structural.** If step 9 shows the root cause is architectural, say so and discuss with the user rather than papering over it.
-- **No inventing** requirements, APIs, models, routes, components, fields, or behaviors. If you haven't seen it in the repo or a manifest, go look. Don't assume a library is available — check the manifest and how neighboring files import it.
-- **No stopping at the first match.** When searching for references and dependencies, review all relevant sites, not just the first hit.
+- **Review the directly related files before proposing a solution.** Naming a file is not enough; read it.
+- **Reuse an existing abstraction; when none fits, justify the new one in writing.**
+- **Follow the project's pattern over your default.** Replace an existing solution with a generic alternative only with written justification.
+- **When step 9 shows the root cause is architectural, say so and discuss with the user** instead of papering over it with a quick patch.
+- **State only requirements, APIs, models, routes, components, fields, and behaviors you have seen in the repo or a manifest.** If you haven't seen it, go look. Check the manifest and neighboring imports before assuming a library is available.
+- **Review all relevant sites when searching for references and dependencies,** not just the first hit.
 
 ## Execution Discipline: Finish the Active Plan Before Moving On
 

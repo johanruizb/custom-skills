@@ -1,6 +1,6 @@
 ---
 name: prompt-enhancer
-description: "Use when the user asks to improve, rewrite, or polish a prompt ('mejora este prompt', 'reescribe este prompt', 'hazlo más claro', 'pulir este prompt') or sends a raw idea, note, or rough draft to turn into a clear, actionable prompt. Transforms vague ideas into well-structured, ready-to-use prompts for any AI — ChatGPT, coding agents, design tools — preserving the original intent and technical terms."
+description: "Rewrites vague, rough, or unclear prompts into structured, ready-to-copy prompts, preserving intent and technical terms. Trigger: 'improve/rewrite/polish this prompt', 'mejora/reescribe/pule este prompt'."
 license: MIT
 metadata:
   author: johanruizb, Hermes Agent
@@ -13,7 +13,7 @@ metadata:
 
 # Prompt Enhancer Skill
 
-Transforms raw ideas, quick notes, or poorly written prompts into clear, actionable, useful prompts for any AI. It does not change the original intent — it only improves clarity, structure, and precision. It does not do pure grammar fixes and does not translate prompts.
+Transforms raw ideas, quick notes, or poorly written prompts into clear, actionable, useful prompts for any AI, keeping the original intent intact while improving clarity, structure, and precision.
 
 ## When to Use
 

@@ -34,7 +34,7 @@ Accept the PRs to analyze from one of these sources, in priority order:
 3. **Local branch** — if the user names a branch, use `gh pr list --head <branch>` to find the associated PR.
 4. **Explicit list** — the user passes several PR numbers separated by comma or space.
 
-If the user does not specify which PRs to analyze, ask. Do not assume "the most recent PR" or "the current branch".
+Do not assume "the most recent PR" or "the current branch".
 
 ### Information the user must provide
 
@@ -45,7 +45,7 @@ There are data the skill cannot infer from the code or from GitHub. Ask the user
 - **Dynamic IDs** for URLs that require an existing record (e.g. `{userId}`). If the user does not provide them, leave the placeholder.
 - **PRs to analyze** if they were not provided in the initial input.
 
-Do not invent URLs, routes, permissions, test data, or behaviors that are not backed by the code or by information provided by the user.
+State URLs, routes, permissions, and test data only when the code or the user provides them; otherwise use `{placeholder}` and list the limitation.
 
 ## Phase 1: PR data collection
 
@@ -98,7 +98,7 @@ For each file in the diff that is not configuration or documentation, read the f
 - What imports and dependencies it has.
 - How it relates to the rest of the system.
 
-Do not assume behavior from the file or function name. Read.
+Derive behavior from the code path, not from the file or function name.
 
 ### 2.2 Trace the affected flow
 
@@ -140,7 +140,7 @@ Review:
 - Business-logic edge cases: boundary values, invalid inputs, race conditions visible from the UI.
 - External integrations: if the change touches an external API call, verify what happens when it fails.
 
-**Only include edge cases the code actually contemplates or that the change makes likely.** Do not invent hypothetical scenarios.
+**Only include edge cases the code actually contemplates or that the change makes likely.** Test only scenarios the change actually affects.
 
 ### 2.6 Assess blast radius
 
@@ -227,14 +227,14 @@ For each item, include when applicable:
 | **Edge cases** | Variations of the same test (different inputs, roles, states) |
 | **Origin** | PR that motivates this test |
 
-Do not include fields without information — an item does not need all 8 fields if only 4 apply.
+Include a field only when you have information for it. An item does not need all 8 fields if only 4 apply.
 
 ### Quality filtering
 
 Before declaring the checklist done, review every item against these criteria:
 
 - Is it backed by evidence from the diff or the code? If not, remove it.
-- Is it generic or redundant? Tests like "check the page loads", "verify no console errors" with no concrete relation to a change → remove or rephrase with specificity.
+- Keep tests with a concrete relation to a change. Rewrite generic or redundant ones ("check the page loads", "verify no console errors") with specificity.
 - Is it an unrelated regression? "Test login", "test registration" when the PR doesn't touch auth → remove. Direct effects only.
 - Could someone who hasn't read the code execute it? If the action is ambiguous ("review the users module"), rephrase with concrete instructions.
 

@@ -1,6 +1,6 @@
 ---
 name: test-suite-improver
-description: "Use when the user wants to audit a project's test suite and improve it — analyze codebase + tests, evaluate quality, select a work mode, plan, write/fix/delete tests, and validate. Harness-agnostic: discovers available tools at runtime and adapts."
+description: "Audits a project's test suite and improves it: classifies every test, plans, then writes, fixes, or removes tests and validates. Harness-agnostic: discovers available tools at runtime and adapts. Trigger: 'improve/review/audit the tests'."
 license: MIT
 metadata:
   author: Hermes Agent
@@ -190,7 +190,7 @@ Change production code only when a real bug is detected and the user authorizes 
 
 Classify validation result as: **passed** (all checks ran and passed), **failed** (one or more checks failed), **partial** (some passed, some couldn't run), **not_run** (validation could not execute).
 
-NEVER claim validation passed if it was not executed. State exactly what ran, what passed, what failed, and what couldn't run.
+State exactly what ran, what passed, what failed, and what couldn't run.
 
 **Completion criterion**: validation result is classified and all executed check results are recorded.
 
