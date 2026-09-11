@@ -20,9 +20,9 @@ Default to the full job: prose, comments, identifiers, file and directory names.
 
 1. **Inventory.** Walk the tracked files and classify each as `translate`, `preserve`, or `mixed`. Check markdown, comments, docstrings, identifier names, CLI strings, and directory names. Done when every tracked file has one classification and every `translate` or `mixed` file lists the foreign-language content it holds.
 2. **Glossary.** Collect the recurring domain nouns from the inventory and fix one English equivalent per term in a working note at the repo root. Done when every recurring term has exactly one entry. Get the user's sign-off on the glossary before touching any file.
-3. **Prose pass.** Translate docs, comments, and docstrings using the glossary. Code blocks, shell commands, and config values stay untouched. Done when the sweep in step 5 returns nothing in prose files.
+3. **Prose pass.** Translate docs, comments, and docstrings using the glossary. Code blocks, shell commands, and config values stay untouched. Done when every prose file from the inventory has been translated with the glossary and no source term remains in a non-preserve prose file.
 4. **Identifier pass.** Rename non-English identifiers, file names, and directory names. Use the language's rename tooling when it exists; otherwise search-and-replace and update every reference. Then run the project's tests and linters. Done when the suite is green.
-5. **Sweep.** Grep the repo for every glossary source term and every foreign term found in the inventory. Done when each remaining hit sits in a `preserve` file. Report the files changed and the test result.
+5. **Sweep.** Grep the repo for every glossary source term and every foreign term found in the inventory. Done when each remaining hit is inside a preserve region - a `preserve` file or a preserve-list item within a `mixed` file. Delete the working glossary note after the sweep. Report the files changed and the test result.
 
 ## Preserve list
 

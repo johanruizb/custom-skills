@@ -140,43 +140,7 @@ Template for the Phase 10 final report. Use this structure for both the inline s
 
 ## HTML Report Generation
 
-When `file_write` and `cmd_exec` are available, generate an HTML report:
+When `file_write` and `cmd_exec` are available, generate an HTML report with `scripts/generate_report.py`. It runs on the standard library alone and uses the optional `markdown` package when importable.
 
-```python
-#!/usr/bin/env python3
-"""Generate HTML test suite report from Markdown."""
-import sys
-from pathlib import Path
-
-def markdown_to_html(md_path, output_path):
-    content = Path(md_path).read_text()
-    # Minimal markdown to HTML conversion
-    # (use a library like `markdown` if available, or basic regex conversion)
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Test Suite Report</title>
-<style>
-  body {{ font-family: -apple-system, sans-serif; max-width: 960px; margin: 2em auto; padding: 0 1em; line-height: 1.6; }}
-  table {{ border-collapse: collapse; width: 100%; margin: 1em 0; }}
-  th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-  th {{ background: #f4f4f4; }}
-  h1, h2, h3 {{ color: #333; }}
-  code {{ background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }}
-  pre {{ background: #f8f8f8; padding: 1em; border-radius: 5px; overflow-x: auto; }}
-</style>
-</head>
-<body>
-<pre>{content}</pre>
-</body>
-</html>"""
-    Path(output_path).write_text(html)
-    print(f"Report saved to {output_path}")
-
-if __name__ == "__main__":
-    markdown_to_html(sys.argv[1], sys.argv[2])
-```
-
-Run with: `python generate_report.py report.md /tmp/test-suite-report.html`
+Run with: `python3 scripts/generate_report.py report.md /tmp/test-suite-report.html`
 Open with: `xdg-open /tmp/test-suite-report.html` (Linux) or `open /tmp/test-suite-report.html` (macOS)

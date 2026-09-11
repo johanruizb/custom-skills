@@ -37,7 +37,7 @@ CATEGORY_LABELS = {
 }
 
 
-def escape_html(text: str) -> str:
+def escape_html(text: str | None) -> str:
     """Escape HTML special characters."""
     if not text:
         return ""
@@ -151,7 +151,7 @@ def render_finding_card(f: dict, index: int) -> str:
         </div>
       </div>
       <div class="mt-2 text-sm text-gray-600">
-        <strong>Category:</strong> {escape_html(CATEGORY_LABELS.get(category, category))} |
+        <strong>Category:</strong> {escape_html(CATEGORY_LABELS.get(category, category) or '')} |
         <strong>Module:</strong> {module} |
         <strong>File:</strong> <code>{file_path}:{lines}</code>
       </div>
@@ -332,7 +332,34 @@ def generate_html(state: dict, output_path: str) -> str:
   <title>Codebase Audit Report — {escape_html(meta.get("repo_root", "Unknown"))}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
+    * {{ box-sizing: border-box; }}
+    body {{ margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; color: #1f2937; line-height: 1.5; }}
+    .max-w-5xl {{ max-width: 64rem; margin: 0 auto; }}
+    .flex {{ display: flex; }} .grid {{ display: grid; }} .inline-block {{ display: inline-block; }}
+    .flex-1 {{ flex: 1 1 0%; }} .flex-wrap {{ flex-wrap: wrap; }} .items-center {{ align-items: center; }} .justify-between {{ justify-content: space-between; }}
+    .grid-cols-3 {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+    .gap-2 {{ gap: .5rem; }} .gap-3 {{ gap: .75rem; }} .gap-4 {{ gap: 1rem; }}
+    .p-3 {{ padding: .75rem; }} .p-4 {{ padding: 1rem; }} .p-5 {{ padding: 1.25rem; }} .p-6 {{ padding: 1.5rem; }}
+    .px-2 {{ padding: 0 .5rem; }} .px-3 {{ padding: 0 .75rem; }} .py-1 {{ padding: .25rem 0; }}
+    .mb-1 {{ margin-bottom: .25rem; }} .mb-2 {{ margin-bottom: .5rem; }} .mb-3 {{ margin-bottom: .75rem; }} .mb-4 {{ margin-bottom: 1rem; }} .mb-6 {{ margin-bottom: 1.5rem; }}
+    .mt-1 {{ margin-top: .25rem; }} .mt-2 {{ margin-top: .5rem; }} .mt-3 {{ margin-top: .75rem; }} .mt-4 {{ margin-top: 1rem; }} .mt-6 {{ margin-top: 1.5rem; }}
+    .bg-white {{ background: #fff; }} .bg-gray-50 {{ background: #f9fafb; }} .bg-gray-100 {{ background: #f3f4f6; }} .bg-gray-200 {{ background: #e5e7eb; }} .bg-gray-900 {{ background: #111827; }}
+    .bg-blue-50 {{ background: #eff6ff; }} .bg-yellow-50 {{ background: #fefce8; }}
+    .text-white {{ color: #fff; }} .text-gray-400 {{ color: #9ca3af; }} .text-gray-500 {{ color: #6b7280; }} .text-gray-600 {{ color: #4b5563; }} .text-gray-700 {{ color: #374151; }} .text-gray-800 {{ color: #1f2937; }} .text-gray-900 {{ color: #111827; }}
+    .text-blue-600 {{ color: #2563eb; }} .text-green-400 {{ color: #4ade80; }} .text-green-600 {{ color: #16a34a; }} .text-red-600 {{ color: #dc2626; }} .text-yellow-600 {{ color: #ca8a04; }}
+    .text-xs {{ font-size: .75rem; }} .text-sm {{ font-size: .875rem; }} .text-lg {{ font-size: 1.125rem; }} .text-2xl {{ font-size: 1.5rem; }} .text-3xl {{ font-size: 1.875rem; }}
+    .font-bold {{ font-weight: 700; }} .font-semibold {{ font-weight: 600; }} .font-mono {{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }}
+    .text-left {{ text-align: left; }} .text-center {{ text-align: center; }} .text-right {{ text-align: right; }} .capitalize {{ text-transform: capitalize; }}
+    .rounded {{ border-radius: .25rem; }} .rounded-lg {{ border-radius: .5rem; }} .shadow {{ box-shadow: 0 1px 3px rgba(0,0,0,.12); }}
+    .border {{ border: 1px solid #e5e7eb; }} .border-gray-200 {{ border-color: #e5e7eb; }} .border-l-4 {{ border-left: 4px solid #e5e7eb; }} .border-yellow-400 {{ border-left-color: #facc15; }} .border-blue-400 {{ border-left-color: #60a5fa; }}
+    .w-full {{ width: 100%; }} .h-5 {{ height: 1.25rem; }}
+    .overflow-x-auto {{ overflow-x: auto; }} .whitespace-pre {{ white-space: pre; }} .whitespace-pre-wrap {{ white-space: pre-wrap; }}
+    .list-disc {{ list-style: disc; }} .list-inside {{ list-style-position: inside; }}
+    .sticky {{ position: sticky; }} .top-0 {{ top: 0; }} .z-10 {{ z-index: 10; }}
+    table {{ border-collapse: collapse; width: 100%; }}
+    th, td {{ text-align: left; }}
+    pre {{ margin: 0; overflow-x: auto; }}
+    select, input, button {{ font: inherit; border: 1px solid #d1d5db; border-radius: .25rem; padding: .25rem .5rem; background: #fff; }}
     .finding-card:hover {{ box-shadow: 0 4px 12px rgba(0,0,0,0.1); }}
     @media print {{ .no-print {{ display: none; }} .finding-card {{ break-inside: avoid; }} }}
   </style>

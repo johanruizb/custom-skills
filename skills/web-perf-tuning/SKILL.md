@@ -16,10 +16,10 @@ Restore fluidity to a web app that feels heavy. Built for apps already far along
 
 Two parts:
 
-- **Core method** (this file): the three layers, and the loop baseline → bottleneck → fix → verify. Stack-agnostic.
-- **Stack playbooks** (`references/<stack>.md`): profiling tools, code sweeps, and ranked fixes for one stack. Exactly one is loaded per run, for the detected stack.
+- **Core method** (this file): the three layers, and the loop orient → baseline → diagnose → fix → verify. Stack-agnostic.
+- **Stack playbooks** (`references/<stack>.md`): profiling tools, code sweeps, and ranked fixes for one stack.
 
-Uses the harness's file, shell, and user-question tools. Where a step needs a real browser, it hands the user an exact recipe and asks for the numbers back.
+Every step either runs a local command or hands the user a copy-paste recipe. Where a step needs a real browser, it hands the user an exact recipe and asks for the numbers back.
 
 ## When to Use
 
@@ -66,7 +66,7 @@ Record numbers before touching code — every later claim of improvement compare
 Agent-measurable:
 
 - Run the project's production build (its own script in `package.json`). Record total bundle, first-load JS per route, and the 5 largest chunks/deps.
-- If a dev server can run: `npx lighthouse <url> --output=json --chrome-flags="--headless"` for LCP, TTFB, and total blocking time. If it can't, ask the user for a PageSpeed Insights run on the deployed URL.
+- Serve the production build (`vite preview`, `next start`, or equivalent) and run `npx lighthouse <url> --output=json --chrome-flags="--headless"` against that URL for LCP, TTFB, and total blocking time. PageSpeed Insights on the deployed URL is a parallel option.
 
 Human-measured, for runtime symptoms — hand the user this recipe and ask for the numbers back:
 
@@ -75,13 +75,13 @@ Human-measured, for runtime symptoms — hand the user this recipe and ask for t
 > 2. Top 3 long tasks (red markers): duration + initiating function (Call Tree or Bottom-Up).
 > 3. If jank on scroll/animation: FPS meter reading (Cmd/Ctrl+Shift+P → "Show frames per second meter").
 
-The stack playbook names its framework profiler (React DevTools, Vue Devtools, Angular DevTools) — hand that recipe too when it applies.
+The stack playbook names its profiler when one exists (React/Vue/Angular DevTools); Svelte and vanilla use Chrome Performance.
 
 Done when every Phase-1 symptom has a baseline number and its source (build report, Lighthouse, or user-provided trace). A lap started without a baseline number cannot be verified in Phase 5 — it never started.
 
 ### Phase 3 — Diagnose
 
-1. Run the **static sweep** from the stack playbook (code findings, no browser).
+1. Load `references/<stack>.md` for the detected stack, then run its **static sweep** (code findings, no browser).
 2. Merge sweep findings with baseline numbers into one ranked list. Rank by user-perceived impact on the scenario: the dominant long task and the first-load JS of the slow route outrank minor smells.
 3. Name the **dominant bottleneck** — the single fix with the largest expected effect.
 
@@ -89,7 +89,7 @@ Done when the ranked list gives every entry a layer and evidence — a number wi
 
 ### Phase 4 — Fix
 
-Load `references/<stack>.md` and apply the fix for the named bottleneck. One bottleneck per lap: a lap that ships several fixes at once cannot attribute its before/after.
+Apply the named fix from the loaded playbook for the bottleneck. One bottleneck per lap: a lap that ships several fixes at once cannot attribute its before/after.
 
 Done when the build passes and the fix's rationale cites the finding it targets ("long task 320 ms initiated by Table render → virtualize the list").
 
@@ -99,6 +99,7 @@ Done when the build passes and the fix's rationale cites the finding it targets 
 2. Record a **ledger** row, before → after:
    - Improved: keep the fix, cross the bottleneck off, return to Phase 3 for the next lap.
    - Flat or worse: **revert**. A fix that adds complexity without a measured win is itself a regression. Re-diagnose — the finding was misread, or the fix missed it.
+3. Write the ledger (ask before creating a file) or present it in the conversation; the run is done only when the user sees it.
 
 Done when the user confirms the scenario feels better, or the rank is empty. The ledger is the deliverable.
 

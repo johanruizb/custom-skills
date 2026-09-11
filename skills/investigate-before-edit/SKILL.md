@@ -61,9 +61,9 @@ Complete every step. Each step has a completion criterion. Do not skip steps bec
 
 Identify the repository root, top-level directories, and how the codebase is organized. Read any AGENTS.md, CLAUDE.md, .cursorrules, README, or contributing guide present — these encode project conventions that override your defaults.
 
-**Actions:** `search_files(target='files')` for manifests and config; `read_file` on AGENTS.md / README.
+**Actions:** search for files by name to find manifests and config; read AGENTS.md / README.
 
-**Completion criterion:** a mental (or written) map of the top-level layout exists, with the relevant subsystem located.
+**Completion criterion:** the top-level tree and the located subsystem are written into the summary.
 
 ### 2. Detect technologies and versions
 
@@ -93,7 +93,7 @@ Trace how data reaches the affected code and where it goes afterward. For a back
 
 Before proposing anything new, search the codebase for existing abstractions, helpers, utils, mixins, or services that already do what you need. Check for similar patterns in sibling modules. The project may already have the tool you're about to build.
 
-**Actions:** `search_files` for function names, class names, and behavioral keywords related to the task.
+**Actions:** search file contents for function names, class names, and behavioral keywords related to the task.
 
 **Completion criterion:** a list of existing reusable abstractions exists. If a suitable one is found, the proposal reuses it instead of creating a parallel implementation.
 
@@ -121,7 +121,7 @@ For any non-trivial bug, work systematically: build a tight feedback loop, form 
 
 Search for all references to the symbols, files, endpoints, or components you plan to touch. List every caller, importer, and dependent. Changes that look local often ripple through importers, tests, serializers, and frontend hooks.
 
-**Actions:** `search_files` for the symbol/file name across the whole repo (not just the current directory).
+**Actions:** search file contents for the symbol/file name across the whole repo (not just the current directory).
 
 **Completion criterion:** every reference site is enumerated. The change is scoped to the minimum that fixes the root cause without collateral damage.
 
@@ -140,7 +140,7 @@ The summary must include:
 
 After the summary:
 
-- If the change is **destructive, ambiguous, or has multiple valid strategies**, ask the user for confirmation via `clarify` (or conversationally) before proceeding.
+- If the change is **destructive, ambiguous, or has multiple valid strategies**, ask the user for confirmation before proceeding.
 - If the change is **small, well-scoped, and clearly what the user asked for**, you may proceed directly to implementation — but still present the summary first so the user can course-correct.
 
 ## Implementation Phase (after investigation is complete)
@@ -158,7 +158,7 @@ Once the summary is acknowledged:
 
 ## Restrictions
 
-- **No modifications during the investigation phase.** Read and search only. The first `patch` / `write_file` / file-creating `terminal` command must come after the summary.
+- **No modifications during the investigation phase.** Read and search only. The first file edit or file-creating shell command must come after the summary.
 - **No solution without reviewing the directly related files.** Naming a file is not enough — read it.
 - **No parallel implementation if a reusable abstraction exists.** Reuse it, or justify in writing why a new one is needed.
 - **No replacing an existing solution with a generic alternative without justification.** The project's pattern wins over your default.
@@ -166,30 +166,9 @@ Once the summary is acknowledged:
 - **No inventing** requirements, APIs, models, routes, components, fields, or behaviors. If you haven't seen it in the repo or a manifest, go look. Don't assume a library is available — check the manifest and how neighboring files import it.
 - **No stopping at the first match.** When searching for references and dependencies, review all relevant sites, not just the first hit.
 
-## User Preference: Test-First Mode
-
-Some users have a strong preference: when they say **"crea un test"** or **"arregla el test"** (or equivalent in any language), the test IS the investigation. Do NOT continue tracing, searching, or asking questions — write the reproducing test immediately, then fix the code. The test-driven approach replaces the investigation phase for that specific task. This is a user preference embedded in the skill because it governs how the investigation phase interacts with test-driven workflows.
-
-If the user has this preference recorded in memory, respect it even when this skill says "investigate first." The user's explicit instruction overrides the default phase order.
-
-## User Preference: No-Test Mode (unless explicitly asked)
-
-Some users have a strong preference: **do NOT run tests (pytest, Playwright, or similar) unless they specifically ask you to.** This applies even when the Verification Checklist says "run available validations." The user considers test execution a waste of tokens for non-runtime changes (config files, docs, env examples, etc.) and wants to decide when tests are warranted.
-
-Rules:
-- **Lint and format** are always OK — they're fast, catch syntax errors, and don't require a database or test infrastructure.
-- **Build** (npm build, etc.) is OK — it catches import breaks and compilation errors.
-- **Tests** (pytest, Playwright, vitest, etc.) are NOT OK unless the user explicitly says "run tests" or "verifica con tests" or equivalent.
-- When the Verification Checklist says "Available validations run: test / lint / typecheck / build", skip the test step and note why: "Tests skipped per user preference — only run when explicitly requested."
-- If the system prompts you to run tests (e.g., the stale-verification reminder), respond with the blocker: "User explicitly prohibited running tests without being asked." Do not run them.
-
-This preference is embedded in the skill because it governs the verification phase of every edit, and the user's frustration signal is strong: "por que te pones a ejecutar pruebas?" when tests were not asked for.
-
-If the user has this preference recorded in memory, respect it even when the Verification Checklist says "run tests." The user's explicit instruction overrides the default verification order.
-
 ## Execution Discipline: Finish the Active Plan Before Moving On
 
-When a plan is in progress (tracked via `todo` or a `.hermes/plans/` file), do NOT suggest new work, declare the task done, or pivot to a different topic until every item in the plan is complete. The user's frustration signal is: "Como que, que quieres hacer ahora? Maldita sea, si el puto plan inicial esta sin terminar, pues la idea es terminarlo" — this means STICK TO THE PLAN. Only after the last task is verified and committed should you ask "what's next."
+When a plan is in progress (tracked in a task list or a plan file), do NOT suggest new work, declare the task done, or pivot to a different topic until every item in the plan is complete. Finish the plan first. Only after the last task is verified and committed should you ask "what's next."
 
 This applies even when:
 - A subagent reports completion but you haven't verified it yet
@@ -201,7 +180,7 @@ Answer the tangential question concisely, then return to the plan. Do not let si
 
 ## When to Pause and Ask
 
-Use `clarify` (or ask conversationally) when:
+Ask the user when:
 
 - The investigation reveals multiple valid strategies with meaningful tradeoffs.
 - The change is destructive (deleting files, dropping columns, breaking APIs).
@@ -213,7 +192,7 @@ Do not ask for confirmation on small, well-scoped changes that clearly match the
 
 ## Parallel Investigation with Subagents
 
-When the task spans multiple independent areas (e.g., backend + frontend, or several unrelated modules), and `delegate_task` is available, dispatch subagents to investigate each area in parallel. Each subagent must follow the same Investigation Phase steps and return its findings as structured evidence (file:line references, not prose).
+When the task spans multiple independent areas (e.g., backend + frontend, or several unrelated modules), and subagent delegation is available, dispatch subagents to investigate each area in parallel. Each subagent must follow the same Investigation Phase steps and return its findings as structured evidence (file:line references, not prose).
 
 Main agent responsibilities when using subagents:
 
@@ -237,13 +216,7 @@ Case-study references extracted from real investigations. Consult the one matchi
 
 2. **Reading file names but not file contents.** A file called `utils.py` doesn't tell you what's in it. Read the relevant files; search for the symbols you plan to touch.
 
-3. **Assuming a stack from extensions or conventions.** `package.json` says React 18, not React 19. `pyproject.toml` says DRF 3.14, not 3.15. Read the manifests.
-
-4. **Stopping at the first search hit.** A function may be called from 12 places. Touching one and breaking the other 11 is the most common preventable regression. Enumerate all reference sites in step 10.
-
 5. **Inventing an API or import you didn't verify.** If you haven't seen the function, class, or export in the repo or a manifest, it doesn't exist for your purposes. Go look.
-
-6. **Proposing a solution before tracing the data flow.** "I see the problem, let me fix it" is a red flag. Seeing a symptom is not understanding the cause.
 
 7. **Replacing a project pattern with a generic best practice.** The project's conventions win. A "better" pattern that diverges from the codebase creates inconsistency and review friction.
 
@@ -255,91 +228,7 @@ Case-study references extracted from real investigations. Consult the one matchi
 
 11. **Not verifying that patches persist after application.** When working in a repo with uncommitted changes from prior sessions, patches can be silently reverted by `git checkout`, `git stash`, or a merge. After applying any patch, re-read the file to confirm the change is present. Before starting a new session, verify that previous patches are still in place.
 
-12. **Assuming the execution environment without verification.** When the user reports a runtime behavior (e.g., "I'm getting 403s"), do NOT assume which code path is executing — verify it. Check `git branch`, `git log`, and the actual file contents on disk. The user may be running from a worktree, a different branch, or a stale build. Claims like "you must be running from the old repo" without evidence are frustrating and waste time. Instead: run `git branch` to confirm the branch, check `git log --oneline -3` to see recent commits, and verify the relevant file's content with `read_file` before making any claim about what code is executing.
-
-13. **Not checking the actual HTTP response before diagnosing a frontend issue.** When the user reports a 404 or 403 in the browser, verify the actual HTTP response with `curl` before assuming the problem is in the frontend code. The backend may be returning a different status code than the user described, or the error may be a data issue (record not found) rather than a permission issue. Always `curl` the endpoint with the same headers (Authorization, Referer) the browser would send.
-
-14. **Assuming the backend is the problem when the frontend shows an error toast/message.** When the user reports "Error al cargar X" or any frontend error toast, the investigation order matters:
-    - **First:** Check the browser console for JS errors (`browser_console` or ask the user to open it). A silent JS error (e.g., calling `.get()` on a string, undefined is not a function) can cause SWR to show an error even when the backend returns 200.
-    - **Second:** Curl the endpoint directly with the same auth headers to confirm the backend is actually returning an error.
-    - **Third:** Trace the frontend fetcher function — verify it uses the correct API utility. In projects with custom API wrappers (e.g., `getProxy()` returning a string vs `makeAPIRequest` using an Axios instance), the fetcher may be calling a method on the wrong object.
-    - **Fourth:** Check the SWR key for collisions or stale data.
-    - **Only then** investigate the backend view/serializer.
-    
-    The most common cause of "Error al cargar X" with a 200 backend response is a bug in the frontend fetcher function, not a backend issue.
-
-15. **Django+DRF middleware ordering: `process_request` runs before DRF authenticates.** When writing a custom middleware that checks `request.user` in `process_request`, remember that DRF's authentication (JWT, token, session from DRF's perspective) has NOT run yet at that point. `request.user` is still the `AnonymousUser` set by Django's `AuthenticationMiddleware`. This means:
-    - A middleware in `process_request` cannot rely on `request.user.is_authenticated` being correct for JWT/token auth.
-    - If the middleware needs the authenticated user, it must either: (a) run in `process_view` instead (after DRF's `APIView.dispatch` has run authentication), or (b) handle the `AnonymousUser` case gracefully and let the DRF permission class (`HasPermission`) do the real check later.
-    - The `HasPermission` permission class (used in DRF views) runs AFTER authentication, so it's the right place for permission checks. The middleware should only set context (like `_effective_permissions`), not gate access.
-    - Common symptom: a middleware that sets `_effective_permissions = set()` for `AnonymousUser` in `process_request` will cache an empty set even for valid JWT users, causing 403s on every endpoint. The fix is to not set `_effective_permissions` for `AnonymousUser` in `process_request` — let the permission class resolve it later. See `references/django-drf-multitenant-permissions.md` for the full permission-system pattern.
-
-16. **Don't invent data from training data — verify from the actual source.** When the user reports a behavior (e.g., "these roles don't exist" or "the data looks wrong"), do NOT assume the data from your training corpus is correct. Your training data may contain plausible-looking data that doesn't exist in the actual database. Always:
-    - Query the actual database or API endpoint to verify what data exists.
-    - Check `git log` and `git branch` to confirm which code is running.
-    - Read the actual file contents on disk, not your memory of what they should contain.
-    - If the user says "te sacaste del culo esos datos" (you pulled that data out of your ass), they're right — you invented it. Stop, verify from the actual source, and apologize.
-    - Common symptom: claiming a user has certain roles, permissions, or data based on what "makes sense" rather than what the database actually contains. The database is the source of truth, not your training data.
-
-17. **Multi-tenant investigation: always check tenant isolation.** In a multi-tenant app, a bug that appears for one tenant may not appear for another. When investigating:
-    - Check if the issue is tenant-specific by testing with a different tenant's data.
-    - Verify `_church_context` / `id_church` filters in queries — a record with `id_church=None` (global) won't be found by a query filtering for a specific church.
-    - Check if the data exists for the specific tenant, not just globally. A 404 may mean "this record doesn't belong to this tenant" rather than "this record doesn't exist."
-    - When migrating data, verify per-tenant: run the migration, then query each tenant's data to confirm it arrived correctly. Don't trust the migration summary alone.
-    - Global records (e.g., `positions_per_group` with `id_church=None`) need special handling — they must be replicated to every tenant, not skipped.
-
-18. **Migration verification: don't trust the summary, query the database.** After running a data migration:
-    - Query the actual database to verify counts and specific records.
-    - Check edge cases: global records, records with null foreign keys, records that already existed before the migration.
-    - Run the migration twice to verify idempotency (get_or_create should not create duplicates).
-    - Verify that the migration didn't skip records it shouldn't have (e.g., global records with `id_church=None`).
-    - Check that the migration updated ALL relevant records, not just the first match per group.
-
-19. **Check for data loss when a CharField is replaced by a FK.** When a migration drops a CharField and adds a FK (`RemoveField` + `AddField`), verify there's a `RunPython` operation BETWEEN them that migrates the data. Without it, all existing values are permanently lost. The `RunPython` must come BEFORE `RemoveField` — the old field is only accessible in the historical model at that point. If the migration has already been applied and the data is lost, the only recovery path is a hardcoded mapping of known values.
-
-20. **Data format mismatch between frontend and backend.** When the frontend shows empty data, "undefined", or renders nothing but the backend returns 200, the most common cause is a mismatch between the data format the backend sends and what the frontend expects. Investigation order:
-    - **First:** Curl the endpoint and inspect the raw JSON response structure. Note the top-level keys and nesting.
-    - **Second:** Check what the frontend fetcher does with the response — does it access `res.data`? Does it expect `response.modules` or `response.results`?
-    - **Third:** Compare the backend response structure with the frontend's expected structure. Common mismatches: backend returns a list but frontend expects `{modules: [...]}`; backend returns `{results: [...]}` but frontend expects a list; backend returns camelCase but frontend expects snake_case (or vice versa).
-    - **Fourth:** Check the SWR key and fetcher function. The fetcher may be transforming the data (e.g., `.then(res => res.data)`) and the component may be accessing a property that doesn't exist on the transformed result.
-    - **Fifth:** Check if the endpoint changed recently (git log for the view/serializer). A serializer change that renamed a field or changed nesting can silently break the frontend.
-    - **Sixth:** Check the browser console for JS errors — a silent JS error (e.g., calling `.get()` on a string, `undefined.reduce()`, `undefined is not a function`) can cause SWR to show an error even when the backend returns 200.
-    - Common pattern: backend returns `[{key, label, resources}, ...]` but frontend accesses `catalog.modules` — the fix is to use `catalog` directly, not `catalog.modules`.
-    - Common pattern: `getProxy().get(...)` where `getProxy()` returns a string (not an Axios instance); `makeAPIRequest` with wrong argument order; missing `.then(res => res.data)` on Axios response.
-
-21. **Callback that ignores the payload.** When a parent component passes an `onSave` callback to a child form, verify that the callback actually uses the payload it receives. Common anti-pattern: `onSave={() => setSelectedId(null)}` — the callback clears state but never calls the API. The child calls `onSave(payload)` expecting the parent to persist it. Always check: does the parent's `onSave` implementation call the backend API with the payload, or does it just reset UI state? This applies to `onSave`, `onSubmit`, `onDelete`, and any callback that should trigger a side effect.
-
-22. **`is_superuser` not exposed to the frontend.** When the frontend needs to know if a user is a superuser (e.g., to show/hide admin features), verify the login/session serializer includes `is_superuser` in its output. Django's `User.is_superuser` is a model field, but serializers often omit it. Add `is_superuser = serializers.BooleanField()` to the serializer — do NOT use `source="is_superuser"` (DRF rejects this with `KeyError` when the field name matches the source; just use `BooleanField()` without `source`).
-
-23. **Browser debugging is the LAST resort, not the first.** When the user reports a UI bug (e.g., "clicking a group does nothing"), the investigation order MUST be:
-    - **First:** Read the relevant source code. The code is the source of truth. The browser shows symptoms, not causes.
-    - **Second:** Check git log for recent commits that may have introduced the bug.
-    - **Third:** Only if the code logic is correct and the symptom persists, use the browser to verify the runtime state (console, network tab, DOM inspection).
-    - **NEVER** spend 40 minutes clicking around the browser when the code is available to read. The user will (rightfully) tell you to stop wasting tokens.
-    - **NEVER** restart the Vite dev server as a debugging step — the code on disk is what matters. If the browser shows stale behavior, delete `.vite/` cache and do a hard reload (Ctrl+Shift+R), but only after verifying the code is correct.
-    - **NEVER** assume the browser shows the real state of the code. Vite HMR can serve stale modules. The code on disk is the source of truth.
-    - **Signal to stop browser debugging:** If you've made 3+ browser navigation/console calls without finding the root cause, STOP. Read the code instead. The root cause is in the code, not in the browser.
-    - **Exception:** If the bug is clearly a runtime data issue (e.g., "the API returns 200 but the UI shows nothing"), one browser_console call to check the API response is acceptable. Then read the code that processes that response.
-    - **User override signal:** If the user says anything like "deja de perder el tiempo en el navegador", "dejate de mamadas", "deja de perder el tiempo y malgastar los tokens", "por que pierdes 40 minutos navegando en la pagina si tienes el codigo base", "eres un inutil", "acaso te estoy hablando en chino", "por que putas no me haces caso", "estas agotando mi paciencia", "estas alucinando", or any equivalent frustration about browser debugging — STOP IMMEDIATELY. Do not make another browser call. Do not restart Vite. Do not check the console again. Read the code. The user is telling you the root cause is in the code, not the browser. Every browser call after this signal is actively wasting the user's patience and tokens. If you already made browser calls and didn't find the cause, the answer is in the code — read it.
-    - **HARD RULE:** After the user says "deja de perder el tiempo" or any equivalent, you get exactly ONE more action: read the relevant source file. If you don't find the root cause in that one read, you missed something in your earlier code reading. Re-read the file more carefully. Do NOT make another browser call under any circumstances.
-
-24. **Select-all button wiring: the parent must pass `onToggleAll`.** When a child component (like `PermissionCatalogList`) exposes a select-all callback via `onAllSelectedChange({ allSelected, toggleAll })`, the parent must pass `onToggleAll(perms, checked)` to the child for the toggle to actually do anything. Common bug: the parent renders the select-all button in its own `action` prop but never passes `onToggleAll` to the child — the button renders, the user clicks it, nothing happens. Always check both directions: (a) the child receives `onToggleAll`, and (b) the parent's `toggleAll` callback (from `onAllSelectedChange`) actually calls `onToggleAll` with the right arguments.
-
-25. **Subagent implementation verification.** When delegating implementation to a subagent (orchestrator), the subagent may not commit its changes. After the subagent finishes, you MUST: (a) verify the changes are present on disk by re-reading key files, (b) run lint + build + relevant tests, (c) commit yourself. Do not assume the subagent left the working tree clean or the code in a passing state. Re-read key files to confirm the subagent's changes match the design decisions. This is especially important for multi-file changes where the subagent may have missed a file or left stale imports.
-
-26. **MUI ListItemButton + nested `<a>` elements.** When a `ListItemButton` contains `secondaryAction` with `IconButton` elements that use `LinkComponent={Link}`, the ListItemButton itself CANNOT use `component={Link}`. This creates nested `<a>` elements (HTML invalid), and the browser ignores the outer `<a>`, making the ListItemButton unclickable for navigation. The fix is to use `onClick` with `useNavigate()` instead of `component={Link}` on the ListItemButton. The inner IconButtons keep their `LinkComponent={Link}` independently. This is a MUI-specific constraint: `ListItemButton` renders as `<div>` by default, and `component={Link}` makes it `<a>`, but the `secondaryAction` IconButtons also render as `<a>` — the browser cannot handle `<a>` inside `<a>`.
-
-    **Symptoms:** clicking a ListItemButton does nothing, even though `component={Link}` and `to` are correctly set. The element has no `href` in the DOM (the browser strips it from nested `<a>`). Console shows no errors. The `secondaryAction` buttons (edit, delete) work fine because they are the innermost `<a>`.
-
-    **Fix:** Replace `component={Link}` with `onClick={() => navigate(path)}` on the ListItemButton. Keep `LinkComponent={Link}` on the inner IconButtons. See `references/mui-listitembutton-nested-link.md` for the full pattern.
-
-27. **Spanish/English permission key mismatch (`view` vs `ver`).** In this project, `getModelPermissions()` in `useRol.jsx` returns permission keys. The hook MUST use Spanish keys (`ver`, `crear`, `editar`, `eliminar`, `exportar`, `administrar`) because all 12+ components that consume these keys use Spanish (`permissions.ver`, `permissions.crear`, etc.). If the hook uses English keys (`view`), every component that reads `permissions.ver` gets `undefined` — which is falsy — causing navigation links to not render, conditional UI to be hidden, and "no permissions" fallbacks to trigger.
-
-    **Symptoms:** superuser can't click on groups, can't see sections they should have access to, "no permissions" shown despite being admin. No JS errors in console. The backend returns `is_superuser: true` and all permissions correctly.
-
-    **Investigation:** Read the component's condition (e.g., `permissions.ver && ...`), then read the hook's return value (`view` vs `ver`). If they don't match, fix the hook.
-
-    **Fix:** Change `view: !!modulePerms.ver || isAdmin` to `ver: !!modulePerms.ver || isAdmin` in `getModelPermissions`. Do NOT change the 12+ components — they are the convention. See `references/spanish-english-permission-names.md` for the full list of affected files.
+Project-specific pitfalls: see `references/project-pitfalls.md`.
 
 ## Verification Checklist
 
@@ -356,3 +245,5 @@ Before declaring the task complete:
 - [ ] Available validations run: test / lint / typecheck / build — results recorded
 - [ ] Final diff reviewed via `git diff` — no accidental changes
 - [ ] Final report separates observed facts from conclusions from assumptions
+
+User memory test-run preferences override the validation defaults.

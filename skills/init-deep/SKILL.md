@@ -117,7 +117,7 @@ Keep the todo list updated as you work.
 
 Start by identifying the repository root and structure.
 
-Run discovery commands, adapting if needed:
+Run these from the repository root:
 
 ```bash
 pwd
@@ -126,77 +126,7 @@ git branch --show-current 2>/dev/null || true
 git rev-parse --short HEAD 2>/dev/null || true
 ```
 
-Map directory depth:
-
-```bash
-find . \
-  -type d \
-  -not -path '*/.git/*' \
-  -not -path '*/node_modules/*' \
-  -not -path '*/vendor/*' \
-  -not -path '*/dist/*' \
-  -not -path '*/build/*' \
-  -not -path '*/coverage/*' \
-  -not -path '*/.next/*' \
-  -not -path '*/.nuxt/*' \
-  -not -path '*/.turbo/*' \
-  -not -path '*/.cache/*' \
-  | awk -F/ '{print NF-1}' | sort -n | uniq -c
-```
-
-List representative files:
-
-```bash
-find . \
-  -type f \
-  -not -path '*/.git/*' \
-  -not -path '*/node_modules/*' \
-  -not -path '*/vendor/*' \
-  -not -path '*/dist/*' \
-  -not -path '*/build/*' \
-  -not -path '*/coverage/*' \
-  -not -path '*/.next/*' \
-  -not -path '*/.nuxt/*' \
-  -not -path '*/.turbo/*' \
-  -not -path '*/.cache/*' \
-  | sed 's|^\./||' \
-  | sort \
-  | head -300
-```
-
-Find important config and context files:
-
-```bash
-find . \
-  -type f \( \
-    -name "README.md" -o \
-    -name "AGENTS.md" -o \
-    -name "CLAUDE.md" -o \
-    -name "package.json" -o \
-    -name "pnpm-workspace.yaml" -o \
-    -name "yarn.lock" -o \
-    -name "package-lock.json" -o \
-    -name "bun.lockb" -o \
-    -name "turbo.json" -o \
-    -name "nx.json" -o \
-    -name "pyproject.toml" -o \
-    -name "requirements.txt" -o \
-    -name "uv.lock" -o \
-    -name "poetry.lock" -o \
-    -name "go.mod" -o \
-    -name "Cargo.toml" -o \
-    -name "Makefile" -o \
-    -name "Dockerfile" -o \
-    -name "docker-compose.yml" -o \
-    -name ".editorconfig" -o \
-    -name "tsconfig.json" -o \
-    -name "vite.config.*" -o \
-    -name "next.config.*" \
-  \) \
-  -not -path '*/node_modules/*' \
-  -not -path '*/.git/*' \
-  | sort
-```
+Map directory depth, list representative files, and find important config and context files with the discovery pipelines in `references/discovery.md`.
 
 Also inspect, when present:
 
@@ -288,7 +218,7 @@ Always create or update: `./AGENTS.md`
 
 Consider directory-level `AGENTS.md` files for directories up to `--max-depth`.
 
-Score a directory as strong if it has several of:
+Strong = 3 or more signals below, or a self-contained package boundary with its own config or tests.
 
 - Its own package/module boundary.
 - Its own config.
@@ -307,88 +237,15 @@ Score a directory as strong if it has several of:
 
 Create directory-level files only for strong candidates. Skip weak candidates. Do not create local `AGENTS.md` files that merely repeat the root file.
 
+Done when every candidate within `--max-depth` is scored and the selected set is listed in the todo.
+
 ## Phase 4 — Root AGENTS.md structure
 
 The root `AGENTS.md` should be concise, factual, and useful.
 
 Target length: 80 to 180 lines. Shorter is better if the project is small.
 
-Use this structure:
-
-```md
-# AGENTS.md
-
-## Project Overview
-
-Briefly describe what this project is, what it does, and the primary stack.
-
-## Repository Structure
-
-List only meaningful directories.
-
-Example:
-
-- `src/` — application source.
-- `tests/` — test suite.
-- `packages/*` — workspace packages.
-
-## Where To Look
-
-| Task | Location | Notes |
-|---|---|---|
-| Find app entry point | `...` | ... |
-| Update API routes | `...` | ... |
-| Update shared types | `...` | ... |
-| Add tests | `...` | ... |
-
-## Commands
-
-# install
-...
-
-# development
-...
-
-# test
-...
-
-# lint
-...
-
-# typecheck
-...
-
-# build
-...
-
-## Architecture Notes
-
-Capture project-specific boundaries, data flow, runtime assumptions, and integrations.
-
-## Coding Conventions
-
-List only conventions actually used in this repository.
-
-## Testing Guidelines
-
-Explain test layout, test commands, fixtures, mocks, and verification expectations.
-
-## Generated Code and External Assets
-
-Explain what should not be edited manually.
-
-## Agent Workflow
-
-- Read the nearest `AGENTS.md` before editing files in a directory.
-- Prefer the smallest relevant verification command before broader checks.
-- Follow existing neighboring patterns before introducing new ones.
-- Do not change public APIs, schemas, or migrations without checking related tests and call sites.
-- Keep changes focused and avoid opportunistic refactors.
-
-## Do Not
-
-List repository-specific anti-patterns and risky actions.
-```
+Use the template in `references/templates.md` (example skeleton; prune anything not repo-specific and omit empty sections).
 
 Adapt headings if the project needs different names, but keep the content practical.
 
@@ -398,36 +255,7 @@ For each selected subdirectory, create or update `AGENTS.md`.
 
 Target length: 30 to 90 lines.
 
-Use this structure:
-
-```md
-# AGENTS.md
-
-## Scope
-
-Explain what this directory owns.
-
-## Local Structure
-
-List only meaningful local files/directories.
-
-## Local Commands
-
-# test this area
-...
-
-## Local Conventions
-
-Only rules that differ from or refine the parent `AGENTS.md`.
-
-## Testing
-
-Local test files, mocks, fixtures, or verification guidance.
-
-## Do Not
-
-Directory-specific anti-patterns or risky actions.
-```
+Use the directory template in `references/templates.md`.
 
 Omit sections that have no content (e.g. Local Commands if there are none).
 

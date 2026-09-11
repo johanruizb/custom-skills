@@ -68,69 +68,15 @@ Analyze the codebase module by module. Use the delegation capability to dispatch
 
 **Critical rule: VERIFY everything in the code.** Do not assume how something works based on naming, conventions, or training data. Read the actual files. Search for actual references. Trace actual call paths.
 
-For each module, look for the categories described in `references/analysis-checklists.md`:
+For each module, look for the categories in `references/analysis-checklists.md`:
 
-### 2.1 Code Duplication
-- Functions/methods that duplicate existing functionality (same logic, different names).
-- Copy-paste blocks with minor variations that could share a single implementation.
-- Similar utility functions scattered across modules.
-- Re-implemented standard library / framework functionality.
-- Parallel implementations of the same concept (e.g., two validators, two formatters, two API callers for the same service).
-
-To pre-screen mechanically before the manual review, run `scripts/detect-duplicates.py <root_dir>` — it prints groups of near-duplicate blocks with `file:line` references. Treat its output as leads to verify, not findings.
-
-### 2.2 Unnecessary Abstractions
-- Wrappers that add no value (single-call wrappers, pass-through layers).
-- Interfaces/abstract classes with a single implementation and no planned variation.
-- Factory classes that always return the same type.
-- Builder patterns where a simple constructor would do.
-- Manager classes that just delegate to another class.
-- Generic helpers so abstract they're harder to use than the direct code.
-
-### 2.3 Redundant Responsibilities
-- Multiple modules/components doing the same job.
-- Overlapping utility files (utils.py, helpers.py, common.py with overlapping content).
-- Duplicate configuration logic across modules.
-- Multiple error-handling patterns doing the same thing differently.
-
-### 2.4 Redundant Dependencies
-- Dependencies declared but never imported/used.
-- Multiple libraries doing the same job (e.g., both `requests` and `httpx` when one suffices — but only flag if the project actually uses both for the same purpose; a migration in progress is a valid reason).
-- Internal modules that wrap a single external call and add no value.
-
-### 2.5 Excessively Complex Flows
-- Call chains so long they could be flattened (A→B→C→D where B and C are pass-throughs).
-- Conditional logic with deeply nested branches that could be simplified.
-- State machines that could be replaced with simple conditionals.
-- Configuration loading that goes through 5 layers when 2 would do.
-
-### 2.6 Dead or Apparently Unused Code
-- Functions, classes, methods, constants never referenced.
-- Commented-out code blocks.
-- Unused imports.
-- Unused variables.
-- Files not imported by anything.
-- Disabled features behind flags that are never enabled.
-
-**CRITICAL**: Before flagging anything as dead/unused, search for ALL reference types:
-- Direct imports (`from x import y`, `import x.y`)
-- Dynamic references (`getattr(module, 'name')`, `importlib`)
-- String-based references (settings, configs, serializers.Meta, Django URL patterns)
-- Template references (Django templates, Jinja2, React components referenced by string)
-- Signal handlers, decorators, middleware registered by string path
-- Management commands referenced by name
-- Test files that import the code
-- Configuration files that reference the code (settings.py, urls.py, INSTALLED_APPS, etc.)
-- Migration files that reference models
-
-If ANY reference is found, do NOT flag as dead. If uncertain, mark as `confidence: low` with a note explaining what was checked.
-
-### 2.7 Inconsistent Patterns
-- Same operation done differently across modules (e.g., some modules use a custom API wrapper, others use raw `fetch`/`requests`).
-- Inconsistent error handling (try/except in some, .catch() in others, no handling elsewhere).
-- Inconsistent naming conventions for the same concept.
-- Inconsistent file organization patterns (some modules have `views.py` + `serializers.py`, others have everything in `models.py`).
-- Inconsistent test patterns (some use factories, some manual setup, some fixtures).
+- **2.1 Code Duplication** - same logic with minor variations; pre-screen with `scripts/detect-duplicates.py <root_dir>` and treat its output as leads to verify, not findings.
+- **2.2 Unnecessary Abstractions** - wrappers, single-implementation interfaces, and delegating layers that add no value.
+- **2.3 Redundant Responsibilities** - multiple modules doing the same job, or overlapping utility/config/error-handling logic.
+- **2.4 Redundant Dependencies** - dependencies declared but unused, or multiple libraries doing the same job.
+- **2.5 Excessively Complex Flows** - deep call chains, nested conditionals, and state machines that could be flattened.
+- **2.6 Dead or Unused Code** - search ALL reference types before flagging; if uncertain, mark `confidence: low` with what was checked.
+- **2.7 Inconsistent Patterns** - the same operation done differently across modules.
 
 **Completion criterion**: every module has been analyzed; raw findings are recorded with file:line evidence. See `references/finding-format.md` for the structured format.
 
@@ -173,15 +119,7 @@ Produce a prioritized plan based on the findings. Each proposed change must be c
 
 ### Classification
 
-**Risk level:**
-- **SAFE**: Proven not to affect behavior (unused imports, dead code with zero references, commented-out blocks, exact duplicates where one copy is never called).
-- **CAREFUL**: Improves without changing semantics (consolidating duplicates, removing pass-through wrappers, simplifying conditionals, renaming for consistency). Requires test verification.
-- **RISKY**: May change behavior or breaks contracts (removing "unused" code with uncertain references, changing public APIs, restructuring module boundaries, removing dependencies). Requires explicit user confirmation.
-
-**Impact level:**
-- **HIGH**: Reduces complexity across multiple files/modules, removes significant duplication, or simplifies a core flow.
-- **MEDIUM**: Improves one module or removes moderate duplication.
-- **LOW**: Minor cleanup (unused imports, commented code removal).
+Classify each item's risk and impact per `references/finding-format.md`.
 
 **Priority ordering (highest first):**
 1. SAFE + HIGH impact
@@ -238,7 +176,6 @@ After user confirmation, apply changes in priority order. For each change:
 - **One file at a time for CAREFUL changes**: Apply the change, verify, move to the next.
 - **Explicit confirmation for RISKY changes**: Present each RISKY change individually with its risk description and ask the user before applying. Do not batch RISKY changes.
 - **If a change introduces a regression**: Revert it immediately. Record the failure. Move to the next independent change. Do not try to fix the regression while other changes are pending.
-- **Subagent collateral damage check**: If using delegated subagents to apply changes, always run `git diff --stat HEAD` and `git status --short` after all subagents complete. Revert any unintended modifications.
 
 **Completion criterion**: all approved changes have been applied (or skipped with documented reasons), and validation has been run after each batch.
 

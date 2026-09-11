@@ -157,4 +157,4 @@ For each suspected abstraction, ask: "If I delete this and inline its body at th
 3. **No speculation**: If you can't point to specific code, don't raise the finding.
 4. **Confidence labeling**: Mark each finding as confirmed / probable / hypothesis.
 5. **Cross-module**: After per-module analysis, do a cross-module pass for duplication and inconsistency (these only appear when comparing modules).
-6. **Use tools**: `search_files` for content search, `read_file` for reading files, `terminal` for running detection scripts (see `scripts/detect-duplicates.py`).
+6. **Use tools**: content search, file reading, and shell execution capabilities for running detection scripts (see `scripts/detect-duplicates.py`).

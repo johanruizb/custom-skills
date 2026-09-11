@@ -4,11 +4,11 @@ The optional HTML report is a self-contained, navigable document with filtering 
 
 ## Requirements
 
-- **Self-contained**: all CSS/JS inline or via CDN. No local file dependencies.
-- **No external services**: works offline once loaded (CDN is acceptable for initial load but report must render without server calls).
+- **Self-contained**: all CSS/JS inline, with CDN assets as progressive enhancement. The generator inlines a minimal fallback stylesheet, so no local file dependencies are required.
+- **Works offline**: no server calls or external services required. CDNs (Tailwind, optional syntax highlighting) enhance the report when reachable and are not needed to render it.
 - **Navigable**: table of contents, internal anchor links to each finding.
 - **Filterable**: client-side filters by category, severity, confidence, module, status.
-- **Evidence display**: code snippets with syntax highlighting for each finding.
+- **Evidence display**: code snippets in a dark code block, with syntax highlighting when a CDN highlighter is available.
 - **Print-friendly**: reasonable print layout.
 
 ## Structure
@@ -66,9 +66,9 @@ The optional HTML report is a self-contained, navigable document with filtering 
 
 ## Styling
 
-- Use Tailwind CSS via CDN (`<script src="https://cdn.tailwindcss.com"></script>`) for utility classes and rapid layout.
-- Syntax highlighting: use Prism.js or highlight.js via CDN with a dark theme for code evidence blocks.
-- Badges: colored pills for severity (red=critical, orange=high, yellow=medium, blue=low, gray=info) and confidence (green=confirmed, yellow=probable, gray=hypothesis).
+- Tailwind CSS via CDN (`<script src="https://cdn.tailwindcss.com"></script>`) is progressive enhancement for utility classes and layout. The generator inlines a minimal fallback stylesheet, so the report stays readable and navigable offline.
+- Syntax highlighting is progressive enhancement: evidence renders as escaped text in a dark code block by default; a CDN highlighter (Prism.js, highlight.js) may enhance it when available.
+- Badges: colored pills for severity (red=critical, orange=high, yellow=medium, blue=low, gray=info) and confidence (green=confirmed, yellow=probable, gray=hypothesis). Colors are inline hex, so they render without the CDN.
 - Responsive: works on mobile, tablet, and desktop.
 
 ## Filter Implementation

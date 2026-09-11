@@ -34,31 +34,12 @@ This skill separates harness-independent logic from harness-specific tool bindin
 
 **Harness adapter** (loaded from `references/harness-adapters.md`): maps capabilities to concrete tools available in the current environment. Selected at runtime based on detected harness.
 
-Capabilities the core depends on (adapter must provide or flag as missing):
-
-| Capability | Purpose |
-|---|---|
-| `file_read` | Read file contents |
-| `file_search` | Search file contents (regex/grep) |
-| `file_find` | Find files by name/glob |
-| `file_write` | Edit/create files |
-| `dir_list` | List directory contents |
-| `cmd_exec` | Execute shell commands |
-| `git_query` | Query git (log, diff, branches) |
-| `web_search` | Search the web |
-| `web_extract` | Extract web page content |
-| `user_ask` | Ask user structured questions (multiple choice, confirmation) |
-| `subagent_spawn` | Delegate tasks to subagents |
-| `task_manage` | Manage a todo/task list |
-| `state_persist` | Persist state across interruptions |
-| `html_open` | Open an HTML file in a browser |
-
-See `references/harness-adapters.md` for per-harness bindings and the fallback generic adapter.
+See `references/harness-adapters.md` for the capability list and per-harness bindings.
 
 ## Phase 1: Tool Discovery & Adapter Selection
 
 1. Detect which tools are available in the current environment. Do NOT assume any tool exists.
-2. For each capability in the table above, determine: available (which tool), or missing.
+2. For each capability in `references/harness-adapters.md`, determine: available (which tool), or missing.
 3. Select the matching harness adapter from `references/harness-adapters.md`. If no specific match, use the generic adapter.
 4. Record the capability map. Missing capabilities are logged as limitations that affect the audit.
 5. **Completion criterion**: every capability is classified as available (with concrete tool name) or missing (with impact noted).
@@ -196,7 +177,7 @@ source:      Technical reference / doc / CVE (when applicable)
 detected_by: Tool or agent that found it
 ```
 
-See `references/finding-schema.md` for JSON examples and `templates/finding-template.json` for the ready-to-fill JSON template.
+See `references/finding-schema.md` for the JSON schema and examples.
 
 ## Selection of Fixes
 
@@ -242,27 +223,7 @@ After fixes, run all available checks via `cmd_exec`:
 7. App startup smoke test (when reasonable).
 8. Targeted regression tests for modified areas.
 
-**Ad-hoc verification scripts:** For Django/DRF projects where the full test suite requires a seeded database (and the seed may be incomplete), write a focused Python script that imports Django settings and runs runtime assertions for each fix. This is faster and more reliable than relying on a potentially broken test setup. Example pattern:
-
-```python
-import os, sys
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings.test')
-import django; django.setup()
-
-# Verify fix: serializer no longer exposes password field
-from auth.serializers import user_serializer
-fields = set(user_serializer().fields.keys())
-assert 'password' not in fields, f"password still exposed: {fields}"
-assert fields == {'id', 'username', 'email'}, f"unexpected fields: {fields}"
-
-# Verify fix: IDOR tenant filter added
-from grupo_cargo.views import some_view
-# ... runtime assertions
-
-print("All ad-hoc checks passed.")
-```
-
-Run this script via `python script.py` after applying fixes. If it passes, the fixes are verified at the code level even when the full test suite can't run due to environmental constraints.
+For projects whose test suite needs seeded data, write a focused script that imports the app and asserts each fix.
 
 Classify validation result as one of:
 

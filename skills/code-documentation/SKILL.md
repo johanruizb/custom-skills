@@ -71,12 +71,12 @@ Goal: understand the project before touching anything.
    - **Redundant** — restates what code already says (e.g., `// increment i by 1` for `i += 1`)
    - **Superficial** — exists but adds no insight (e.g., `// helper function`)
    - **Missing** — complex logic with no documentation
-   - **Critical** — documents design decisions, warnings, constraints — PRESERVE
+   - **Critical** — documents design decisions, warnings, constraints
 
 5. **Detect available tools.** Check what validators exist:
    ```bash
    # Run these to detect what's available
-   which ruff flake8 pylint mypy eslint tsc prettier rustc cargo go vet rubocop phpstan 2>/dev/null
+   which ruff flake8 pylint mypy eslint tsc prettier rustc cargo go rubocop phpstan 2>/dev/null
    ```
    Record which ones are available for Phase 4 validation.
 
@@ -195,7 +195,7 @@ After all modifications:
    # If git is available
    git diff --stat
    # Check that only comments/docstrings changed, no logic
-   git diff -U0 -- '*.py' | grep -E '^[+-]' | grep -vE '^[+-]\s*(#|"""|\*|//|/\*|\*/)' | grep -vE '^[+-]{3}'
+   git diff -U0 -- '*.py' '*.js' '*.ts' '*.tsx' '*.rs' '*.go' '*.php' '*.java' '*.rb' '*.cs' | grep -E '^[+-]' | grep -vE '^[+-]\s*(#|"""|\*|//|/\*|\*/)' | grep -vE '^[+-]{3}'
    ```
 
 3. **Run tests if available:**
@@ -233,7 +233,7 @@ If git is available, show `git diff --stat` for a quick overview.
 
 1. **Documenting trivial code.** A one-line getter does not need a docstring. Skip it. Documentation should add insight, not volume.
 
-2. **Removing critical comments in full-regen mode.** Comments about race conditions, security constraints, "we tried X and it failed because Y" are indispensable. When in doubt, keep the comment. Use `references/critical-comment-detection.md` to classify borderline comments.
+2. **Removing critical comments in full-regen mode.** Classify borderline comments with `references/critical-comment-detection.md`.
 
 3. **Inventing behavior.** If you cannot verify a behavior from the code, do not document it. State "behavior not verifiable from code" rather than guessing.
 

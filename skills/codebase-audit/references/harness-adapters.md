@@ -172,7 +172,7 @@ When the harness is not recognized, discover tools by testing each capability:
 ```
 For each capability in the capability table:
   1. Check if the harness documentation mentions a matching tool.
-  2. If unclear, attempt to use the tool and catch errors.
+  2. Check the tool list; if inaccessible, probe with one harmless read.
   3. Record: available (tool name) or missing (impact on audit).
 ```
 

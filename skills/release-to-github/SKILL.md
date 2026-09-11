@@ -7,23 +7,21 @@ allowed-tools: Bash(git:*)
 
 # release-to-github
 
-Cut a release from the commits since the last tag: version, changelog, release commit,
-tag, and a version branch.
-
 Every convention comes from the repository, because one skill serves many projects. The
 human cannot undo a push, a GitHub release, or a package publish, so those run last,
 after they have seen the release notes.
 
 Before the Survey, write the TODO list the harness understands (its todo tool): one
-item per phase, Survey through each Ship step. Mark an item completed the moment its
-phase is done; the list is the running state of the release.
+item per phase (Survey, Version, Changelog, Ship), with one item per approval step 4-7.
+Mark an item completed the moment its phase is done; the list is the running state of
+the release.
 
 ## Survey
 
 Read the conventions before writing anything:
 
 - Version file: `package.json`, `pyproject.toml`, `Cargo.toml`, `*.csproj`, `VERSION`.
-  Fall back to `git grep` for the last tag's number.
+  Fall back to `git tag --sort=-v:refname | head -n1`.
 - Changelog: `CHANGELOG.md` at the root. Offer to create it when missing.
 - Commit style: `git log` since the last tag. Fall back to Conventional Commits.
 - Tag style: `git tag`. Default `v`-prefixed SemVer (`v1.4.2`).
@@ -77,12 +75,13 @@ rewrite old sections:
 ### Security
 ```
 
+- Map commit types to headings: `feat` → Added, `fix` → Fixed, `perf`/`refactor` → Changed, removal/`revert` → Removed; skip internal chores.
 - Drop headings with no entries.
 - Append the short hash of the last commit in the release range to the header, so each
   section shows at a glance where it ends; the previous section's hash (or the tag)
   marks where it begins.
-- Write every entry through the unslop skill, and re-run it on any later revision of
-  the section.
+- Write entries in plain, specific language (no AI-slop phrasing); if the unslop skill
+  is available, run the section through it.
 - Phrase each entry for the user of the project, not for the committer: what changed
   in behavior, not which commit did it.
 - End the section with a full-changelog line, unless this is the first release:

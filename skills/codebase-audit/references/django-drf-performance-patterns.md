@@ -193,3 +193,27 @@ DATABASES = {
     }
 }
 ```
+
+## Validation
+
+For Django/DRF projects where the full test suite requires a seeded database (and the seed may be incomplete), write a focused Python script that imports Django settings and runs runtime assertions for each fix. This is faster and more reliable than relying on a potentially broken test setup. Example pattern:
+
+```python
+import os, sys
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings.test')
+import django; django.setup()
+
+# Verify fix: serializer no longer exposes password field
+from auth.serializers import user_serializer
+fields = set(user_serializer().fields.keys())
+assert 'password' not in fields, f"password still exposed: {fields}"
+assert fields == {'id', 'username', 'email'}, f"unexpected fields: {fields}"
+
+# Verify fix: IDOR tenant filter added
+from grupo_cargo.views import some_view
+# ... runtime assertions
+
+print("All ad-hoc checks passed.")
+```
+
+Run this script via `python script.py` after applying fixes. If it passes, the fixes are verified at the code level even when the full test suite can't run due to environmental constraints.

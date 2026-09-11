@@ -15,24 +15,15 @@ metadata:
 
 ## Overview
 
-When one or more Pull Requests arrive for review, the team needs to know what to test manually — which views to open, which flows to exercise, which edge cases to verify. Doing it from memory or reading only the PR title produces incomplete validations and production bugs.
+Deliverable: a Markdown testing checklist, traceable to the PR changes that originated each item.
 
-This skill analyzes the real changes of each PR (diff, modified files, affected source code) and generates a manual testing checklist organized by module, with navigable links to views when they can be generated. Every checklist item is traceable to the PR that originated it and backed by evidence from the code — not by assumptions.
-
-The deliverable is a Markdown document ready for a QA or developer to execute the tests without having read the code.
+Every item is backed by evidence from the diff or the source code read, never by assumptions.
 
 ## When to Use
-
-- The user asks to "generar checklist de pruebas", "crear plan de testing para este PR", "qué tengo que probar de este cambio", or the English equivalents ("generate a testing checklist", "what should I test in this PR").
-- One or several PRs arrive and a manual testing guide is needed before merge.
-- The user wants to validate that the changes don't break adjacent flows without doing a full regression.
-- The user wants traceability: to know exactly which test covers which change of which PR.
 
 Don't use for:
 - Writing automated tests (unit, integration, e2e) — use `test-suite-improver` for that.
 - Code review of the PR — run a diff-based code review instead.
-- Debugging a specific bug reported in a PR — investigate and debug it directly.
-- Generating documentation for the whole application — this is a change-validation checklist, not a user manual.
 
 ## Input
 

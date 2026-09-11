@@ -35,31 +35,12 @@ This skill separates harness-independent logic from harness-specific tool bindin
 
 **Harness adapter** (loaded from `references/harness-adapters.md`): maps capabilities to concrete tools available in the current environment. Selected at runtime based on detected harness.
 
-Capabilities the core depends on (adapter must provide or flag as missing):
-
-| Capability | Purpose |
-|---|---|
-| `file_read` | Read file contents (source + tests) |
-| `file_search` | Search file contents (regex/grep) |
-| `file_find` | Find files by name/glob |
-| `file_write` | Edit/create test files |
-| `dir_list` | List directory contents |
-| `cmd_exec` | Execute shell commands (run tests, coverage, linters) |
-| `git_query` | Query git history/branches |
-| `web_search` | Search the web (best practices for detected frameworks) |
-| `web_extract` | Extract web page content (official docs) |
-| `user_ask` | Ask user structured questions (mode selection, confirmations) |
-| `subagent_spawn` | Delegate tasks to subagents (parallel analysis) |
-| `task_manage` | Manage a todo/task list |
-| `state_persist` | Persist state across interruptions |
-| `html_open` | Open an HTML file in a browser |
-
-See `references/harness-adapters.md` for per-harness bindings and the fallback generic adapter.
+See `references/harness-adapters.md` for the capability list, per-harness bindings, and the fallback generic adapter.
 
 ## Phase 1: Tool Discovery & Adapter Selection
 
 1. Detect which tools are available in the current environment. Do NOT assume any tool exists.
-2. For each capability in the table above, determine: available (which tool), or missing.
+2. For each capability in the adapter's reference table, determine: available (which tool), or missing.
 3. Select the matching harness adapter from `references/harness-adapters.md`. If no specific match, use the generic adapter.
 4. Record the capability map. Missing capabilities are logged as limitations that affect the workflow.
 5. **Completion criterion**: every capability is classified as available (with concrete tool name) or missing (with impact noted).
@@ -192,7 +173,7 @@ For Mode 3 (analysis only): skip this phase entirely.
 
 Change production code only when a real bug is detected and the user authorizes the fix. Never modify production code solely to make tests pass.
 
-**Subagent strategy** (when `subagent_spawn` available): split work by module. Each subagent receives: project map, framework best practices, the plan, the test smells inventory, and the module's source files. Each subagent returns: test files created/modified, with summaries. The main agent coordinates to avoid duplicate tests and incompatible fixtures.
+**Subagent strategy**: see Subagent Strategy below.
 
 **Completion criterion**: all planned test files have been created/modified/removed; no planned item is pending.
 

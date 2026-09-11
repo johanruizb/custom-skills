@@ -1,6 +1,6 @@
 # Import-Rewrite Algorithm
 
-Used by Step 8 and Step 9 of the screaming-architecture-refactor skill. This is the exact algorithm for computing new import paths after a file move, preserving the original import's extension pattern.
+Used by Step 8 and Step 9 of the screaming-architecture-refactor skill. This is the exact algorithm for computing new import paths after a file move, preserving the original import's extension pattern. Aliases resolve through the `ALIAS_MAP` input.
 
 ## Core Rule
 
@@ -10,8 +10,10 @@ Used by Step 8 and Step 9 of the screaming-architecture-refactor skill. This is 
 |---|---|---|---|
 | `./components/AppBar` | `shell/appbar/index.jsx` | `./components/shell/appbar` | `./components/shell/appbar/index.jsx` |
 | `./components/AppBar.jsx` | `shell/appbar/index.jsx` | `./components/shell/appbar/index.jsx` | `./components/shell/appbar` |
-| `@components/TextField/X` | `forms/fields/X.jsx` | `@components/forms/fields/X` | `@components/forms/fields/X.jsx` |
-| `@components/TextField/X.jsx` | `forms/fields/X.jsx` | `@components/forms/fields/X.jsx` | `@components/forms/fields/X` |
+| `<alias>/TextField/X` | `<alias-base>/forms/fields/X.jsx` | `<alias>/forms/fields/X` | `<alias>/forms/fields/X.jsx` |
+| `<alias>/TextField/X.jsx` | `<alias-base>/forms/fields/X.jsx` | `<alias>/forms/fields/X.jsx` | `<alias>/forms/fields/X` |
+
+`<alias>` and `<alias-base>` come from the `ALIAS_MAP` input.
 
 ## Algorithm (pseudocode)
 
@@ -19,36 +21,36 @@ Used by Step 8 and Step 9 of the screaming-architecture-refactor skill. This is 
 function compute_new_import(original_import, importer_path, new_dest):
     orig_has_ext = os.path.splitext(original_import)[1] != ""
     
-    if original_import starts with "@components/":
-        # @components/ maps to frontend/src/components/
-        new_rel = new_dest[len("frontend/src/components/"):]
-        
-        if not orig_has_ext:
-            # Original had no extension — strip it from new path
-            if basename(new_dest) starts with "index.":
-                # Barrel: drop the index file, keep directory
-                new_rel = dirname(new_rel)
-            else:
-                # Regular file: drop extension
-                new_rel = splitext(new_rel)[0]
-        
-        return "@components/" + new_rel
+    for alias, base_dir in ALIAS_MAP:
+        if original_import starts with alias:
+            # alias maps to its base dir from ALIAS_MAP
+            new_rel = new_dest[len(base_dir):]
+            
+            if not orig_has_ext:
+                # Original had no extension — strip it from new path
+                if basename(new_dest) starts with "index.":
+                    # Barrel: drop the index file, keep directory
+                    new_rel = dirname(new_rel)
+                else:
+                    # Regular file: drop extension
+                    new_rel = splitext(new_rel)[0]
+            
+            return alias + new_rel
     
-    else:
-        # Relative import (starts with .)
-        imp_dir = dirname(importer_path)
-        new_rel = relpath(new_dest, imp_dir)
-        
-        if not orig_has_ext:
-            if basename(new_dest) starts with "index.":
-                new_rel = dirname(new_rel)
-            else:
-                new_rel = splitext(new_rel)[0]
-        
-        if not new_rel starts with ".":
-            new_rel = "./" + new_rel
-        
-        return new_rel
+    # Relative import (starts with .)
+    imp_dir = dirname(importer_path)
+    new_rel = relpath(new_dest, imp_dir)
+    
+    if not orig_has_ext:
+        if basename(new_dest) starts with "index.":
+            new_rel = dirname(new_rel)
+        else:
+            new_rel = splitext(new_rel)[0]
+    
+    if not new_rel starts with ".":
+        new_rel = "./" + new_rel
+    
+    return new_rel
 ```
 
 ## Barrel Resolution
@@ -56,7 +58,7 @@ function compute_new_import(original_import, importer_path, new_dest):
 When an import resolves to a barrel file (e.g. `./components/AppBar` → `AppBar/index.jsx`), the new import should point to the **directory**, not the index file:
 
 - `./components/AppBar` → `./components/shell/appbar` (not `./components/shell/appbar/index`)
-- `@components/AppBar` → `@components/shell/appbar` (not `@components/shell/appbar/index`)
+- `<alias>/AppBar` → `<alias>/shell/appbar` (not `<alias>/shell/appbar/index`)
 
 This matches how JavaScript/TypeScript module resolution works: `import from "./dir"` resolves to `./dir/index.js` automatically.
 

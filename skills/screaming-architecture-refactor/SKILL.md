@@ -29,11 +29,16 @@ Don't use for:
 
 ## Inputs
 
-The skill always operates with three inputs. If any is missing, ask the user before proceeding:
+The skill requires three inputs. If any is missing, ask the user before proceeding:
 
 - `PROJECT_ROOT` — absolute path to the project root (where config files, tsconfig, package.json, pyproject, etc. live).
 - `TARGET_PATH` — absolute or project-relative path to the directory to reorganize. Must be inside `PROJECT_ROOT`.
 - `MODE` — one of `analyze`, `apply`, `verify`.
+
+Two optional inputs modify behavior:
+
+- `ALIAS_MAP`: map of import aliases to base directories (alias -> base dir), e.g. `{"@components/": "frontend/src/components/"}`. Used when rewriting aliased imports; defaults to empty.
+- `ARTIFACT_DIR`: directory for plan artifacts and the run log. Defaults to `<PROJECT_ROOT>/.screaming-arch/`.
 
 `MODE` semantics:
 
@@ -47,7 +52,7 @@ Recommended flow on a fresh path: `analyze` → user reviews → `apply` → `ve
 
 ## Plan Artifact
 
-Every `analyze` run writes a plan to `<PROJECT_ROOT>/.hermes/screaming-arch/<sanitized-target-path>.md` (create the dir if missing). `apply` and `verify` read this artifact. If `apply` is invoked without a fresh artifact, first run `analyze` implicitly.
+Every `analyze` run writes a plan to `<ARTIFACT_DIR>/<sanitized-target-path>.md` (create the dir if missing). `apply` and `verify` read this artifact. If `apply` is invoked without a fresh artifact, first run `analyze` implicitly.
 
 The artifact contains, in this exact order:
 
@@ -62,9 +67,11 @@ The artifact contains, in this exact order:
 
 ## Procedure
 
-Follow the steps in order. Each step lists its completion criterion — do not advance until it is met.
+Follow the steps that apply to the active mode, in order. Each step lists its completion criterion. Do not advance until it is met.
 
-### Step 1 — Scan recursively, including hidden files
+### Analyze (Steps 1-7)
+
+#### Step 1 — Scan recursively, including hidden files
 
 Scan every entry under `TARGET_PATH`, including dotfiles, test files, configs, assets, docs, and build output that lives alongside source.
 
@@ -72,11 +79,13 @@ Scan every entry under `TARGET_PATH`, including dotfiles, test files, configs, a
 find <TARGET_PATH> -type f
 ```
 
+If a listing tool caps its output, paginate until the listing is exhausted; the direct `find` command has no cap and is the authoritative enumeration.
+
 Then enumerate directories with a glob/find capability, e.g. `find <TARGET_PATH> -type d`. Include hidden directories (`.git` is excluded automatically if it is the project's git dir; other hidden dirs like `.storybook`, `.vscode`, `__mocks__`, `__snapshots__` are in scope).
 
 Completion criterion: the file count you collected equals the count reported by `find <TARGET_PATH> -type f | wc -l`. If they differ, rescan the gap before continuing.
 
-### Step 2 — Classify by real responsibility
+#### Step 2 — Classify by real responsibility
 
 For every file, determine what it actually does — not what its name suggests. Read enough of each file to identify:
 
@@ -95,7 +104,7 @@ This approach handles 196 files in ~2 tool calls instead of 196. Read more only 
 
 Completion criterion: every file in the inventory has a `capability` and `role` assigned. Ambiguous files are flagged with `?` and resolved before Step 5.
 
-### Step 3 — Trace imports, exports, aliases, references
+#### Step 3 — Trace imports, exports, aliases, references
 
 Build the reference graph for `TARGET_PATH`:
 
@@ -107,13 +116,13 @@ Build the reference graph for `TARGET_PATH`:
 
 Completion criterion: for every file in `TARGET_PATH`, you know (a) who imports it and (b) what it imports. The outside-in list (files outside `TARGET_PATH` that reference inside) is non-empty only if real cross-boundary references exist — confirm by running a content search for the target's old path segments across `PROJECT_ROOT`.
 
-### Step 4 — Identify capabilities and shared elements
+#### Step 4 — Identify capabilities and shared elements
 
 Group files by the capability they serve. A capability is a coherent slice of business value the system offers (auth, checkout, reporting, member management, audit log, etc.). Files serving more than one capability are candidates for a `shared/` (or `common/`, `platform/`) folder — but only if they are genuinely cross-cutting. A file used by two features that are themselves part of the same capability does not qualify as shared.
 
 Completion criterion: every file is assigned to exactly one capability or to `shared`. No file is left in a "misc" bucket; if you are tempted to create one, re-classify.
 
-### Step 5 — Propose the target tree
+#### Step 5 — Propose the target tree
 
 Design the target structure so that:
 
@@ -127,7 +136,7 @@ If a previous run already established a capability layout under a sibling path, 
 
 Completion criterion: the target tree has no orphan technical-layer folder at its root, every leaf maps to at least one source file, and every source file maps to exactly one target leaf.
 
-### Step 6 — Generate inventory, tree, and move map
+#### Step 6 — Generate inventory, tree, and move map
 
 Write the plan artifact (see the Plan Artifact section above) using the templates in `references/inventory-template.md` and `references/move-map-schema.md`. The move map must be machine-checkable: each row has `source`, `destination`, `import_rewrites` (list of `{file, find, replace}`), and `evidence` (why the move is correct).
 
@@ -135,13 +144,15 @@ For deletions, each row must cite the evidence: which file it duplicates (with a
 
 Completion criterion: the artifact is written to disk, and a quick sanity check passes — for every `source` in the move map, `os.path.exists(source)` is true; for every `destination`, no file exists yet (or the plan explicitly marks it as a merge).
 
-### Step 7 — `analyze` mode: stop here
+#### Step 7 — `analyze` mode: stop here
 
 In `analyze` mode, present the artifact path to the user and a concise summary (capabilities found, file count, move count, deletion count, risks). Do not modify any project file other than the artifact. Wait for the user to review and either approve, request changes, or switch to `apply`.
 
 Completion criterion: the user has acknowledged the plan (explicit approval, or a follow-up instruction to `apply`).
 
-### Step 8 — `apply` mode: execute the moves
+### Apply (Steps 8-11, requires artifact)
+
+#### Step 8 — `apply` mode: execute the moves
 
 Execute the plan in this order to minimize broken intermediate states:
 
@@ -156,7 +167,7 @@ Do not change business logic. Do not reformat code. Do not rename identifiers. O
 
 Completion criterion: `find <TARGET_PATH> -type f` returns only the files listed in the stays-in-place section (or nothing, if nothing had to stay). Every move-map row is marked done. No empty directory remains under `TARGET_PATH`.
 
-### Step 9 — Update external references
+#### Step 9 — Update external references
 
 For every file outside `TARGET_PATH` that imported from it, apply the same import rewrites. This is the step most likely to be skipped — guard against it explicitly:
 
@@ -170,7 +181,7 @@ Also update: documentation that references the old structure (README, ARCHITECTU
 
 Completion criterion: a project-wide content search for every old path segment returns zero real references. Remaining hits are false positives you can justify.
 
-### Step 10 — Run validations
+#### Step 10 — Run validations
 
 Run every validator the project exposes. Detect them from `package.json` scripts, `pyproject.toml`/`setup.cfg`/`Makefile`, and CI config:
 
@@ -184,7 +195,7 @@ If a validator does not exist, note it in the final report under "validations ex
 
 Completion criterion: every available validator has been run and its result recorded (pass/fail). Failures are fixed before declaring done; if a failure is pre-existing and unrelated, record it as a pre-existing risk, not a new failure.
 
-### Step 11 — Review the diff and fix broken references
+#### Step 11 — Review the diff and fix broken references
 
 ```
 git -C <PROJECT_ROOT> diff --stat
@@ -193,9 +204,13 @@ git -C <PROJECT_ROOT> diff
 
 Scan the diff for: missed import rewrites, accidental logic changes, files that moved but lost content, files that stayed without a recorded reason. Fix any broken reference you find.
 
+If `PROJECT_ROOT` is not a git repo, diff the on-disk tree against the move map instead (every `destination` exists, every moved `source` is gone) and review that result the same way.
+
 Completion criterion: the diff contains only path/import/barrel/config changes plus the new plan artifact. No line of business logic is in the diff unless it was already in a prior commit.
 
-### Step 12 — `verify` mode
+### Verify (Step 12)
+
+#### Step 12 — `verify` mode
 
 `verify` does not move anything. It re-runs Step 10 validations, then checks:
 
@@ -204,6 +219,8 @@ Completion criterion: the diff contains only path/import/barrel/config changes p
 - No project-wide reference to any old path segment that was supposed to be removed.
 - The plan artifact's move map matches the on-disk state (every `destination` exists, every `source` no longer exists unless it is in stays-in-place).
 - A `git status` shows only the expected changes (or is clean if the migration was already committed).
+
+If `PROJECT_ROOT` is not a git repo, diff the on-disk tree against the move map instead.
 
 Completion criterion: all checks pass; any discrepancy is listed in the final report as a risk, not silently dropped.
 
@@ -227,7 +244,7 @@ If any section is empty, state "None." explicitly — do not omit the section.
 
 The skill is designed to run many times over the same project, once per subpath. To keep runs consistent:
 
-- Every run reads the plan artifact dir `<PROJECT_ROOT>/.hermes/screaming-arch/` to discover prior decisions. Capability names, folder conventions, and the `shared/` policy established by earlier runs are reused, not reinvented.
+- Every run reads the plan artifact dir `<ARTIFACT_DIR>` to discover prior decisions. Capability names, folder conventions, and the `shared/` policy established by earlier runs are reused, not reinvented.
 - Before proposing a new capability folder, check whether a sibling path already established one with the same name — if so, merge into it instead of creating a parallel folder.
 - The stays-in-place list from a prior run is authoritative: do not re-move a file a previous run decided to keep, unless the user explicitly overrides.
-- After each successful `apply`, append a one-line summary to `<PROJECT_ROOT>/.hermes/screaming-arch/RUNLOG.md` with date, target path, file count, and run mode.
+- After each successful `apply`, append a one-line summary to `<ARTIFACT_DIR>/RUNLOG.md` with date, target path, file count, and run mode.

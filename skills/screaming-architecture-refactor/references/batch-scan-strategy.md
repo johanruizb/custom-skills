@@ -10,7 +10,7 @@ Use the code-runner capability to run a short script that reads the first ~60 li
 import json, os, re
 
 ROOT = "/path/to/project"
-TARGET = "frontend/src/components"  # relative to ROOT
+TARGET = "<TARGET_PATH>"  # relative to ROOT
 results = []
 
 for root, dirs, files in os.walk(os.path.join(ROOT, TARGET)):

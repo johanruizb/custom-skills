@@ -85,7 +85,6 @@ Detailed checklists for each audit area. Use these during Phase 5 (Audit) to sys
 - [ ] **Large components exceeding project line limit** — check for files >500 lines (or project's stated limit). Large components have more re-render surface, harder to `React.memo`, and often contain inline object/array literals recreated every render.
 - [ ] **`framer-motion` used for simple CSS transitions** — check if `framer-motion` is imported in 10+ files for simple fade/slide animations that could use CSS transitions or MUI `Fade`/`Grow`/`Slide` components instead.
 - [ ] **`react-helmet` in bootstrap entry point** — check `main.jsx` or entry file for `import { Helmet } from "react-helmet"`. This forces the library into the initial bundle. Defer to a component inside the app tree.
-- [ ] **`window.open()` for blob URLs without `noopener,noreferrer`** — search for `window.open(url, "_blank")` without third argument. While blob URLs are same-origin, inconsistent security posture.
 - [ ] **`useState` for server data instead of SWR/React Query** — check if components use `useState` + `useEffect` for API data instead of a caching library. SWR/React Query provide deduplication, caching, revalidation, and cancellation.
 - [ ] **Missing `React.memo` on frequently re-rendered list items** — check if list item components (inside `.map()`) are wrapped in `React.memo`. Without it, every parent re-render re-renders all list items.
 - [ ] **Inline function/object/array literals in JSX props** — search for patterns like `onClick={() => ...}` or `style={{...}}` or `options={[...]}` inside render. These create new references every render, defeating `React.memo` and `PureComponent`.
@@ -93,29 +92,6 @@ Detailed checklists for each audit area. Use these during Phase 5 (Audit) to sys
 - [ ] **`<img>` tags without lazy loading** — search for `<img` without `loading="lazy"`. Images above the fold should use native lazy loading.
 - [ ] **Large static data arrays defined inside component body** — check for `const options = [...]` or `const config = {...}` inside the component function. These are recreated every render. Extract outside the component or use `useMemo`.
 - [ ] **Missing `useCallback` on callbacks passed to child `React.memo` components** — search for callbacks defined inline in render that are passed to memoized children. Without `useCallback`, the child receives a new reference every render and `memo` is defeated.
-
-#### Django / DRF Performance (add to any Django audit)
-
-- [ ] **No pagination** — check `REST_FRAMEWORK` settings for `DEFAULT_PAGINATION_CLASS` and `PAGE_SIZE`. Also check every `ModelViewSet` and `ListAPIView` for `pagination_class = None` (intentional) vs missing (unbounded results).
-- [ ] **No caching layer** — check `CACHES` in settings. If Redis is available (e.g., for Channels) but `CACHES` is absent, every request hits the DB for lookup tables, church metadata, and config. Check for zero `cache.get`/`cache.set` calls.
-- [ ] **`fields = '__all__'` in serializers** — count occurrences. Each one serializes every model column including large text fields, audit timestamps, and potentially sensitive data. Prefer explicit field lists.
-- [ ] **N+1 queries in view loops** — search for `for .* in .*serializer.data` or `for .* in .*queryset` followed by `.get()`, `.filter()`, `.count()`, or `.all()` inside the loop body. Classic pattern: serialize queryset, then iterate `serializer.data` and re-fetch related objects per item.
-- [ ] **N+1 count queries** — search for `.count()` inside `for` loops. Batch-count with `annotate(Count(...))` or `values(...).annotate(...)` instead.
-- [ ] **`.count() != 0` where `.exists()` suffices** — `.exists()` issues `SELECT 1 LIMIT 1` (stops at first match); `.count()` scans all matching rows. Search for `if .count() > 0`, `if .count() != 0`, `while .count()`.
-- [ ] **Missing `select_related` / `prefetch_related`** — search for FK/M2M access inside loops without prefetch. Check that `Prefetch` with `to_attr` is used when the loop re-filters (`.filter()` on a prefetched relation invalidates the cache).
-- [ ] **Recursive tree traversal with per-node queries** — check for recursive functions that call `.filter(parent=X)` or `.children.filter()` per node. Fetch all nodes in one query and build the tree in memory.
-- [ ] **`.save()` in loops instead of `bulk_create`/`bulk_update`** — each `.save()` is a separate INSERT/UPDATE. Use `bulk_create(batch_size=500)` and `bulk_update(fields=[...])`.
-- [ ] **Duplicate `.count()` calls** — check for `queryset.count()` called multiple times in the same function where the result doesn't change. Cache in a variable.
-- [ ] **Synchronous HTTP calls in request path** — search for `requests.get`/`requests.post` in views, utils, and services called from views. These block the Django worker. Check for missing timeouts (block indefinitely). Consider async tasks or caching.
-- [ ] **Missing `.only()` / `.defer()` on wide models** — check if list endpoints on models with 20+ fields use `.only()` to fetch only needed columns. Without it, all columns are loaded from DB.
-- [ ] **Missing composite indexes** — check if `Meta.indexes` is defined. For multi-tenant apps, common filter patterns (`id_church + status`, `id_church + deleted`, `id_church + person_type`) need composite indexes. Django auto-indexes FK columns but not compound filters.
-- [ ] **Missing ETag/Last-Modified** — check for `@condition` decorator or `ETag`/`Last-Modified` response headers on read-only endpoints. Without them, every request returns full data even for unchanged resources.
-- [ ] **Connection pool not configured** — check `conn_max_age` in `DATABASES`. With ASGI/uvicorn and many workers, persistent connections can exhaust PostgreSQL's `max_connections` without a pooler (PgBouncer).
-- [ ] **Debug `print()` in production views** — search for `print(` in view files. These output to stdout instead of structured logs and may trigger unnecessary queries just for debug output.
-- [ ] **Email/SMTP connection per message** — check if email sending opens a new `smtplib.SMTP` connection per email. For batch notifications, reuse one connection for multiple messages.
-- [ ] **Bulk import without `batch_size`** — check `bulk_create` calls for missing `batch_size` parameter. Without it, all INSERTs go in one query, risking PostgreSQL parameter limit errors for wide tables.
-
----
 
 ## Bugs Checklist
 
@@ -205,7 +181,6 @@ Detailed checklists for each audit area. Use these during Phase 5 (Audit) to sys
 - [ ] **`useEffect` cleanup resets state that should persist** — check if cleanup functions reset auth state, form data, or other persistent state. Cleanup should cancel in-flight requests, not reset derived state.
 - [ ] **`useEffect` with missing middle-case branches** — check effects with `if/if` (not `if/else if/else`) that don't cover all possible values of their dependency. Missing branches leave state unchanged from the previous value.
 - [ ] **Mutable default parameters** — search for `function f(x = {})` or `function f(x = [])`. In JavaScript, default parameters are re-evaluated each call (unlike Python), but the pattern is still a code smell for confusion.
-- [ ] **`window.open()` without `noopener,noreferrer` for external URLs** — search for `window.open(url, "_blank")` without third argument. The opened page gets `window.opener` reference (reverse tabnabbing). For blob URLs the risk is lower but the pattern should be consistent.
 - [ ] **`dangerouslySetInnerHTML` or `innerHTML` with external data** — search for `innerHTML` and `dangerouslySetInnerHTML`. Even if the result is only read back (e.g., `div.innerHTML = text; return div.textContent`), the innerHTML assignment can trigger side effects with crafted payloads.
 - [ ] **`window.location.assign()` or `window.location.replace()` for SPA navigation** — search for `window.location.assign(` and `window.location.replace(`. In SPAs, use `useNavigate()` from react-router. Full page reloads lose app state.
 - [ ] **`target="_blank"` links without `rel="noopener noreferrer"`** — search for `target="_blank"` without `rel="noopener noreferrer"` on `<a>` tags. Reverse tabnabbing vulnerability.
@@ -233,7 +208,6 @@ Detailed checklists for each audit area. Use these during Phase 5 (Audit) to sys
 - [ ] **`except: pass` swallowing all errors** — search for `except:\n    pass` or `except Exception:\n    pass`. Bare `except:` catches `SystemExit` and `KeyboardInterrupt`. `except Exception: pass` hides all runtime errors. At minimum log the exception; better to catch specific exception types.
 - [ ] **Duplicate key in dict literal** — search for dict literals where the same key appears twice. Python dicts allow duplicate keys in literals but the last one wins, making the first assignment dead code. Common in large response dicts built by hand.
 - [ ] **`permission_classes` assigned twice in same class** — search for consecutive `permission_classes = [...]` lines. The second overwrites the first. Copy-paste error.
-- [ ] **`fields = '__all__'` in serializers** — count occurrences. Each one exposes all model fields including audit timestamps, FK IDs, and potentially sensitive data. Prefer explicit field lists. The project's own conventions may explicitly ban `__all__`.
 - [ ] **Inactive apps still routed in `urls.py`** — check if apps removed from `INSTALLED_APPS` still have `include()` entries in the root URL configuration. Routes are live but app infrastructure (signals, models, migrations) is not initialized.
 - [ ] **Duplicate utility functions across modules** — check for the same utility function (e.g., `get_date`, `get_datetime`, `now`) defined in multiple modules. Bug fixes in one don't propagate. Consolidate into a canonical location.
 - [ ] **`bulk_create` without `batch_size`** — search for `bulk_create(` without `batch_size=`. Without it, all INSERTs go in one query, risking PostgreSQL parameter limit errors for wide tables.
