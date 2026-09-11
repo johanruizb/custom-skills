@@ -1,7 +1,7 @@
 ---
 name: issue-enrichment
-description: "Use when a GitHub issue or feature request is too brief to implement and needs to be enriched with technical context from the codebase before implementation. Investigates the project, finds affected code, and rewrites the issue with the context a developer needs — without expanding scope."
-version: 1.2.0
+description: "Use when a GitHub issue or feature request is too brief to implement. Investigates the codebase and rewrites the issue with the technical context a developer needs, preserving the original scope."
+version: 1.3.0
 author: Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -15,167 +15,144 @@ metadata:
 
 ## Overview
 
-Many issues arrive as one-line descriptions that a developer cannot act on. This skill reads the issue, investigates the codebase to understand how the affected functionality works today, and rewrites the issue into a clear, actionable specification that preserves the original scope.
-
-The deliverable is a rewritten issue body — readable by a person, not a technical audit. The skill is read-only with respect to source code: it searches, reads, traces, then produces enriched text.
+Many issues arrive as one-line descriptions a developer cannot act on. This skill reads the issue and its comments, investigates how the affected functionality works today, and rewrites the issue into a spec a developer can start from, preserving the original scope. The deliverable is the rewritten issue body, an issue a person reads and understands quickly. Source code stays read-only. Search, read, trace, then write the text.
 
 ## When to Use
 
 - A GitHub issue or local task description is too brief or vague to implement.
-- The user asks to "analyze and enrich", "add context to this issue", or "clarify this issue before implementing".
+- The user asks to "analyze and enrich" an issue, "add context to this issue", or "clarify this issue before implementing".
 - Before handing an issue to a developer or coding agent who needs context to start.
 
 Don't use for:
-- Issues that already contain full context and acceptance criteria.
-- Tasks that ask you to fix or implement the issue (use `investigate-before-edit`).
-- Pure bug reproduction — investigate and debug it directly instead.
+
+- Issues that already carry full context and acceptance criteria.
+- Implementation work (use `investigate-before-edit`).
+- Pure bug reproduction. Debug it directly instead.
 
 ## Input
 
-Accept the issue from one of these sources, in priority order:
+Take the issue from one of these sources, in priority order:
 
-1. **GitHub issue number** — `gh issue view N` (or the GitHub API / web page as a fallback).
-2. **Issue URL** — fetch with `web_extract` or `gh issue view`.
-3. **Local text** — pasted by the user or in a file path.
+1. **GitHub issue number**: `gh issue view N --comments`, falling back to the GitHub API or the web page.
+2. **Issue URL**: open the page or `gh issue view`.
+3. **Local text**: pasted by the user or read from a file path.
 
-Record the original text verbatim before modifying anything — you will verify scope was preserved at the end.
+Keep the original text verbatim. The enriched version must represent every requirement it carries.
 
-### Read ALL comments (critical)
+### Read every comment
 
-After recording the issue body, read every comment on the issue. Comments often contain:
-- Additional requirements or scope refinements the original body doesn't mention.
-- Bug reports, edge cases, or UX feedback from users/testers.
-- Technical constraints or implementation notes from developers.
-- Requests that contradict or supersede the original issue text.
+The body is rarely the whole issue. Comments carry additional requirements and scope refinements, bug reports and edge cases from users or testers, technical constraints from developers, and requests that contradict or supersede the body. Treat each comment as a requirement source: whatever a comment adds, the enriched issue represents it alongside the original text.
 
-Use `gh issue view N --comments` or fetch the issue page and extract comments. Treat each comment as a potential source of requirements — investigate them the same way you investigate the issue body. If a comment adds requirements, the enriched issue must represent them alongside the original text.
+### Preserve screenshots
 
-**Pitfall:** Skipping comments because the issue body "looks complete." The user will correct you — comments are part of the issue.
+The body and the comments often carry screenshots: a bug state, a mockup, a reference screen. Read the image when the harness can view images, downloading it first if the URL alone does not render. A picture usually states the requirement more precisely than the text around it.
+
+When a screenshot supports a requirement, carry it into the enriched issue:
+
+- Keep its markdown reference, `![...](url)`, in the section it supports, so the implementer sees the same picture.
+- Add one line describing the interface it shows: the screen, the state, the expected change (for example, "Payment modal today has no NIT field; the change adds it"). That description is what survives when the link breaks or the reader cannot open it.
+- If the image cannot be viewed, keep the link and say next to it what could not be verified. Never drop it silently.
 
 ## Investigation (mandatory, before rewriting)
 
-Read-only. No edits to source code. The goal: understand how the affected functionality works today so the enriched issue describes reality, not assumptions.
+Read-only: search, read, trace. The goal is to describe how the affected functionality works today, so the enriched issue states reality instead of assumptions. A brief issue needs this phase most: the implementer starts with the least context.
 
 ### 1. Restate the requirement
 
-Parse the issue: what entity is affected, what action is requested, what should change. Write a one-sentence restatement in your own words. List the key terms to search for.
+Parse the issue and its comments: which entity is affected, what action is requested, what should change. Write a one-sentence restatement in your own words and list the terms to search for.
 
-**Done when:** you have a concise restatement and a list of search terms.
+**Completion criterion:** the restatement names the entity, the action, and the expected change; the search terms are listed.
 
 ### 2. Find the affected code
 
-Read AGENTS.md / CLAUDE.md / .cursorrules / README / CONTEXT.md for project layout and conventions. Search the codebase for the key terms from step 1. Read the relevant files — do not guess from filenames.
+Read the project context docs (AGENTS.md, CLAUDE.md, .cursorrules, README, CONTEXT.md) for layout and conventions. Search for the terms from step 1, then open every relevant hit and read it.
 
-**Actions:** `search_files(target='content')` for key terms; `read_file` on hits; `read_file` on project context docs.
-
-**Done when:** the files directly related to the requirement are found and confirmed by reading.
+**Completion criterion:** the files directly related to the requirement are found and confirmed by reading.
 
 ### 3. Trace how it works today
 
-Follow the data and execution flow through the affected code. For backend: request → view → serializer → model → response. For frontend: component → hook → API → render. Read each hop.
+Follow the data and execution flow through the affected code. Backend: request, view, serializer, model, response. Frontend: component, hook, API, render. Read each hop.
 
-**Done when:** you can narrate the current behavior with `file:line` references.
+**Completion criterion:** you can narrate the current behavior with `file:line` references.
 
-### 4. Identify dependencies and edge cases
+### 4. Dependencies and edge cases
 
-Note what the affected code depends on: other modules, external APIs, auth/permission rules, tenant isolation, configuration. Identify boundary conditions evident from the code: empty states, missing data, permission boundaries, pagination, timezones. Only include what the code or requirement shows — do not invent hypothetical scenarios.
+Record what the affected code depends on: other modules, external APIs, auth and permission rules, tenant isolation, configuration. Record the boundary conditions evident in the code: empty states, missing data, permission boundaries, pagination, timezones. Include only what the code or the requirement shows.
 
-**Done when:** dependencies, constraints, and real edge cases are recorded (or "none" is stated).
+**Completion criterion:** dependencies, constraints, and real edge cases are recorded, or "none" is stated.
 
-### 5. Check blast radius and tests
+### 5. Blast radius and tests
 
-Search for all references to the symbols/files/components the issue touches. Find tests covering the area and the test command.
+Search for every reference to the symbols, files, and components the issue touches. Find the tests covering the area and the command that runs them.
 
-**Done when:** reference sites and test status are known.
+**Completion criterion:** every reference site is listed; the test command is known or the coverage gap is recorded.
 
-## Parallel Investigation
+### Parallel investigation
 
-When the issue spans independent areas (e.g. backend + frontend) and `delegate_task` is available, dispatch subagents per area. Each must return `file:line` evidence, not prose. Re-read critical files yourself before trusting subagent summaries.
+When the issue spans independent areas (say, backend and frontend) and the harness can dispatch subagents, send one per area. Each returns `file:line` evidence, not prose. Re-read the critical files yourself before trusting a summary.
 
 ## Writing the Enriched Issue
 
-Rewrite the issue body. Every claim about current behavior must be backed by evidence you found. Omit any section if no relevant information was found — do not pad with generic content.
+Rewrite the issue body. Every claim about current behavior cites the `file:line` where you saw it. Omit any section that found no relevant information, and never pad with generic content.
 
 ### Output Format
-
-Keep it simple. This is a well-written issue, not a report:
 
 ```markdown
 ## Objective
 
-<One or two sentences. What the issue asks for, in plain language. Preserves original scope.>
+<One or two sentences: what the issue asks for, in plain language, original scope preserved.>
 
 ## Context
 
-<How the affected functionality works today and why the change is needed. Written in plain prose, not bullet lists. Cite file paths inline like `module/views.py:142` so the developer knows where to look. 2-4 short paragraphs maximum.>
+<How the affected functionality works today and why the change is needed, in plain prose rather than bullet lists. Cite paths inline like `module/views.py:142`. Two to four short paragraphs maximum.>
 
 ## Requested change
 
-<What needs to change, in precise technical terms grounded in the code. The delta between current and desired behavior — not a solution design.>
+<The delta between current and desired behavior, in precise technical terms grounded in the code. Not a solution design.>
 
 ## Acceptance criteria
 
-- [ ] <Only if clearly inferable from the original requirement + code evidence.>
-- [ ] <If none can be clearly inferred, omit this entire section.>
+- [ ] <Testable assertions derived from the original requirement and the code evidence.>
+- [ ] <If none can be derived, omit this entire section.>
 ```
 
-That's it. Four sections at most. If a section adds no value, leave it out.
+Each preserved screenshot sits in the section it supports, with its markdown link and its one-line interface description.
 
-### Language
+### Rules
 
-Write the enriched issue — text AND section headings — in the user's language and the project's domain language. The template above shows English headings; translate them to match the output language (e.g., a Spanish-language issue uses `Objetivo`, `Contexto`, `Cambio solicitado`, `Criterios de aceptación`). If the project uses Spanish domain terms (e.g. IglesiaApp), use them. If the user writes in Spanish, output in Spanish.
+- **Scope.** Represent every requirement from the body and the comments. The enriched issue adds nothing else: no requirements the issue never asked for, no "while we're at it" refactors, no claim about current behavior you did not ground in the code.
+- **Language.** Write the text and the headings in the user's language and the project's domain terms. A Spanish issue gets `Objetivo`, `Contexto`, `Cambio solicitado`, `Criterios de aceptación`.
+- **Length.** The minimum that makes the issue actionable. Past roughly 600 words it has padding: every sentence carries specific information from the investigation.
+- **Voice.** Write it as an issue for a person: plain prose, short paragraphs, no audit-report tone.
 
-### Scope Discipline (critical)
-
-The enriched issue must NOT:
-
-- Invent requirements not in the original.
-- Expand scope (no "while we're at it" additions, no new features).
-- Propose refactorings the issue didn't ask for.
-- Assume behaviors that don't exist in the code — if you couldn't find it, don't guess.
-- Be excessively long — aim for the minimum that makes the issue actionable. If it exceeds ~600 words, it probably has padding.
-
-The enriched issue MUST:
-
-- Preserve every requirement from the original issue.
-- Cite file paths for claims about current behavior.
-- Read like a person wrote it, not like a machine-generated audit.
+**Completion criterion:** every requirement from the original text and the comments is represented; every behavioral claim cites evidence; preserved screenshots keep their description; nothing goes beyond what the investigation found.
 
 ## Delivery
 
 1. Show the enriched issue to the user for review.
-2. If the user approves, update GitHub with `gh issue edit N --body "..."` (or the GitHub API as a fallback).
-3. If local, write to a file or display, as the user prefers.
-
-Do not push to GitHub without user confirmation.
+2. On approval, update GitHub with `gh issue edit N --body "..."` (or the API as a fallback), or write the file locally.
+3. Do not touch the issue before the user confirms.
 
 ## Common Pitfalls
 
-1. **Inventing context.** If `search_files` and `read_file` didn't surface it, it doesn't go in the issue. Don't guess.
-
-2. **Expanding scope.** The investigation reveals adjacent functionality and the enriched issue starts describing changes the original never asked for. Cut anything the original didn't request.
-
-3. **Padding with generic content.** "El código debe seguir las buenas prácticas" ("the code should follow good practices") is noise. Every sentence must carry specific information from the investigation.
-
-4. **Making it read like a report.** The output is an issue a developer reads and understands quickly. If it reads like a technical audit document, simplify. Plain prose, short paragraphs, only what helps implementation.
-
-5. **Acceptance criteria that are actually new requirements.** Criteria must be testable assertions derivable from the original requirement. If a criterion adds a constraint the issue didn't mention, remove it.
-
-6. **Skipping investigation because the issue "looks obvious."** Brief issues need investigation the most — the implementer has the least context.
-
-7. **Overwriting GitHub without confirmation.** Always show the enriched version first.
-
-8. **Skipping issue comments.** The issue body is not the full picture — comments often contain additional requirements, UX feedback, or scope refinements. Always read all comments before investigating. The user will correct you if you miss them.
+1. **Inventing context.** If searching and reading did not surface it, it does not go in the issue. Every claim about current behavior needs a `file:line` you actually saw.
+2. **Expanding scope.** Investigation reveals adjacent functionality and the draft starts describing changes the original never asked for. Cut anything the body and comments did not request.
+3. **Padding with generic content.** "The code should follow good practices" is noise. Every sentence carries specific information from the investigation.
+4. **Writing a report instead of an issue.** The output is read once, quickly, by someone about to implement. If it reads like a technical audit, simplify it.
+5. **Acceptance criteria that are new requirements.** A criterion must be a testable assertion derived from the original request. One that adds a constraint the issue never mentioned is scope expansion in disguise.
+6. **Skipping investigation because the issue "looks obvious."** A brief issue needs it most: the implementer starts with the least context.
+7. **Overwriting GitHub before review.** Show the enriched version first; edit the issue only after the user confirms.
+8. **Dropping comments or their screenshots.** The body is rarely the whole picture. Comments carry requirements, and a screenshot carries UI detail no text conveys. Read both and represent both.
 
 ## Verification Checklist
 
-- [ ] Investigation complete: affected code found, current behavior traced with file references
-- [ ] All issue comments read and their requirements represented in the enriched version
-- [ ] Original text preserved; every original requirement represented in enriched version
-- [ ] No invented requirements, no scope expansion, no unrequested refactorings
-- [ ] Every claim about current behavior backed by file path evidence
-- [ ] Acceptance criteria only included when clearly inferable — otherwise omitted
+- [ ] Investigation complete: affected code found, current behavior traced with `file:line` references
+- [ ] Every comment read, screenshots included, and its requirements represented in the enriched version
+- [ ] Every original requirement represented; nothing invented, no scope expanded, no unrequested refactorings
+- [ ] Every claim about current behavior backed by a `file:line` you read
+- [ ] Acceptance criteria testable and derived from the original request, or the section omitted
+- [ ] Preserved screenshots keep their link and their one-line interface description
+- [ ] Output in the user's language, headings included, with the project's domain terms
 - [ ] Reads like a well-written issue, not a technical audit
-- [ ] Domain language matches project; output matches user's language
-- [ ] Under ~600 words (no padding)
-- [ ] Shown to user; GitHub update pending confirmation
+- [ ] Under roughly 600 words (no padding)
+- [ ] Shown to the user; GitHub update pending confirmation

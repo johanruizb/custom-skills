@@ -82,7 +82,7 @@ npx skills add johanruizb/custom-skills --skill investigate-before-edit --global
 
 ### issue-enrichment
 
-Use when a GitHub issue or feature request is too brief to implement and needs to be enriched with technical context from the codebase before implementation. Investigates the project, finds affected code, and rewrites the issue with the context a developer needs — without expanding scope.
+Use when a GitHub issue or feature request is too brief to implement. Investigates the codebase and rewrites the issue with the technical context a developer needs, preserving the original scope. Screenshots from the body and comments are carried into the enriched issue with a one-line description of the interface they show.
 
 **Install:**
 
