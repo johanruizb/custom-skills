@@ -1,10 +1,10 @@
 ---
 name: web-perf-tuning
 description: "Use when a web app feels slow, heavy, laggy, or janky in normal use (\"se siente pesada\", \"no fluye\", stutters on scroll or input), or the user asks to optimize frontend/UI performance, make an interface more fluid, speed up page load, or cut bundle size. For mature apps of any stack (React/Next, Vue/Nuxt, Angular, Svelte, vanilla): records a baseline first, fixes one dominant bottleneck per lap using per-stack playbooks, and verifies every fix with before/after numbers."
-version: 1.0.0
-author: Hermes Agent
 license: MIT
 metadata:
+  author: Hermes Agent
+  version: "1.0.0"
   hermes:
     tags: [performance, frontend, web, jank, bundle, profiling, optimization]
     related_skills: [codebase-audit]

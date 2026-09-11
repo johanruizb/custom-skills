@@ -1,11 +1,11 @@
 ---
 name: prompt-enhancer
 description: "Use when the user asks to improve, rewrite, or polish a prompt ('mejora este prompt', 'reescribe este prompt', 'hazlo más claro', 'pulir este prompt') or sends a raw idea, note, or rough draft to turn into a clear, actionable prompt. Transforms vague ideas into well-structured, ready-to-use prompts for any AI — ChatGPT, coding agents, design tools — preserving the original intent and technical terms."
-version: 1.4.0
-author: johanruizb, Hermes Agent
 license: MIT
-platforms: [linux, macos, windows]
 metadata:
+  author: johanruizb, Hermes Agent
+  version: "1.4.0"
+  platforms: [linux, macos, windows]
   hermes:
     tags: [prompts, rewriting, clarity, ai-assistance, communication]
     related_skills: []

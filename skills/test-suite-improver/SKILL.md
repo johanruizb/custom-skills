@@ -1,10 +1,10 @@
 ---
 name: test-suite-improver
 description: "Use when the user wants to audit a project's test suite and improve it — analyze codebase + tests, evaluate quality, select a work mode, plan, write/fix/delete tests, and validate. Harness-agnostic: discovers available tools at runtime and adapts."
-version: 1.1.0
-author: Hermes Agent
 license: MIT
 metadata:
+  author: Hermes Agent
+  version: "1.1.0"
   hermes:
     tags: [testing, test-suite, quality, audit, harness-agnostic, refactoring]
     related_skills: [codebase-audit]

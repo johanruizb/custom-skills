@@ -1,11 +1,11 @@
 ---
 name: code-documentation
 description: "Use when the user asks to generate, update, or regenerate inline documentation (docstrings, JSDoc, comments) across a codebase. Analyzes project structure, detects language/framework conventions, offers incremental or full-regeneration modes, and validates that docs match the code without changing behavior."
-version: 1.1.0
-author: Hermes Agent
 license: MIT
-platforms: [linux, macos, windows]
 metadata:
+  author: Hermes Agent
+  version: "1.1.0"
+  platforms: [linux, macos, windows]
   hermes:
     tags: [documentation, docstrings, jsdoc, comments, code-quality, maintenance]
     related_skills: [codebase-audit]

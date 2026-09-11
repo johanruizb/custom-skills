@@ -6,8 +6,9 @@ description: |
   says "init-deep", "inicializa contexto", "genera AGENTS.md", or wants coding-agent documentation
   derived from the actual repository. Produces a root AGENTS.md plus directory-level files only where
   local context is clearly useful. Never creates or modifies CLAUDE.md.
-version: 1.0.0
 license: MIT
+metadata:
+  version: "1.0.0"
 ---
 
 # init-deep

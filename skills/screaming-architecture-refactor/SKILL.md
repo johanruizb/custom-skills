@@ -1,11 +1,11 @@
 ---
 name: screaming-architecture-refactor
 description: "Use when reorganizing a specific subpath of a project to Screaming Architecture + feature-based folders. Receives project root, target path, and mode (analyze | apply | verify). Designed to run repeatedly over different paths of the same project for incremental, consistent, safe migration."
-version: 1.1.0
-author: Hermes Agent
 license: MIT
-platforms: [linux, macos, windows]
 metadata:
+  author: Hermes Agent
+  version: "1.1.0"
+  platforms: [linux, macos, windows]
   hermes:
     tags: [architecture, refactoring, screaming-architecture, feature-folders, restructuring, imports, migration]
     related_skills: []

@@ -1,11 +1,11 @@
 ---
 name: issue-enrichment
 description: "Use when a GitHub issue or feature request is too brief to implement. Investigates the codebase and rewrites the issue with the technical context a developer needs, preserving the original scope."
-version: 1.3.0
-author: Hermes Agent
 license: MIT
-platforms: [linux, macos, windows]
 metadata:
+  author: Hermes Agent
+  version: "1.3.0"
+  platforms: [linux, macos, windows]
   hermes:
     tags: [github, issues, enrichment, investigation, codebase-analysis, specification, triage]
     related_skills: [investigate-before-edit, codebase-audit]

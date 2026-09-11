@@ -1,11 +1,11 @@
 ---
 name: pr-test-checklist
 description: "Use when the user asks for a manual testing checklist for one or more Pull Requests ('generar checklist de pruebas', 'crear plan de testing para este PR', 'qué tengo que probar de este cambio') before merge. Analyzes the real diff and source code of each PR to produce actionable, traceable tests free of assumptions. Does not perform full regression — only validates what changed and its direct side effects."
-version: 1.1.0
-author: Hermes Agent
 license: MIT
-platforms: [linux, macos, windows]
 metadata:
+  author: Hermes Agent
+  version: "1.1.0"
+  platforms: [linux, macos, windows]
   hermes:
     tags: [testing, pull-requests, checklist, qa, manual-testing, code-review, github]
     related_skills: [issue-enrichment, investigate-before-edit, test-suite-improver]

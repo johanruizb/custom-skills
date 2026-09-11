@@ -1,11 +1,11 @@
 ---
 name: investigate-before-edit
 description: "Use before ANY code modification. Forces an investigation phase that inspects the codebase with harness tools before editing, so decisions are backed by evidence rather than assumptions. Presents a research summary and waits for confirmation on destructive or ambiguous changes."
-version: 1.1.0
-author: Hermes Agent
 license: MIT
-platforms: [linux, macos, windows]
 metadata:
+  author: Hermes Agent
+  version: "1.1.0"
+  platforms: [linux, macos, windows]
   hermes:
     tags: [investigation, pre-edit, root-cause, codebase-analysis, evidence-driven, harness-agnostic]
     related_skills: [codebase-audit]

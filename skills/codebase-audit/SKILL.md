@@ -1,10 +1,10 @@
 ---
 name: codebase-audit
 description: "Use when the user wants a deep audit of an entire codebase for performance, bugs, and/or security issues. Discovers available tools at runtime, adapts to any harness (Hermes, Claude Code, OpenCode, etc.), reviews all source code (not just diffs), and optionally fixes selected findings."
-version: 1.1.0
-author: Hermes Agent
 license: MIT
 metadata:
+  author: Hermes Agent
+  version: "1.1.0"
   hermes:
     tags: [audit, performance, bugs, security, codebase, review, harness-agnostic]
     related_skills: [test-suite-improver]
