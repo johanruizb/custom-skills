@@ -1,8 +1,16 @@
 # custom-skills
 
-Personal collection of Claude Code skills, installable via [skills.sh](https://skills.sh).
+Personal collection of coding-agent skills, installable via [skills.sh](https://skills.sh).
 
 [![skills.sh](https://skills.sh/b/johanruizb/custom-skills)](https://skills.sh/johanruizb/custom-skills)
+
+## Install all skills
+
+```bash
+npx skills add johanruizb/custom-skills --all --global
+```
+
+Each skill can also be installed on its own; the command is listed under every entry below.
 
 ## Skills
 
@@ -14,9 +22,9 @@ Commits the existing staged set as authoritative. When nothing is staged, it sta
 
 **Structure:**
 
-- `SKILL.md` — Fast-path policy, cohesion rules, and safety boundaries
-- `scripts/prepare_commit.sh` — Compact `inspect` mode and deterministic `commit` executor
-- `references/conventional-commits.md` — Optional type and breaking-change reference
+- `SKILL.md`: Fast-path policy, cohesion rules, and safety boundaries
+- `scripts/prepare_commit.sh`: Compact `inspect` mode and deterministic `commit` executor
+- `references/conventional-commits.md`: Optional type and breaking-change reference
 
 **Install:**
 
@@ -50,7 +58,7 @@ npx skills add johanruizb/custom-skills --skill codebase-audit --global
 
 Cut a standardized release for any repository. A survey step reads each project's conventions first (version file, changelog, tag style, publish target, release tooling), so the same skill fits every project without per-repo configuration.
 
-Derives the next version from the commits since the last tag (Conventional Commits → SemVer, with `0.x` handling), writes a Keep a Changelog section phrased for users instead of committers — passing all entries through the unslop skill and ending with a full-changelog comparison link — and finishes with a release commit, annotated tag, and a version branch (`release/vX.Y.Z`) for backporting fixes. The irreversible steps (push, GitHub release, package publish) run last, after the release notes have been reviewed.
+Derives the next version from the commits since the last tag (Conventional Commits → SemVer, with `0.x` handling), writes a Keep a Changelog section phrased for users instead of committers, and ends with a full-changelog comparison link plus a release commit, annotated tag, and a version branch (`release/vX.Y.Z`) for backporting fixes. Changelog entries use plain, specific language and go through the unslop skill when it is available. The irreversible steps (push, GitHub release, package publish) run last, after the release notes have been reviewed.
 
 **Install:**
 
@@ -72,7 +80,7 @@ npx skills add johanruizb/custom-skills --skill init-deep --global
 
 ### investigate-before-edit
 
-Use before ANY code modification. Forces an investigation phase that inspects the codebase with harness tools before editing, so decisions are backed by evidence rather than assumptions. Presents a research summary and waits for confirmation on destructive or ambiguous changes.
+Use before any code modification. Forces an investigation phase that inspects the codebase with harness tools before editing, so decisions are backed by evidence rather than assumptions. Presents a research summary and asks for confirmation on destructive or ambiguous changes.
 
 **Install:**
 
@@ -92,7 +100,7 @@ npx skills add johanruizb/custom-skills --skill issue-enrichment --global
 
 ### pr-test-checklist
 
-Analyze changes in one or more Pull Requests and generate a manual testing checklist for the application. Reviews the actual diff and source code to produce actionable, traceable tests free of assumptions. Does not perform full regression — only validates what changed and its direct side effects.
+Analyze changes in one or more Pull Requests and generate a manual testing checklist for the application. Reviews the actual diff and source code to produce actionable, traceable tests free of assumptions. Does not perform a full regression: only validates what changed and its direct side effects.
 
 **Install:**
 
@@ -122,7 +130,7 @@ npx skills add johanruizb/custom-skills --skill screaming-architecture-refactor 
 
 ### simplify-codebase
 
-Analyze an entire codebase for accidental complexity — duplication, unnecessary abstractions, redundant dependencies, dead code, inconsistent patterns — then propose and apply a prioritized simplification plan. Harness-agnostic: discovers available tools at runtime and adapts.
+Analyze an entire codebase for accidental complexity: duplication, unnecessary abstractions, redundant dependencies, dead code, inconsistent patterns. Then propose and apply a prioritized simplification plan. Harness-agnostic: discovers available tools at runtime and adapts.
 
 **Install:**
 
@@ -142,12 +150,12 @@ npx skills add johanruizb/custom-skills --skill test-suite-improver --global
 
 ### web-perf-tuning
 
-Restore fluidity to a web app that feels slow, heavy, or janky in normal use. For mature apps of any stack: records a measured baseline first, classifies findings into three layers (load, main thread, render churn), fixes one dominant bottleneck per lap using per-stack playbooks (React/Next, Vue/Nuxt, Angular, Svelte, vanilla), and verifies every fix with before/after numbers — reverting anything that doesn't measurably improve.
+Restore fluidity to a web app that feels slow, heavy, or janky in normal use. For mature apps of any stack: records a measured baseline first, classifies findings into three layers (load, main thread, render churn), fixes one dominant bottleneck per lap using per-stack playbooks (React/Next, Vue/Nuxt, Angular, Svelte, vanilla), and verifies every fix with before/after numbers, reverting anything that doesn't measurably improve.
 
 **Structure:**
 
-- `SKILL.md` — The three layers, the lap method (orient → baseline → diagnose → fix → verify), the ledger report format
-- `references/<stack>.md` — One playbook per stack: profiling recipes, static code sweeps, ranked bottlenecks. `references/vanilla.md` also holds the DOM/CSS layer shared by all stacks
+- `SKILL.md`: The three layers, the lap method (orient → baseline → diagnose → fix → verify), the ledger report format
+- `references/<stack>.md`: One playbook per stack: profiling recipes, static code sweeps, ranked bottlenecks. `references/vanilla.md` also holds the DOM/CSS layer shared by all stacks
 
 **Install:**
 
@@ -174,5 +182,5 @@ npx skills add johanruizb/custom-skills --skill anglicize-repo --global
 
 ## Credits
 
-- [github/awesome-copilot](https://github.com/github/awesome-copilot) — original git-commit skill (MIT)
-- [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) — inspiration for custom skills workflows (MIT)
+- [github/awesome-copilot](https://github.com/github/awesome-copilot): original git-commit skill (MIT)
+- [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode): inspiration for custom skills workflows (MIT)
