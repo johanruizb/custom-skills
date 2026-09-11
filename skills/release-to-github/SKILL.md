@@ -7,6 +7,7 @@ allowed-tools:
   - Bash(bash:*)
   - Read
   - Edit
+  - TodoWrite
 ---
 
 # release-to-github
@@ -17,6 +18,10 @@ tag, and a version branch.
 Every convention comes from the repository, because one skill serves many projects. The
 human cannot undo a push, a GitHub release, or a package publish, so those run last,
 after they have seen the release notes.
+
+Before the Survey, write the TODO list the harness understands (its todo tool): one
+item per phase, Survey through each Ship step. Mark an item completed the moment its
+phase is done; the list is the running state of the release.
 
 ## Survey
 
@@ -67,7 +72,7 @@ One new section under the released version and today's date. Write new entries; 
 rewrite old sections:
 
 ```markdown
-## [1.5.0] - 2026-08-31
+## [1.5.0] - 2026-08-31 (abc1234)
 
 ### Added
 ### Changed
@@ -78,6 +83,9 @@ rewrite old sections:
 ```
 
 - Drop headings with no entries.
+- Append the short hash of the last commit in the release range to the header, so each
+  section shows at a glance where it ends; the previous section's hash (or the tag)
+  marks where it begins.
 - Write every entry through the unslop skill, and re-run it on any later revision of
   the section.
 - Phrase each entry for the user of the project, not for the committer: what changed
