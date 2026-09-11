@@ -5,7 +5,7 @@ description: |
   Use when the user asks to initialize agent instructions, create project context files for coding agents,
   says "init-deep", "inicializa contexto", "genera AGENTS.md", or wants coding-agent documentation
   derived from the actual repository. Produces a root AGENTS.md plus directory-level files only where
-  local context is clearly useful. Never creates or modifies CLAUDE.md.
+  local context is clearly useful.
 license: MIT
 metadata:
   version: "1.0.0"
@@ -18,8 +18,7 @@ Deep repository-context initialization. Analyze the repository and create a usef
 ## Non-negotiable rules
 
 - Generate or update `AGENTS.md` files only.
-- Never generate `CLAUDE.md`.
-- Never modify `CLAUDE.md`.
+- Never create or modify `CLAUDE.md`.
 - You may read existing `CLAUDE.md` files only as source material for migration or preservation.
 - If both `AGENTS.md` and `CLAUDE.md` exist, treat `AGENTS.md` as the canonical target.
 - Do not create noisy, generic, redundant, or boilerplate context files.
@@ -52,14 +51,6 @@ Interpret arguments from the user's request.
 
 Regenerate the `AGENTS.md` hierarchy cleanly.
 
-Rules:
-
-- Read all existing `AGENTS.md` files first.
-- Preserve useful project-specific knowledge.
-- Remove stale, generic, duplicated, or contradictory content.
-- Do not delete unrelated files.
-- Never create or modify `CLAUDE.md`.
-
 ### `--max-depth=N`
 
 Limit candidate directories to depth `N`.
@@ -73,12 +64,9 @@ Examples:
 - `init-deep --max-depth=2`
 - `init-deep --create-new --max-depth=4`
 
-If no flags are provided, run in update mode:
+If no flags are provided, run in update mode.
 
-- Update existing `AGENTS.md` files.
-- Create new directory-level `AGENTS.md` files only where clearly useful.
-- Do not overwrite blindly.
-- Read before editing.
+Behavior: see Phase 6.
 
 ## Working rules
 
@@ -88,7 +76,7 @@ Before writing any file:
 
 1. Check whether it exists.
 2. If it exists, read it.
-3. Edit it carefully (prefer `patch` over full overwrite).
+3. Edit it carefully (prefer targeted edits over full overwrite).
 4. If it does not exist, create it.
 
 Never use a destructive overwrite on an existing `AGENTS.md`.
@@ -113,14 +101,15 @@ Exception: You may create an `AGENTS.md` in a generated-code source directory on
 
 ## Phase 0 — Track work
 
-Maintain a todo list with these phases:
+Track the phases as working state (todo list if available):
 
-1. Discover repository structure and existing context files.
-2. Analyze architecture, commands, conventions, and hotspots.
-3. Score candidate directories.
-4. Generate or update root `AGENTS.md`.
-5. Generate or update useful directory-level `AGENTS.md` files.
-6. Review, deduplicate, trim, and report.
+1. Phase 1 — Repository discovery: discover repository structure and existing context files.
+2. Phase 2 — Deep analysis: analyze architecture, commands, conventions, and hotspots.
+3. Phase 3 — Candidate directory scoring: score candidate directories.
+4. Phase 4 — Root `AGENTS.md` structure: generate or update root `AGENTS.md`.
+5. Phase 5 — Directory-level `AGENTS.md` structure: generate or update useful directory-level `AGENTS.md` files.
+6. Phase 6 — Write behavior: generate or update the selected files in update or create-new mode.
+7. Phase 7 — Review and trim: review, deduplicate, trim, and report.
 
 Keep the todo list updated as you work.
 
@@ -222,6 +211,38 @@ Also inspect, when present:
 - Existing `AGENTS.md`.
 - Existing `CLAUDE.md` as read-only source material only.
 
+Read them.
+
+Extract useful facts:
+
+- Setup commands.
+- Development commands.
+- Test commands.
+- Build commands.
+- Architecture notes.
+- Code style rules.
+- Naming conventions.
+- Testing conventions.
+- Security rules.
+- Prohibited patterns.
+- Directory-specific guidance.
+- Generated-code warnings.
+
+Preserve only facts that are:
+
+- Specific to this repository.
+- Still supported by files/configs.
+- Useful for future coding agents.
+
+Discard:
+
+- Generic advice.
+- Stale commands.
+- Contradictions.
+- Duplicated parent guidance.
+- Vague preferences.
+- Long prose that does not change agent behavior.
+
 ## Phase 2 — Deep analysis
 
 Analyze the repository before writing.
@@ -261,51 +282,7 @@ When useful, inspect:
 
 Do not guess commands. Only include commands that are present in the repository or clearly inferable from existing config.
 
-## Phase 3 — Existing context preservation
-
-Find all existing context files:
-
-```bash
-find . \
-  -type f \( -name "AGENTS.md" -o -name "CLAUDE.md" \) \
-  -not -path '*/node_modules/*' \
-  -not -path '*/.git/*' \
-  | sort
-```
-
-Read them.
-
-Extract useful facts:
-
-- Setup commands.
-- Development commands.
-- Test commands.
-- Build commands.
-- Architecture notes.
-- Code style rules.
-- Naming conventions.
-- Testing conventions.
-- Security rules.
-- Prohibited patterns.
-- Directory-specific guidance.
-- Generated-code warnings.
-
-Preserve only facts that are:
-
-- Specific to this repository.
-- Still supported by files/configs.
-- Useful for future coding agents.
-
-Discard:
-
-- Generic advice.
-- Stale commands.
-- Contradictions.
-- Duplicated parent guidance.
-- Vague preferences.
-- Long prose that does not change agent behavior.
-
-## Phase 4 — Candidate directory scoring
+## Phase 3 — Candidate directory scoring
 
 Always create or update: `./AGENTS.md`
 
@@ -330,7 +307,7 @@ Score a directory as strong if it has several of:
 
 Create directory-level files only for strong candidates. Skip weak candidates. Do not create local `AGENTS.md` files that merely repeat the root file.
 
-## Phase 5 — Root AGENTS.md structure
+## Phase 4 — Root AGENTS.md structure
 
 The root `AGENTS.md` should be concise, factual, and useful.
 
@@ -415,7 +392,7 @@ List repository-specific anti-patterns and risky actions.
 
 Adapt headings if the project needs different names, but keep the content practical.
 
-## Phase 6 — Directory-level AGENTS.md structure
+## Phase 5 — Directory-level AGENTS.md structure
 
 For each selected subdirectory, create or update `AGENTS.md`.
 
@@ -462,7 +439,7 @@ Rules:
 - Prefer precise, local, actionable instructions.
 - Make the file useful when an agent is editing that subtree.
 
-## Phase 7 — Write behavior
+## Phase 6 — Write behavior
 
 ### Update mode (default)
 
@@ -478,10 +455,9 @@ Rules:
 - Preserve useful project-specific knowledge.
 - Regenerate selected `AGENTS.md` files cleanly.
 - Remove stale content from regenerated files.
-- Do not create or edit `CLAUDE.md`.
 - Do not delete old files unless the user explicitly asked for deletion.
 
-## Phase 8 — Review and trim
+## Phase 7 — Review and trim
 
 After writing, review all changed `AGENTS.md` files.
 
@@ -535,7 +511,6 @@ Context hierarchy:
 - ./path/to/AGENTS.md
 
 Notes:
-- No CLAUDE.md files were created or modified.
 - ...
 ```
 

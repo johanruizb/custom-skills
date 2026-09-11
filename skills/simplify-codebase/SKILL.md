@@ -53,7 +53,7 @@ Do NOT assume any tool exists. If a capability is missing, note it as a limitati
 Map the codebase before touching anything.
 
 1. **Find the repository root** (look for `.git`, `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, etc.).
-2. **Map directory structure** using `search_files(target='files')` and `terminal` (ls/find). Exclude: `node_modules`, `vendor`, `dist`, `build`, `.git`, `__pycache__`, `.venv`, `venv`, `target`, `.next`, `coverage`, `migrations` (unless looking for migration-specific patterns).
+2. **Map directory structure** using file-listing/search capability (glob/find or your file search tool). Exclude: `node_modules`, `vendor`, `dist`, `build`, `.git`, `__pycache__`, `.venv`, `venv`, `target`, `.next`, `coverage`, `migrations` (unless looking for migration-specific patterns).
 3. **Identify technologies and versions**: read manifests and lockfiles. Record exact framework/library versions. Do NOT assume a stack from file extensions.
 4. **Read project conventions**: AGENTS.md, CLAUDE.md, .cursorrules, README, contributing guides, lint configs, pre-commit configs. These encode rules the simplification must respect.
 5. **Identify entry points, test directories, config directories, and documentation**.
@@ -64,7 +64,7 @@ Map the codebase before touching anything.
 
 ## Phase 2: Deep Analysis
 
-Analyze the codebase module by module. Use `delegate_task` to dispatch subagents per module/area when available — they run in parallel and return structured findings. The main agent consolidates.
+Analyze the codebase module by module. Use the delegation capability to dispatch subagents per module/area when available — they run in parallel and return structured findings. The main agent consolidates.
 
 **Critical rule: VERIFY everything in the code.** Do not assume how something works based on naming, conventions, or training data. Read the actual files. Search for actual references. Trace actual call paths.
 
@@ -216,14 +216,14 @@ See `templates/simplification-plan.md` for the template. Each item in the plan m
 - Do NOT propose changes to code you haven't read and verified.
 - Do NOT propose removing code without verifying all reference types (see Phase 2.6).
 
-**Completion criterion**: a prioritized, classified plan exists. Present it to the user and ask for confirmation before applying any changes. Use `clarify` if available, or ask conversationally.
+**Completion criterion**: a prioritized, classified plan exists. Present it to the user and ask for confirmation before applying any changes. Ask with your question tool if available, or ask conversationally.
 
 ## Phase 5: Apply Changes
 
 After user confirmation, apply changes in priority order. For each change:
 
 1. **Re-read the affected files** (they may have changed since analysis).
-2. **Apply the minimal change** using `patch` or `write_file`.
+2. **Apply the minimal change** using targeted edits or your file-edit capability.
 3. **Search for references** to any renamed/removed symbols to ensure all call sites are updated.
 4. **Run validation** after each change group (not just at the end):
    - Fastest available check first (lint, typecheck, build).
@@ -238,7 +238,7 @@ After user confirmation, apply changes in priority order. For each change:
 - **One file at a time for CAREFUL changes**: Apply the change, verify, move to the next.
 - **Explicit confirmation for RISKY changes**: Present each RISKY change individually with its risk description and ask the user before applying. Do not batch RISKY changes.
 - **If a change introduces a regression**: Revert it immediately. Record the failure. Move to the next independent change. Do not try to fix the regression while other changes are pending.
-- **Subagent collateral damage check**: If using `delegate_task` subagents to apply changes, always run `git diff --stat HEAD` and `git status --short` after all subagents complete. Revert any unintended modifications.
+- **Subagent collateral damage check**: If using delegated subagents to apply changes, always run `git diff --stat HEAD` and `git status --short` after all subagents complete. Revert any unintended modifications.
 
 **Completion criterion**: all approved changes have been applied (or skipped with documented reasons), and validation has been run after each batch.
 
@@ -309,7 +309,7 @@ For each applied change:
 
 ## Subagent Strategy
 
-When `delegate_task` is available, use it to parallelize Phase 2 (analysis). Split work by module/area:
+When the delegation capability is available, use it to parallelize Phase 2 (analysis). Split work by module/area:
 
 | Subagent | Task | Input | Output |
 |---|---|---|---|
@@ -333,37 +333,17 @@ The main agent:
 
 ## Common Pitfalls
 
-1. **Assuming how code works without reading it.** Naming is not behavior. A function called `validate_user` might not validate anything. Read the actual implementation before proposing changes.
+1. **Proposing abstractions that are more complex than the duplication.** Two similar 10-line functions are often better than one 15-line function with 3 parameters. Apply the deletion test: would removing the proposed abstraction concentrate complexity, or just add a layer?
 
-2. **Flagging code as dead without checking all reference types.** Django URL patterns, signal handlers, settings references, dynamic imports, template references, and management command registrations are easy to miss. Always search comprehensively. When in doubt, mark as `confidence: low` and let the user decide.
+2. **Not respecting project conventions.** If the project has a consistent pattern that you find "ugly" but works and is tested, do NOT propose changing it just for style. Only flag patterns that are genuinely inconsistent *within the project* or causing real complexity.
 
-3. **Proposing abstractions that are more complex than the duplication.** Two similar 10-line functions are often better than one 15-line function with 3 parameters. Apply the deletion test: would removing the proposed abstraction concentrate complexity, or just add a layer?
+3. **Treating AI-generated code as inherently bad.** The goal is to reduce complexity, not to remove code because an AI wrote it. Evaluate each piece on its merits: does it add value? Is it duplicated? Is it dead? If it's clean, tested, and useful, leave it.
 
-4. **Mass refactoring in one shot.** Apply changes progressively, validate after each batch. If you apply 50 changes at once and tests break, you can't tell which change caused it.
-
-5. **Not respecting project conventions.** If the project has a consistent pattern that you find "ugly" but works and is tested, do NOT propose changing it just for style. Only flag patterns that are genuinely inconsistent *within the project* or causing real complexity.
-
-6. **Removing "unused" code that's actually used dynamically.** Django uses string references extensively (settings, URL patterns, serializers.Meta.model, signal string paths). Always grep for the string name, not just the import statement.
-
-7. **Treating AI-generated code as inherently bad.** The goal is to reduce complexity, not to remove code because an AI wrote it. Evaluate each piece on its merits: does it add value? Is it duplicated? Is it dead? If it's clean, tested, and useful, leave it.
-
-8. **Skipping validation because "the change is trivial."** Even removing an unused import can break things if it's re-exported elsewhere. Run the fast checks (lint, build) after every batch.
-
-9. **Not differentiating facts from assumptions.** In the report, clearly separate what you verified (file:line evidence) from what you inferred. The user needs to know which findings are solid and which are uncertain.
-
-10. **Proposing to replace duplication with a more complex abstraction.** The restriction is clear: "No reemplazar duplicación simple por arquitecturas más difíciles de mantener." If the deduplication requires a new class hierarchy, factory, or generic framework, it's probably not worth it. A shared function or a constant is fine; a plugin system is not.
+4. **Not differentiating facts from assumptions.** In the report, clearly separate what you verified (file:line evidence) from what you inferred. The user needs to know which findings are solid and which are uncertain.
 
 ## Verification Checklist
 
-- [ ] Phase 1: Project map complete (technologies, versions, modules, entry points, validation commands)
-- [ ] Phase 2: Every module analyzed; findings recorded with file:line evidence
 - [ ] Phase 2: Dead code findings verified against all reference types
-- [ ] Phase 3: Codebase map built and presented to user
-- [ ] Phase 4: Simplification plan prioritized, classified (SAFE/CAREFUL/RISKY), presented
-- [ ] Phase 4: User confirmed which changes to apply
-- [ ] Phase 5: Changes applied in priority order, progressively, with validation after each batch
 - [ ] Phase 5: Any regression was reverted and recorded
-- [ ] Phase 6: Full validation run (test, lint, typecheck, build) — results recorded
-- [ ] Phase 7: Final report delivered with all sections complete
 - [ ] Report separates verified facts from assumptions
 - [ ] Opportunities pending are listed with recommendations

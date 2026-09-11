@@ -50,15 +50,15 @@ Apply in order before generating any output:
 
 8. **Preserve technical terms.** Component names, paths, variables, IDs, URLs, commands — keep them exactly as the user wrote them.
 
-9. **Resolve ambiguity with tools before delivering.** If important information is missing, add "Assumptions" at the end. If there are multiple reasonable interpretations and the ambiguity is critical (it changes the outcome significantly), use the `clarify` tool to ask the user before delivering. If `clarify` is not available or the user asks for immediate delivery, include "Optional questions" so they can refine later.
+9. **Resolve ambiguity with tools before delivering.** If important information is missing, add "Assumptions" at the end. If there are multiple reasonable interpretations and the ambiguity is critical (it changes the outcome significantly), ask the user with your question tool (`clarify`, `AskUserQuestion`, or a plain question) before delivering. If no question tool is available or the user asks for immediate delivery, include "Optional questions" so they can refine later.
 
 10. **Deliver ready to copy and paste.** The prompt must go inside a markdown code block (```) so the user can copy it with a single click. Text outside the block is explanation; the usable prompt goes inside the block.
 
 ## Tool Usage
 
-- Use `clarify` when the original prompt's ambiguity is critical and there are multiple reasonable interpretations that change the result.
-- Do not use `clarify` for minor ambiguities that can be resolved with a documented assumption.
-- If `clarify` is not available, document Assumptions and Optional questions in the response.
+- Ask the user with your question tool (`clarify`, `AskUserQuestion`, or a plain question) when the original prompt's ambiguity is critical and there are multiple reasonable interpretations that change the result.
+- Do not ask for minor ambiguities that can be resolved with a documented assumption.
+- If no question tool is available, document Assumptions and Optional questions in the response.
 
 ## Response Format
 
@@ -111,24 +111,9 @@ Encoding: UTF-8 with Latin-1 fallback. Nulls → dropna per column.
 
 ## Pitfalls
 
-- **Over-engineering simple prompts.** A 3-line prompt does not need 5 sections. If the direct version is clear, deliver it and move on.
-- **Inventing requirements to "help".** Adding features, technologies, or criteria the user never mentioned changes the intent. What they did not say, do not assume.
-- **Assuming too much instead of asking.** If the ambiguity changes the outcome significantly, use `clarify` instead of picking an interpretation and moving on. Assumptions are for minor ambiguities, not design decisions.
-- **Stripping jargon that looks vague but is precise.** Domain-specific terms the user used may be exactly right in their context — preserve them.
-- **Ignoring the language of the original.** Responding in English when the prompt was in Spanish (or vice versa) breaks the skill's usefulness for the user.
-- **Delivering the prompt as plain text without a code block.** A multi-line prompt outside a code block is hard to copy — the user has to select it by hand. Always inside ``` for one-click copy.
 - **Over-specifying until the prompt is single-use.** If the user wanted a reusable template, don't turn it into a prompt that only works for one narrow scenario.
 
 ## Verification
 
-- [ ] Main intent of the original prompt understood and preserved.
-- [ ] No invented requirements.
-- [ ] Technical terms preserved exactly as written.
-- [ ] Section structure only when it adds clarity.
-- [ ] Tone adjusted to context (technical, design, analysis, general).
-- [ ] Alternative version included when it adds value.
-- [ ] Assumptions documented if there was ambiguity.
-- [ ] `clarify` used when the ambiguity was critical (or the reason documented).
 - [ ] Prompt delivered inside a markdown code block for easy copying.
-- [ ] Result ready to copy and paste.
 - [ ] Response language matches the original prompt's language.

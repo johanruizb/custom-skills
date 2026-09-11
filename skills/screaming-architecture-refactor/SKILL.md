@@ -29,7 +29,7 @@ Don't use for:
 
 ## Inputs
 
-The skill always operates with three inputs. If any is missing, ask via `clarify` before proceeding:
+The skill always operates with three inputs. If any is missing, ask the user before proceeding:
 
 - `PROJECT_ROOT` — absolute path to the project root (where config files, tsconfig, package.json, pyproject, etc. live).
 - `TARGET_PATH` — absolute or project-relative path to the directory to reorganize. Must be inside `PROJECT_ROOT`.
@@ -69,10 +69,10 @@ Follow the steps in order. Each step lists its completion criterion — do not a
 Scan every entry under `TARGET_PATH`, including dotfiles, test files, configs, assets, docs, and build output that lives alongside source.
 
 ```
-search_files(pattern="*", target="files", path="<TARGET_PATH>", limit=2000)
+find <TARGET_PATH> -type f
 ```
 
-Then enumerate directories with `search_files(target="files")` filtered for directory globs, or via `terminal` with `find <TARGET_PATH> -type d`. Include hidden directories (`.git` is excluded automatically if it is the project's git dir; other hidden dirs like `.storybook`, `.vscode`, `__mocks__`, `__snapshots__` are in scope).
+Then enumerate directories with a glob/find capability, e.g. `find <TARGET_PATH> -type d`. Include hidden directories (`.git` is excluded automatically if it is the project's git dir; other hidden dirs like `.storybook`, `.vscode`, `__mocks__`, `__snapshots__` are in scope).
 
 Completion criterion: the file count you collected equals the count reported by `find <TARGET_PATH> -type f | wc -l`. If they differ, rescan the gap before continuing.
 
@@ -86,7 +86,7 @@ For every file, determine what it actually does — not what its name suggests. 
 
 **Batch-scan strategy for large directories (50+ files):** Do NOT read files one at a time. Instead, use a two-pass approach:
 
-1. **Pass 1 — Gather metadata in bulk.** Use `execute_code` to read the first ~60 lines + imports/exports of every file in one batch. Store results in a JSON file. This gives you the head (first meaningful lines), exports list, and import list for every file in a single tool call.
+1. **Pass 1 — Gather metadata in bulk.** Use the code-runner capability to run a short script that reads the first ~60 lines + imports/exports of every file in one batch. Store results in a JSON file. This gives you the head (first meaningful lines), exports list, and import list for every file in a single tool call.
 2. **Pass 2 — Classify from the metadata.** Iterate over the stored metadata and assign capability + role to each file. Only re-read a file individually when the head + exports are insufficient to classify.
 
 This approach handles 196 files in ~2 tool calls instead of 196. Read more only when classification is ambiguous. See `references/batch-scan-strategy.md` for the full two-pass procedure with example code.
@@ -100,10 +100,10 @@ Completion criterion: every file in the inventory has a `capability` and `role` 
 Build the reference graph for `TARGET_PATH`:
 
 - Internal imports within `TARGET_PATH` (who imports whom).
-- Imports from `TARGET_PATH` coming from outside it (use `search_files` with the target path as a content pattern, e.g. `from ['"](\.\./)*<target-dir-name>` for JS, `from <target-dir>` for Python, etc.).
+- Imports from `TARGET_PATH` coming from outside it (use a content search (glob/grep) with the target path as a pattern, e.g. `from ['"](\.\./)*<target-dir-name>` for JS, `from <target-dir>` for Python, etc.).
 - Barrel files (`index.ts/js`, `__init__.py`, `mod.rs`) and what they re-export.
 - Path aliases (`tsconfig.json` paths, `jsconfig.json`, `vite.config` alias, `webpack.resolve.alias`, `babel-plugin-module-resolver`, `pylint`/`mypy` path config, Django `INSTALLED_APPS`, etc.).
-- Dynamic imports, lazy imports, and string-based references (e.g. `lazy(() => import("..."))`, `django.apps.get_model("app.Model")`, reflect-style lookups).
+- Dynamic imports, lazy imports, and string-based references (e.g. `lazy(() => import("..."))`, `django.apps.get_model("app.Model")`, reflect-style lookups). Grep for `import(`, `require(`, `get_model`, `resolve`, and string literals that look like paths.
 
 Completion criterion: for every file in `TARGET_PATH`, you know (a) who imports it and (b) what it imports. The outside-in list (files outside `TARGET_PATH` that reference inside) is non-empty only if real cross-boundary references exist — confirm by running a content search for the target's old path segments across `PROJECT_ROOT`.
 
@@ -146,8 +146,8 @@ Completion criterion: the user has acknowledged the plan (explicit approval, or 
 Execute the plan in this order to minimize broken intermediate states:
 
 1. Create target directories (including hidden ones that are being moved, not the ones staying).
-2. Move files with `git mv` when inside a git repo (preserves history); fall back to `mv` otherwise. Move one file at a time and verify each move succeeded before continuing — batch only when the destination parent already exists.
-3. After all moves, update every import/export/barrel/alias listed in the move map. Use `patch` for targeted edits; never rewrite a whole file just to change an import path.
+2. Move files with `git mv` when inside a git repo (preserves history); fall back to `mv` otherwise. Move one file at a time and verify each move succeeded before continuing — batch only when the destination parent already exists. For a source in a subfolder, take the destination filename from the source basename (`os.path.basename(src)` or `parts[-1]`), never from an intermediate subfolder name.
+3. After all moves, update every import/export/barrel/alias listed in the move map. Use targeted edits; never rewrite a whole file just to change an import path. Preserve the original import's extension pattern, point barrel imports at the directory rather than the index file, and follow `references/import-rewrite-algorithm.md` for the exact logic.
 4. Update config files that encode path aliases or module resolution (`tsconfig.json`, `jsconfig.json`, `vite.config.*`, `webpack.config.*`, `babel.config.*`, `pyproject.toml`, `setup.cfg`, `manage.py`/`INSTALLED_APPS`, `jest.config.*`, `tsconfig.spec.json`, etc.). Only touch the entries that reference `TARGET_PATH` or its old subpaths.
 5. Delete files marked for deletion in the plan. Each deletion must have evidence recorded in the artifact; if evidence is missing or weak, skip the deletion and flag it in the final report instead.
 6. Remove now-empty source directories. Verify each is empty before removing (`find <dir> -mindepth 1 -maxdepth 1 | wc -l` must be 0). Never remove a dir that still has content.
@@ -161,7 +161,7 @@ Completion criterion: `find <TARGET_PATH> -type f` returns only the files listed
 For every file outside `TARGET_PATH` that imported from it, apply the same import rewrites. This is the step most likely to be skipped — guard against it explicitly:
 
 ```
-search_files(pattern="<old-path-segment>", target="content", path="<PROJECT_ROOT>", limit=200)
+grep -rn "<old-path-segment>" <PROJECT_ROOT>
 ```
 
 Run this for every old path segment that changed (old folder names, old barrel paths). Each hit is either a real reference to update or a false positive (string literal, comment, unrelated match) — classify and update only the real ones.
@@ -187,8 +187,8 @@ Completion criterion: every available validator has been run and its result reco
 ### Step 11 — Review the diff and fix broken references
 
 ```
-terminal(command="git -C <PROJECT_ROOT> diff --stat")
-terminal(command="git -C <PROJECT_ROOT> diff")
+git -C <PROJECT_ROOT> diff --stat
+git -C <PROJECT_ROOT> diff
 ```
 
 Scan the diff for: missed import rewrites, accidental logic changes, files that moved but lost content, files that stayed without a recorded reason. Fix any broken reference you find.
@@ -231,49 +231,3 @@ The skill is designed to run many times over the same project, once per subpath.
 - Before proposing a new capability folder, check whether a sibling path already established one with the same name — if so, merge into it instead of creating a parallel folder.
 - The stays-in-place list from a prior run is authoritative: do not re-move a file a previous run decided to keep, unless the user explicitly overrides.
 - After each successful `apply`, append a one-line summary to `<PROJECT_ROOT>/.hermes/screaming-arch/RUNLOG.md` with date, target path, file count, and run mode.
-
-## Hard Rules
-
-These are non-negotiable. Violating any of them is a bug in the execution, not a judgment call.
-
-1. No file left unclassified in the inventory.
-2. No file left in `TARGET_PATH` after `apply` unless it is in the stays-in-place list with a reason.
-3. No empty directory left under `TARGET_PATH` after `apply`.
-4. No hidden file forgotten — the scan in Step 1 explicitly includes dotfiles.
-5. No business logic changed — the diff in Step 11 must confirm this.
-6. No file deleted without evidence recorded in the plan artifact.
-7. No external area modified except to fix references that broke because of the move.
-8. No validator skipped silently — if it is unavailable, say so in the report.
-9. No new technical-layer root folder (`components/`, `services/`, `utils/`, etc.) created at the root of `TARGET_PATH` unless every entry in it is genuinely shared.
-10. Prior runs' decisions are respected — capability names, shared policy, and stays-in-place lists are reused, not overwritten.
-
-## Common Pitfalls
-
-1. **Trusting the file name instead of the content.** `userUtils.ts` might actually be the auth token refresh service. Always read enough to classify by responsibility.
-2. **Forgetting outside-in references.** The most common breakage after a move is an external file still importing the old path. Step 3 and Step 9 exist specifically to prevent this.
-3. **Missing dynamic imports.** `lazy(() => import("./old/path"))` and `get_model("app.Model")` do not show up in static import scans. Grep for `import(`, `require(`, `get_model`, `apps.get_model`, `resolve`, and string literals that look like paths.
-4. **Creating a `shared/` dump.** If everything vaguely cross-cutting lands in `shared/`, it becomes the new `utils/`. Only files used by 2+ distinct capabilities belong there.
-5. **Moving framework-fixed files.** Next.js `app/` route segments, Django app packages, Rust `lib.rs`/`main.rs` location, `Cargo.toml` at crate root — some files cannot move. List them in stays-in-place, do not force them.
-6. **Silent validator skips.** "No test runner" is a valid finding; record it. Silent omission looks like a pass and hides breakage.
-7. **Deleting without evidence.** A file that "looks unused" is not evidence. Run a reference search; if zero references exist AND it is not an entry point or generated artifact with a regeneration path, only then propose deletion — and record the evidence.
-8. **Breaking barrel files partially.** When a barrel re-exports a moved file, both the barrel's export path and every consumer of the barrel must be updated. Update the barrel first, then verify consumers still resolve.
-9. **Ignoring prior runs.** Re-running on a sibling path and inventing a new capability name fragments the architecture. Always read the `RUNLOG.md` and prior artifacts first.
-10. **Reformatting while editing imports.** A `patch` that changes one import line must not also reflow the file. Use targeted `old_string`/`new_string` replacements, not full-file rewrites.
-11. **Import-rewrite extension mismatch.** When computing new import paths, the original import may or may not have a file extension (e.g. `./components/AppBar` vs `./components/AppBar.jsx`). The rewrite MUST preserve the original's extension pattern: if the original had no extension, the new import should also have no extension (strip `.jsx`/`.js` from the destination). If the original had an extension, keep the destination's extension. For barrel imports (e.g. `./components/AppBar` resolving to `AppBar/index.jsx`), the new import should point to the directory, not the index file. See `references/import-rewrite-algorithm.md` for the exact logic.
-12. **Duplicate destinations from subfolder files.** When a source file lives in a subfolder (e.g. `Creyentes/Niños/AddToClassGroups.jsx`), the destination must use the actual filename (`AddToClassGroups.jsx`), not the subfolder name (`Niños`). A common bug: `parts[4]` picks the subfolder name instead of `parts[-1]` (the filename). Always use `os.path.basename(src)` or `parts[-1]` for the destination filename.
-
-## Verification Checklist
-
-- [ ] Step 1 file count matches `find <TARGET_PATH> -type f | wc -l`
-- [ ] Every file in the inventory has `capability` + `role` assigned
-- [ ] Outside-in reference list is complete (Step 3)
-- [ ] Target tree has no orphan technical-layer root folder
-- [ ] Plan artifact written to `.hermes/screaming-arch/<sanitized-target>.md`
-- [ ] Move map: every `source` exists, every `destination` is free (or marked merge)
-- [ ] `apply`: `find <TARGET_PATH> -type f` returns only stays-in-place files
-- [ ] `apply`: no empty directory under `TARGET_PATH`
-- [ ] Project-wide search for old path segments returns zero real references
-- [ ] All available validators run and results recorded
-- [ ] `git diff` contains only path/import/barrel/config changes
-- [ ] Final report has all 9 sections (empty sections say "None.")
-- [ ] RUNLOG.md appended with the run summary

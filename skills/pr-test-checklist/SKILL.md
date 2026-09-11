@@ -274,51 +274,9 @@ Do not publish to GitHub without explicit user confirmation.
 
 **Completion criterion:** The user reviewed and approved the checklist, or requested adjustments that were applied. The delivery format is defined and executed.
 
-## Common Pitfalls
+## Final gate
 
-1. **Generating tests based only on the PR title/description.** The title says "Add date filter" but the diff shows pagination was also modified. Without reading the diff and the code, the checklist would be incomplete. Always read the full diff and the modified files.
-
-2. **Inventing URLs, routes, or behaviors.** If the routes file was not found, do not assume the URL is `/users/{id}/edit`. Use placeholders and document the limitation. If the code does not show a certain behavior, do not claim it exists.
-
-3. **Including generic tests unrelated to the changes.** "Verify login works" does not belong in the checklist of a PR that changed date formatting in a report. Every item must trace to a concrete change in the diff.
-
-4. **Turning the checklist into a full regression.** The goal is to validate changes, not re-verify the whole application. If the PR touches 3 files in the Reports module, the checklist covers Reports and the modules that depend on it, not the application's 20 modules.
-
-5. **Not reading the PR comments.** Comments frequently contain critical information: "this only applies to admin users", "the UI change is mobile-only", "I removed validation X because Y". Without reading them, the checklist may include tests for behaviors that no longer exist or omit cases reviewers requested.
-
-6. **Assuming permissions or roles without verifying them in the code.** "Probably only admin can access" is worthless. Read the permission decorators, guards, or middleware. If the code shows no permission restriction, do not invent one.
-
-7. **Not asking when information is missing.** If the testing environment's base URL was not provided, ask. If a test user ID is needed, ask. A checklist full of placeholders without values is less actionable than one where the user provided the data.
-
-8. **Generating redundant tests.** Two items describing essentially the same action with the same expected result confuse the tester. Consolidate or remove the redundant one.
-
-9. **Not checking the blast radius.** A change in a utility function like `formatDate()` can affect 15 views. If you only generate the test for the view mentioned in the PR, the other 14 go unvalidated. Search for references.
-
-10. **Skipping frontend analysis when the PR touches backend (and vice versa).** A change in the API serializer can break the contract with the frontend. A component change can assume a field the backend doesn't send. Always verify both sides when the project is full-stack.
-
-11. **Checklist too vague.** "Test that the filter works" does not tell the tester which filter, with which values, where, or what to expect. "In the Reports view, select the 'From' filter with date 2024-01-01 and 'To' with 2024-12-31. Verify the table shows only records in that range." is actionable.
-
-12. **Not classifying by severity (mandatory vs recommended).** If all tests are presented with equal weight, the tester doesn't know where to start or what blocks the merge.
-
-## Verification Checklist
-
-- [ ] PRs identified: numbers, titles, authors, branches recorded
-- [ ] Comments of each PR read and considered
-- [ ] Diff of each PR analyzed: modified, added, deleted files
-- [ ] Files classified by category (frontend, backend, infra, dependencies, docs)
-- [ ] Modules and affected features identified from file paths
-- [ ] Source code of modified files read (not just the diff)
-- [ ] Execution flow traced for every significant change (frontend: component→API, backend: request→response)
-- [ ] Routes and views identified with paths and URL parameters
-- [ ] Testing URLs built (with placeholders where data is missing)
-- [ ] Permissions and authorization rules verified in the code
-- [ ] Validations and edge cases identified from the code
-- [ ] Blast radius assessed (references to modified symbols across the code)
-- [ ] Missing information requested from the user (base URL, credentials, IDs, PRs)
-- [ ] Checklist generated, organized by module, with navigable links
-- [ ] Every item traceable to its origin PR
-- [ ] Items classified as 🔴 mandatory or 🟡 recommended with consistent criteria
-- [ ] No generic, redundant, or unrelated items
-- [ ] No invented data (URLs, permissions, behaviors, test data)
-- [ ] Checklist reviewed by the user and adjustments applied
-- [ ] Delivery format defined and executed (file, PR comment, or conversation)
+- Full diff of every PR read.
+- Affected flow traced end to end.
+- Every item traceable to its PR and backed by evidence from the diff or the code.
+- User approval obtained before executing the chosen output format.

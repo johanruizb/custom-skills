@@ -2,12 +2,7 @@
 name: release-to-github
 description: "Cut a standardized release for the current repository: bump the version, write the changelog, commit, tag, and branch."
 license: MIT
-disable-model-invocation: true
-allowed-tools:
-  - Bash(bash:*)
-  - Read
-  - Edit
-  - TodoWrite
+allowed-tools: Bash(git:*)
 ---
 
 # release-to-github

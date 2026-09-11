@@ -72,4 +72,4 @@ The destination file's actual extension is irrelevant for the output — only th
 
 ## Deduplication
 
-When scanning a file for imports to rewrite, use a `seen` set of `(old_import, new_import)` tuples to avoid duplicate rewrites of the same import string within the same file. This prevents `patch` from matching the same string twice and producing a double-replacement.
+When scanning a file for imports to rewrite, use a `seen` set of `(old_import, new_import)` tuples to avoid duplicate rewrites of the same import string within the same file. This prevents a targeted edit from matching the same string twice and producing a double-replacement.

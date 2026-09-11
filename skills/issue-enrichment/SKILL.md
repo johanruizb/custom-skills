@@ -116,6 +116,8 @@ Rewrite the issue body. Every claim about current behavior cites the `file:line`
 - [ ] <If none can be derived, omit this entire section.>
 ```
 
+Each criterion is a testable assertion derived from the original request. A criterion that adds a constraint the issue never mentioned is scope expansion in disguise.
+
 Each preserved screenshot sits in the section it supports, with its markdown link and its one-line interface description.
 
 ### Rules
@@ -133,26 +135,9 @@ Each preserved screenshot sits in the section it supports, with its markdown lin
 2. On approval, update GitHub with `gh issue edit N --body "..."` (or the API as a fallback), or write the file locally.
 3. Do not touch the issue before the user confirms.
 
-## Common Pitfalls
-
-1. **Inventing context.** If searching and reading did not surface it, it does not go in the issue. Every claim about current behavior needs a `file:line` you actually saw.
-2. **Expanding scope.** Investigation reveals adjacent functionality and the draft starts describing changes the original never asked for. Cut anything the body and comments did not request.
-3. **Padding with generic content.** "The code should follow good practices" is noise. Every sentence carries specific information from the investigation.
-4. **Writing a report instead of an issue.** The output is read once, quickly, by someone about to implement. If it reads like a technical audit, simplify it.
-5. **Acceptance criteria that are new requirements.** A criterion must be a testable assertion derived from the original request. One that adds a constraint the issue never mentioned is scope expansion in disguise.
-6. **Skipping investigation because the issue "looks obvious."** A brief issue needs it most: the implementer starts with the least context.
-7. **Overwriting GitHub before review.** Show the enriched version first; edit the issue only after the user confirms.
-8. **Dropping comments or their screenshots.** The body is rarely the whole picture. Comments carry requirements, and a screenshot carries UI detail no text conveys. Read both and represent both.
-
 ## Verification Checklist
 
-- [ ] Investigation complete: affected code found, current behavior traced with `file:line` references
 - [ ] Every comment read, screenshots included, and its requirements represented in the enriched version
-- [ ] Every original requirement represented; nothing invented, no scope expanded, no unrequested refactorings
-- [ ] Every claim about current behavior backed by a `file:line` you read
-- [ ] Acceptance criteria testable and derived from the original request, or the section omitted
 - [ ] Preserved screenshots keep their link and their one-line interface description
 - [ ] Output in the user's language, headings included, with the project's domain terms
-- [ ] Reads like a well-written issue, not a technical audit
-- [ ] Under roughly 600 words (no padding)
 - [ ] Shown to the user; GitHub update pending confirmation

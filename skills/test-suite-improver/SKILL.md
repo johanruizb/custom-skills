@@ -190,6 +190,8 @@ For Mode 1 (improve): fix broken tests first, then remove flagged tests, then ad
 
 For Mode 3 (analysis only): skip this phase entirely.
 
+Change production code only when a real bug is detected and the user authorizes the fix. Never modify production code solely to make tests pass.
+
 **Subagent strategy** (when `subagent_spawn` available): split work by module. Each subagent receives: project map, framework best practices, the plan, the test smells inventory, and the module's source files. Each subagent returns: test files created/modified, with summaries. The main agent coordinates to avoid duplicate tests and incompatible fixtures.
 
 **Completion criterion**: all planned test files have been created/modified/removed; no planned item is pending.
@@ -275,53 +277,6 @@ When subagents are NOT available: process phases sequentially within one agent u
 - Use subagents to keep each agent's context focused.
 - Re-read a file before modifying it (it may have changed).
 
-## Restrictions
-
-- Do NOT remove tests without prior analysis (Phase 4).
-- Do NOT delete the entire suite without explicit user confirmation (Phase 6, Mode 2).
-- Do NOT modify production code solely to make tests pass — unless a real bug is detected and the user authorizes the fix.
-- Do NOT use coverage as the sole quality metric.
-- Do NOT hide failing tests or disable them without justification.
-- Do NOT assume commands, frameworks, or tools before inspecting the project.
-- Do NOT make mass changes without explaining the scope first (Phase 7 plan confirmation).
-- Do NOT generate trivial tests to inflate coverage.
-
 ## Common Pitfalls
 
-1. **Assuming tools exist.** Always discover first. A missing `cmd_exec` means no tests run. A missing `web_search` means lower confidence on framework-specific patterns. Record the limitation, don't hide it.
-
-2. **Assuming the test runner.** Never guess `pytest` or `jest`. Detect from config files. Run the exact command the project uses.
-
-3. **Removing tests without evidence.** Every removal must cite the specific smell (duplicate, tautological, obsolete) with the test name and file. "Looks simple" is not a reason.
-
-4. **Claiming validation passed without running it.** Never. State exactly what ran, what passed, what failed, what couldn't run.
-
-5. **Testing implementation details.** Tests that assert internal method calls break on valid refactors. Test observable behavior instead.
-
-6. **Inflating coverage with trivial tests.** `assert result is not None` adds coverage but no value. Each test must assert a meaningful outcome.
-
-7. **Not running mutation verification.** A test that always passes proves nothing. Break the code, confirm the test fails, revert. At least for a sample.
-
-8. **Skipping the initial baseline.** Without a "before" snapshot you can't measure improvement. Always run the suite first (or document why it couldn't run).
-
-9. **Ignoring framework-specific best practices.** pytest fixtures ≠ jest beforeEach. Research the exact framework before writing tests.
-
-10. **Parallel subagents writing incompatible fixtures.** Coordinate shared infrastructure. Two subagents creating `conftest.py` entries that conflict will break the suite.
-
-## Verification Checklist
-
-- [ ] Tool discovery completed; capability map recorded with missing tools noted
-- [ ] Harness adapter selected and loaded
-- [ ] Project map complete: technologies, versions, modules, test setup, test infrastructure
-- [ ] Initial baseline recorded (test results + coverage, or documented blocker)
-- [ ] Every test file reviewed; classified inventory with evidence for non-keep decisions
-- [ ] Framework-specific best practices researched with sources cited
-- [ ] User selected work mode (Mode 2 has explicit confirmation)
-- [ ] Plan created and confirmed by user
-- [ ] All planned test files created/modified/removed
-- [ ] Validation run: each check classified as passed/failed/not_run
-- [ ] Mutation verification done on a sample of new/modified tests
-- [ ] Coverage before/after compared
-- [ ] Final report delivered (inline and/or file)
-- [ ] State file updated (when persistence available)
-- [ ] Limitations section in report: missing tools, unverified items, pending issues
+1. **Parallel subagents writing incompatible fixtures.** Coordinate shared infrastructure. Two subagents creating `conftest.py` entries that conflict will break the suite.

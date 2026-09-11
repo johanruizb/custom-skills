@@ -5,11 +5,7 @@ description: |
   repo, translate it to English, or unify files that mix another language with
   English. Covers prose, comments, identifiers, and file names.
 license: MIT
-allowed-tools:
-  - Bash(git:*)
-  - Bash(grep:*)
-  - Bash(find:*)
-  - Bash(rg:*)
+allowed-tools: Read, Glob, Grep, Edit, Write, Bash(git:*), Bash(rg:*)
 ---
 
 # anglicize-repo

@@ -33,7 +33,7 @@ Don't use for:
 
 ## Pre-flight: Mode Selection
 
-Before modifying anything, ask the user which mode to use via `clarify` (in the user's language):
+Before modifying anything, ask the user which mode to use (or use your question tool), in the user's language:
 
 **Question:** "Which documentation mode do you prefer?"
 **Choices:**
@@ -46,7 +46,7 @@ If the user already specified the mode in their request, skip this step.
 
 Goal: understand the project before touching anything.
 
-1. **Scan project structure.** Use `search_files(target='files')` to list all source files. Identify directory layout, entry points, test directories, config files.
+1. **Scan project structure.** List all source files (glob or find). Identify directory layout, entry points, test directories, config files.
 
 2. **Detect languages and frameworks.** Read manifest/config files:
    - Python: `pyproject.toml`, `setup.py`, `requirements.txt`, `Pipfile`
@@ -84,7 +84,7 @@ Goal: understand the project before touching anything.
 
 ## Phase 2: Proposal
 
-Present the plan to the user before making changes. Use `clarify` or print a summary and wait for confirmation.
+Present the plan to the user before making changes. Ask the user (or use your question tool), or print a summary and wait for confirmation.
 
 The proposal must include:
 
@@ -110,7 +110,7 @@ Process the project in controlled batches by module or directory. Never process 
 - Group files by module/directory (e.g., `src/auth/`, `src/models/`, `src/api/`).
 - Process one batch at a time.
 - After each batch, run available validators (lint, type-check) to catch errors early.
-- Use `delegate_task` for parallel processing of independent modules when the project is large (3+ independent modules).
+- Delegate independent modules to subagents for parallel processing when the project is large (3+ independent modules).
 
 ### Documentation generation rules
 
@@ -132,11 +132,7 @@ For each file, generate documentation that prioritizes:
 AVOID:
 - Restating what code already expresses (`// sets x to 5` for `x = 5`)
 - Commenting every line
-- Documenting trivial implementations (getters/setters, one-line wrappers)
-- Inventing behaviors not verifiable from the code
-- Changing code logic (only fix syntax errors you introduce)
 - Generic boilerplate blocks repeated across files
-- Documenting secrets, credentials, or sensitive values
 
 ### Incremental mode rules
 
@@ -159,7 +155,7 @@ When deciding whether to preserve or remove an existing comment, classify it wit
 
 ### Subagent delegation
 
-For large projects (50+ source files), use `delegate_task` to parallelize:
+For large projects (50+ source files), delegate independent modules to subagents:
 
 - Each subagent gets: the module path, the documentation rules (from this skill), the language conventions (from `references/language-conventions.md`), the mode, and the exclusion list.
 - Each subagent processes one module and returns a summary of changes.

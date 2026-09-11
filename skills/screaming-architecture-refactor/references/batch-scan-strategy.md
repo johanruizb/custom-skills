@@ -4,7 +4,7 @@ Used by Step 2 of the screaming-architecture-refactor skill. When `TARGET_PATH` 
 
 ## Pass 1 — Gather metadata in bulk
 
-Use `execute_code` to read the first ~60 lines + imports/exports of every file in one batch. Store results in a JSON file.
+Use the code-runner capability to run a short script that reads the first ~60 lines + imports/exports of every file in one batch. Store results in a JSON file.
 
 ```python
 import json, os, re
@@ -70,4 +70,4 @@ Only re-read a file when:
 
 ## Performance
 
-For 196 files, this approach completes in ~2 tool calls (1 for Pass 1, 1 for Pass 2) instead of 196 individual `read_file` calls. The JSON file is ~200-500KB for 196 files, well within `execute_code` limits.
+For 196 files, this approach completes in ~2 tool calls (1 for Pass 1, 1 for Pass 2) instead of 196 individual file reads. The JSON file is ~200-500KB for 196 files, well within code-runner limits.

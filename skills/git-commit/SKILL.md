@@ -4,9 +4,7 @@ description: |
   Commit the current changes autonomously. Use when the user explicitly asks to commit
   or invokes /git-commit. For message-only requests, use a commit-message skill instead.
 license: MIT
-allowed-tools:
-  - Bash(git:*)
-  - Bash(bash:*)
+allowed-tools: Bash(git:*), Bash(bash:*)
 ---
 
 # git-commit
