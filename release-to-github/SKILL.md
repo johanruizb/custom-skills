@@ -16,9 +16,48 @@ item per phase (Survey, Version, Changelog, Ship), with one item per approval st
 Mark an item completed the moment its phase is done; the list is the running state of
 the release.
 
+## State
+
+`.release-state.json` at the repo root caches the Survey and tracks the last release.
+Committed with the release, it keeps later runs, clones, and agents on the same
+conventions:
+
+```json
+{
+  "conventions": {
+    "versionFile": "package.json",
+    "changelog": "CHANGELOG.md",
+    "changelogLinks": "inline",
+    "commitStyle": "conventional",
+    "tagPrefix": "v",
+    "branchPrefix": "release/",
+    "githubReleases": true,
+    "publishTarget": "npm",
+    "releaseTool": { "name": "npm version", "commits": true, "tags": true }
+  },
+  "lastRelease": {
+    "version": "1.5.0",
+    "tag": "v1.5.0",
+    "branch": "release/v1.5.0",
+    "date": "2026-08-31"
+  }
+}
+```
+
+- Omit fields the repo does not use: no `githubReleases` or `publishTarget` without
+  them, no `releaseTool` when the bump is manual.
+- `changelogLinks` is `inline` when URLs sit in the entries, `reference-block` when the
+  file collects them at the bottom.
+- Stale when a cached path no longer exists or `lastRelease.tag` is not the latest
+  `git tag`. A stale file falls back to the full Survey and is rewritten.
+- Ship writes it: refreshed conventions and `lastRelease`, committed with the release
+  (step 1).
+
 ## Survey
 
-Read the conventions before writing anything:
+Read the conventions before writing anything. Check `.release-state.json` first (§State).
+When it is present and fresh, its `conventions` are the survey, so run only the
+pre-flight checks. When it is absent or stale, discover each convention from the repo:
 
 - Version file: `package.json`, `pyproject.toml`, `Cargo.toml`, `*.csproj`, `VERSION`.
   Fall back to `git tag --sort=-v:refname | head -n1`.
@@ -42,9 +81,9 @@ Pre-flight checks, before any write:
 - No previous tag at all: a first release. The commit range starts at the root commit,
   the changelog omits the full-changelog line, and Version classifies every commit.
 
-Done when each convention traces to a file or `git` output, you can name the bump
-mechanism you will use (tool, or manual edit), and every pre-flight check passes or has
-a decision from the human.
+Done when every convention traces to `.release-state.json` or to a file or `git` output,
+you can name the bump mechanism you will use (tool, or manual edit), and every pre-flight
+check passes or has a decision from the human.
 
 ## Version
 
@@ -94,9 +133,16 @@ Done when every user-facing change since the last tag has an entry, and every om
 
 ## Ship
 
-When the release tooling already committed and tagged (see Survey), skip steps 1-2.
+An interrupted run leaves its work in git: the release commit, the tag, or the remote
+branch may already exist. When one does, skip its step and resume at the first missing
+one, trusting `git` and `gh` over the state file.
 
-1. Commit the version file(s) and the changelog together:
+Write the refreshed `.release-state.json` (Survey's conventions, the new `lastRelease`)
+before step 1. When the release tooling already committed and tagged (see Survey), skip
+steps 1-2 but commit the changelog and the state file when they are still uncommitted:
+`chore(release): v<version>`.
+
+1. Commit the version file(s), the changelog, and `.release-state.json` together:
    `chore(release): v<version>`.
 2. Tag: annotated, first changelog entry as the subject, the whole new section as the
    body (`git tag -a v<version> -m "<subject>" -m "<body>"`).
