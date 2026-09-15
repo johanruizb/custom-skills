@@ -1,13 +1,13 @@
 ---
 name: visual-feedback-loop
-description: "Use whenever a change affects what the user will see (UI, layout, styling, charts, reports, PDFs, generated images) or the user provides a screenshot, mockup, or reference URL of how something should look. Enforces a closed visual feedback loop: capture the real output, compare it against the reference, close every delta, and show evidence before claiming the change is done. Triggers: 'no se ve como lo pedí', 'hazlo como esta imagen', 'verifícalo visualmente'."
+description: "Use whenever a change affects what the user will see (UI, layout, styling, charts, reports, PDFs, generated images) or the user provides a screenshot, mockup, or reference URL of how something should look. Runs a closed visual feedback loop — capture the real output, compare against the reference, close every delta — and persists contract, captures, and state in the project's `.feedback/` folder so a later run resumes instead of starting over. Triggers: 'no se ve como lo pedí', 'hazlo como esta imagen', 'verifícalo visualmente', 'sigue el loop visual'."
 license: MIT
 metadata:
   author: johanruizb, Hermes Agent
-  version: "1.0.0"
+  version: "1.1.0"
   platforms: [linux, macos, windows]
   hermes:
-    tags: [visual-verification, screenshot, design-fidelity, ui-qa, feedback-loop, harness-agnostic]
+    tags: [visual-verification, screenshot, design-fidelity, ui-qa, feedback-loop, state-persistence, harness-agnostic]
     related_skills: [investigate-before-edit]
 ---
 
@@ -23,6 +23,8 @@ The only valid evidence is a **capture**: a frame of the real, running artifact.
 contract → capture → compare → fix → capture → … → green
 ```
 
+The loop persists its state in `.feedback/` at the project root — recipe, contract, captures, deltas — so a later run resumes instead of starting from zero.
+
 **Iron law:**
 
 ```
@@ -37,8 +39,51 @@ Capture, compare, and close every delta before claiming the change is done.
 - The user describes a target look in words — spacing, colors, layout, typography, style — and expects it honored.
 - The change touches anything the user will see: web/desktop/mobile UI, charts, reports, PDFs, emails, generated images, terminal output.
 - The user says it does not look like what they asked for.
+- A previous visual loop is being resumed (the user says "continue", "sigue con eso", "retoma el feedback visual").
 
 Don't use when the change has no visual surface (pure logic, data, backend, config).
+
+## The `.feedback/` Folder
+
+Every run persists itself at the project root, so the next run resumes instead of re-deriving. Write while working — after every lap, not at the end — so a crash, a compaction, or a hand-off loses nothing.
+
+```
+.feedback/
+  loop.md               # app recipe: how to run, navigate, and capture (once per app)
+  <task>.md             # one file per task: contract, captures, deltas, status, next action
+  captures/             # screenshots: <task>-<state>-<lap>.png
+  reference/            # reference images, or captures of reference URLs, saved as files
+```
+
+**`loop.md` — the app recipe.** The first run discovers how this app is run and captured; write it down so no future run re-discovers it:
+
+```markdown
+# Loop: <app name>
+Run: <start command, port, URL, readiness check>
+Reach: <routes, seed data, login or bypass, actions for hover/open/loading/empty/error>
+Capture: <tool and exact command; viewport, device pixel ratio, theme>
+Quirks: <build step before serving, cached assets, flaky waits, auth>
+```
+
+Verify the recipe still works before trusting it — ports, commands, and routes rot. Update it the moment it drifts.
+
+**`<task>.md` — the state.** One file per visual task:
+
+```markdown
+# <task name>
+Reference: reference/<file> — <what it shows>
+Status: open | green | blocked
+Next action: <the single step a cold start executes next>
+
+## Contract
+## Captures
+## Deltas (open)
+## Deltas (closed)
+```
+
+Update it after every lap, with a next action concrete enough that a cold start needs no history.
+
+**Captures and references** live as files, not as prose. Save a reference into `reference/` whenever it is reachable as a file or URL; when the user pasted an image that no file backs, the written contract stays the durable copy. Add `.feedback/` to `.gitignore` unless the user wants the evidence tracked.
 
 ## Harness Adaptation
 
@@ -56,6 +101,16 @@ Map capabilities before starting. Do not assume a tool exists. If a needed capab
 
 - **Yes** — compare captures against the reference directly.
 - **No** — say so before starting. Verify numerically where possible (see *Numeric fallback*) and label the evidence as *measured, not seen*. Hand the final visual judgment to the user with the capture attached. Never claim a visual match you could not see.
+
+## Phase 0 — Resume
+
+Start every run by reading `.feedback/` if it exists.
+
+- **A task in flight?** Load its `<task>.md` — contract, latest captures, open deltas, next action. Confirm with the user that this is the task being continued, then go straight to that next action: no re-deriving the contract, no new baseline.
+- **New task?** Read `loop.md` and reuse the recipe (verify it still runs). Create a new `<task>.md`.
+- **No `.feedback/`?** First run: build the recipe as you go and create the folder by writing the first artifact.
+
+**Completion criterion:** the run states which task it resumed — or that it started a new one — and the concrete next action it is executing.
 
 ## Phase 1 — Write the Visual Contract
 
@@ -81,13 +136,15 @@ Example contract:
 
 Confirm with the user only when an ambiguity would change the work (an unknown exact color, breakpoint, or behavior). Otherwise state the contract and proceed.
 
-**Completion criterion:** every reference has a checklist of checkable attributes, and the states, viewports, and themes to capture are named. Checkable = two people looking at one capture can answer yes or no per line.
+Save every reference reachable as a file or URL into `.feedback/reference/`, then write the contract into `.feedback/<task>.md` with the capture states and a next action.
+
+**Completion criterion:** every reference has a checklist of checkable attributes, the states, viewports, and themes to capture are named, and the contract is written to `.feedback/<task>.md`. Checkable = two people looking at one capture can answer yes or no per line.
 
 ## Phase 2 — Baseline
 
-When the view already exists, capture the current state before editing. It becomes the *before* in the report and the point to revert to if the loop stalls.
+When the view already exists, capture the current state before editing. It becomes the *before* in the report and the point to revert to if the loop stalls. Store it in `.feedback/captures/` and record the path in the task file.
 
-**Completion criterion:** baseline capture exists, or the view is new and there is nothing to capture.
+**Completion criterion:** baseline capture exists and is recorded in the task file, or the view is new and there is nothing to capture.
 
 ## Phase 3 — Implement
 
@@ -99,8 +156,9 @@ Make the change. Keep the contract visible while editing; if the implementation 
 - Capture every state named in the contract: route/screen, viewport, theme, and interactive state (default, hover, focus, open, loading, empty, error, long content).
 - Match the reference's viewport and aspect ratio when known; if unknown, state the viewport you used. A viewport mismatch manufactures deltas that do not exist.
 - Capture fresh: reload past caches, confirm the served build actually contains your change. Stale dev servers and failed hot-reloads are a common source of false greens.
+- Save each capture to `.feedback/captures/` as `<task>-<state>-<lap>.png` and record the paths in the task file. Anything you had to discover to capture — commands, waits, auth — belongs in `loop.md`.
 
-**Completion criterion:** a capture exists for every contract state, from the same build the user will see.
+**Completion criterion:** a capture exists for every contract state, from the same build the user will see, saved and recorded in `.feedback/`.
 
 ## Phase 5 — Compare (the loop)
 
@@ -119,6 +177,7 @@ Rules of the loop:
 - Every mismatch is a line. "Looks close" is not a line. The loop goes **green** only when the list is empty.
 - Ignore font antialiasing and sub-pixel rendering differences; they are not layout.
 - Fix the deltas, then capture again. One **lap** = one pass of capture → compare → fix.
+- After every lap, update the task file: closed deltas, the new capture path, the status, and the next action. A stale task file sends the next run back to zero.
 - If the same delta survives **three laps**, stop and escalate: show both captures, state your hypothesis, ask. Do not keep flailing.
 - If the artifact fails to render, that is the first delta. A blank frame is never done.
 
@@ -131,6 +190,7 @@ Report with artifacts, not beliefs:
 - The final capture(s) — path or attachment — and the reference.
 - The delta list result: empty, or the accepted deviations with the reason.
 - What could not be verified: unreachable states, missing data, a harness that cannot view images.
+- Write the final status into the task file: green, or open with the accepted deviations and the surviving next action.
 
 "Captured 1440×900, five deltas closed, none remaining" is a report. "It should look like you asked" is not.
 
@@ -156,13 +216,18 @@ Then hand the captures to the user for the final visual call and ask them to rep
 8. **Losing the reference.** After a compaction an image may drop from context; the written contract is the durable copy. Rebuild from it, and ask for the image again if the contract is insufficient.
 9. **Delegating the comparison to a blind pair of eyes.** A subagent that cannot see images returns the same guess you had. If a subagent captures, the capture comes back to a viewer.
 10. **Claiming green on a blank or broken render.** A failed render is the loudest delta.
+11. **Ignoring an existing `.feedback/`.** Re-deriving the contract, baseline, and recipe a previous run already wrote down. Read the folder first.
+12. **Trusting a stale `loop.md`.** Ports, commands, and routes rot. Run the recipe before capturing with it; fix it when it drifts.
 
 ## Completion Checklist
 
+- [ ] `.feedback/` checked at start: an existing task resumed at its next action, or a new task file created
 - [ ] Visual contract written: attributes, states, viewports, themes
 - [ ] Baseline captured for existing views
 - [ ] Captures taken from the real build, fresh, at every contract state
 - [ ] Comparison made against the reference re-opened this lap
 - [ ] Delta list empty, or remaining deviations stated and accepted
+- [ ] `loop.md` recipe written or updated (run, reach, capture)
+- [ ] Task file current: captures, delta list, status, next action
 - [ ] Evidence shown: final captures + reference
 - [ ] Limitations stated: unviewable captures, unreachable states, missing data

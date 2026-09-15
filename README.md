@@ -177,11 +177,11 @@ npx skills add johanruizb/custom-skills --skill anglicize-repo --global
 
 ### visual-feedback-loop
 
-Force the agent to actually look at what it changed instead of assuming it matches the request. When the user provides a screenshot, mockup, or reference URL, describes a target look in words, or the change touches anything visible (UI, styling, charts, reports, PDFs, generated images), the skill runs a closed loop: write a visual contract from the reference, capture the real output at every named state, compare side by side, and close every delta — with evidence — before reporting done. It adapts to the harness at runtime and refuses to claim a visual match when it cannot see.
+Force the agent to actually look at what it changed instead of assuming it matches the request. When the user provides a screenshot, mockup, or reference URL, describes a target look in words, or the change touches anything visible (UI, styling, charts, reports, PDFs, generated images), the skill runs a closed loop: write a visual contract from the reference, capture the real output at every named state, compare side by side, and close every delta — with evidence — before reporting done. Loop state persists in the project's `.feedback/` folder (app capture recipe, contract, captures, deltas), so a later run resumes instead of starting over. It adapts to the harness at runtime and refuses to claim a visual match when it cannot see.
 
 **Structure:**
 
-- `SKILL.md`: The loop (contract → capture → compare → fix), the delta list, stop rules, and the pitfalls that produce false greens
+- `SKILL.md`: The loop (contract → capture → compare → fix), the resumable `.feedback/` state, the delta list, stop rules, and the pitfalls that produce false greens
 
 **Install:**
 
@@ -189,7 +189,7 @@ Force the agent to actually look at what it changed instead of assuming it match
 npx skills add johanruizb/custom-skills --skill visual-feedback-loop --global
 ```
 
-**Usage:** Give the agent a reference (image, URL, or description) with your request. The agent builds a visual contract, shows the final capture next to the reference, and reports the closed delta list instead of "should look like you asked".
+**Usage:** Give the agent a reference (image, URL, or description) with your request. The agent builds a visual contract, shows the final capture next to the reference, and reports the closed delta list instead of "should look like you asked". Re-invoking it later resumes from `.feedback/`, reusing the app's capture recipe and the open deltas.
 
 ## Requirements
 
