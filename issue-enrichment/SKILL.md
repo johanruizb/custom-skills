@@ -8,7 +8,7 @@ metadata:
   platforms: [linux, macos, windows]
   hermes:
     tags: [github, issues, enrichment, investigation, codebase-analysis, specification, triage]
-    related_skills: [investigate-before-edit, codebase-audit]
+    related_skills: [investigate-before-edit, code-health]
 ---
 
 # Issue Enrichment

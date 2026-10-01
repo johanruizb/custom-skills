@@ -7,7 +7,7 @@ metadata:
   version: "1.1.0"
   hermes:
     tags: [testing, test-suite, quality, audit, harness-agnostic, refactoring]
-    related_skills: [codebase-audit]
+    related_skills: [code-health]
 ---
 
 # Test Suite Improver
@@ -25,7 +25,7 @@ Don't use for:
 - Writing a single test for a known bug — write it test-first, directly.
 - Reviewing only git diffs — use a diff-based code review instead.
 - Debugging a specific failing test — debug it directly instead.
-- Full codebase security/performance audit (use `codebase-audit` instead).
+- Full codebase security/performance audit (use `code-health` instead).
 
 ## Architecture: Core + Adapters
 

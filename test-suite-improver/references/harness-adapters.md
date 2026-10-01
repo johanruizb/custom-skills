@@ -2,7 +2,7 @@
 
 This file contains adapters for each supported harness. Each adapter maps the core capabilities to concrete tools. Load the matching adapter at Phase 1.
 
-> **Sibling skill notice:** `codebase-audit` (same category) has a copy of this file at its own `references/harness-adapters.md`. When you update this file, mirror the changes there too. The two files are intentionally duplicated (skills cannot share files across directories), but must stay in sync to avoid drift.
+> **Sibling skill notice:** `code-health` (same category) has a copy of this file at its own `references/harness-adapters.md`. When you update this file, mirror the changes there too. The two files are intentionally duplicated (skills cannot share files across directories), but must stay in sync to avoid drift.
 
 ## Capability Reference
 

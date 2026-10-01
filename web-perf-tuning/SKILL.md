@@ -7,7 +7,7 @@ metadata:
   version: "1.0.0"
   hermes:
     tags: [performance, frontend, web, jank, bundle, profiling, optimization]
-    related_skills: [codebase-audit]
+    related_skills: [code-health]
 ---
 
 # Web Performance Tuning
@@ -29,7 +29,7 @@ Every step either runs a local command or hands the user a copy-paste recipe. Wh
 
 Don't use for:
 
-- Whole-codebase audits hunting bugs and security too — use `codebase-audit` (its performance review is static; this skill measures the running app).
+- Whole-codebase audits hunting bugs and security too — use `code-health` (its performance review is static; this skill measures the running app).
 - Backend-only tuning (queries, API latency). The network *waterfall* is in scope; fixing the server behind it is not.
 - Greenfield projects with no symptoms yet — apply performance best practices directly while building.
 

@@ -4,6 +4,8 @@ This file contains adapters for each supported harness. Each adapter maps the co
 
 > **Sibling skill notice:** `test-suite-improver` (same category) has a copy of this file at its own `references/harness-adapters.md`. When you update this file, mirror the changes there too. The two files are intentionally duplicated (skills cannot share files across directories), but must stay in sync to avoid drift.
 
+State file for this skill: `.code-health-state.json`.
+
 ## Capability Reference
 
 | Capability | Purpose | Required for |
@@ -45,7 +47,7 @@ Hermes exposes: browser tools, terminal, web_search, web_extract, read_file, wri
 | `user_ask` | `clarify` | Multiple choice (up to 4 options) or open-ended |
 | `subagent_spawn` | `delegate_task` | Up to 3 concurrent. Pass `tasks` array for batch. Leaf agents can't delegate further. |
 | `task_manage` | `todo` | Task list with status tracking |
-| `state_persist` | `write_file` to `.audit-state.json` | Write state to a JSON file in the repo root or temp |
+| `state_persist` | `write_file` to `.code-health-state.json` | Write state to a JSON file in the repo root or temp |
 | `html_open` | `terminal` (e.g., `terminal(command='xdg-open /tmp/report.html')`) | Open via shell |
 
 ### Hermes-Specific Instructions
@@ -102,7 +104,7 @@ Claude Code exposes: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, T
 | `user_ask` | `AskUserQuestion` | Structured questions with selectable options |
 | `subagent_spawn` | `Agent` / `Task` | Spawn subagents for parallel work |
 | `task_manage` | `TodoWrite` | Task list with status |
-| `state_persist` | `Write` to `.audit-state.json` | |
+| `state_persist` | `Write` to `.code-health-state.json` | |
 | `html_open` | `Bash` (e.g., `Bash(command='open report.html')`) | |
 
 ### Claude Code-Specific Instructions
@@ -152,7 +154,7 @@ OpenCode exposes: file read, file write/edit, bash (shell), grep/search, glob, w
 | `user_ask` | Conversation / structured prompt | OpenCode TUI supports interactive prompts |
 | `subagent_spawn` | Task/subagent spawning (if available) | Check at runtime |
 | `task_manage` | Todo/task tracking (if available) | Check at runtime |
-| `state_persist` | File write to `.audit-state.json` | |
+| `state_persist` | File write to `.code-health-state.json` | |
 | `html_open` | Bash (`xdg-open` / `open`) | |
 
 ### OpenCode-Specific Instructions
@@ -160,7 +162,7 @@ OpenCode exposes: file read, file write/edit, bash (shell), grep/search, glob, w
 - OpenCode's TUI is conversational. If no structured question tool exists, ask via normal conversation.
 - Check for web search/fetch availability at runtime — some OpenCode configurations don't include them. If unavailable, note the limitation and reduce confidence on version-specific findings.
 - Check for subagent support at runtime. If unavailable, process areas/modules sequentially.
-- Use file write to persist state to `.audit-state.json` for resumption support.
+- Use file write to persist state to `.code-health-state.json` for resumption support.
 - For the HTML report: run the generator script via Bash, then open with `xdg-open`.
 
 ---

@@ -1,6 +1,6 @@
 # Finding Schema
 
-Structured format for audit findings. Every finding MUST contain all required fields.
+Structured format for every finding (audit or simplification). Every finding MUST contain all required fields. Category values and worked examples for both families live in this file.
 
 ## JSON Schema
 
@@ -17,8 +17,8 @@ Structured format for audit findings. Every finding MUST contain all required fi
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^(PERF|BUG|SEC)-\\d{3,}$",
-      "description": "Unique identifier: PERF-001, BUG-003, SEC-002"
+      "pattern": "^(PERF|BUG|SEC|SIMPL)-\\d{3,}$",
+      "description": "Unique identifier: PERF-001, BUG-003, SEC-002, SIMPL-004"
     },
     "title": {
       "type": "string",
@@ -26,7 +26,7 @@ Structured format for audit findings. Every finding MUST contain all required fi
     },
     "category": {
       "type": "string",
-      "enum": ["performance", "bugs", "security"]
+      "enum": ["performance", "bugs", "security", "duplication", "abstract-cruft", "dead-code", "inconsistency", "complex-flow"]
     },
     "severity": {
       "type": "string",
@@ -192,7 +192,37 @@ Structured format for audit findings. Every finding MUST contain all required fi
 }
 ```
 
+### Simplification Example
+
+```json
+{
+  "id": "SIMPL-001",
+  "title": "Duplicated date formatting in two serializer modules",
+  "category": "duplication",
+  "severity": "medium",
+  "priority": "P2",
+  "confidence": "confirmed",
+  "status": "open",
+  "module": "reports",
+  "file": "backend/reports/serializers.py",
+  "lines": "45-52",
+  "description": "Two modules contain an identical 8-line function that formats ISO dates to DD/MM/YYYY.",
+  "evidence": "backend/reports/serializers.py:45-52 def format_date(iso_str): dt = datetime.fromisoformat(iso_str); return dt.strftime('%d/%m/%Y')\nbackend/dashboard/serializers.py:78-85 def format_iso_to_display(iso_str): ... same body ...",
+  "reasoning": "Two identical implementations. A fix applied to one does not propagate to the other, so the outputs can drift apart.",
+  "impact": "Date formatting diverges between reports and dashboard pages when only one copy gets updated.",
+  "reproduction": "Compare both function bodies; they are byte-identical apart from the name.",
+  "recommendation": "Move one function to a shared utility module (e.g., utils/dates.py), import it from both serializers, and delete the other copy. Update every call site.",
+  "fix_risk": "low",
+  "tests_needed": "Serializer tests for both modules; verify both render the same output as before the change.",
+  "dependencies": [],
+  "source": "",
+  "detected_by": "duplication-detector + scripts/detect-duplicates.py lead, verified by reading both files"
+}
+```
+
 ## Severity Guidelines
+
+For simplification findings (`SIMPL-`), severity grades maintenance burden instead of risk: high = significantly more complexity or drift risk across modules, medium = moderate, low = minor cleanup (unused imports, commented-out code).
 
 | Severity | Criteria |
 |---|---|
@@ -220,6 +250,8 @@ Structured format for audit findings. Every finding MUST contain all required fi
 | P3 | Optional improvement. Nice to have, no urgency. |
 
 ## Fix Risk Guidelines
+
+Mapping to the simplification classes: SAFE maps to `low` (provably behavior-neutral: dead code with zero verified references, unused imports), CAREFUL maps to `medium`, RISKY maps to `high` (needs explicit user confirmation before any edit).
 
 | Risk | Criteria |
 |---|---|

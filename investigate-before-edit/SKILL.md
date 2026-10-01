@@ -8,7 +8,7 @@ metadata:
   platforms: [linux, macos, windows]
   hermes:
     tags: [investigation, pre-edit, root-cause, codebase-analysis, evidence-driven, harness-agnostic]
-    related_skills: [codebase-audit]
+    related_skills: [code-health]
 ---
 
 # Investigate Before Edit
