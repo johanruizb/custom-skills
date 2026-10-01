@@ -4,7 +4,7 @@ description: |
   Commit the current changes autonomously. Use when the user explicitly asks to commit
   or invokes /git-commit. For message-only requests, use a commit-message skill instead.
 license: MIT
-allowed-tools: Bash(git:*), Bash(bash:*)
+allowed-tools: Bash(git:*)
 ---
 
 # git-commit
@@ -14,16 +14,15 @@ Commit from the current task context. Preserve every change outside the intended
 ## Fast path
 
 1. Reuse the task intent and paths already known. Reuse the diff you just created.
-2. Resolve `scripts/prepare_commit.sh` relative to this `SKILL.md`; keep the repository `cwd`.
-3. If Git state is unknown, run `bash <helper> inspect`.
-4. If the index has changes, commit exactly that staged set without confirmation unless a
+2. If Git state is unknown, run `git status --short --branch` and `git diff --cached --stat`.
+3. If the index has changes, commit exactly that staged set without confirmation unless a
    Safety stop condition applies:
-   `bash <helper> commit --message "type(scope): summary"`.
-5. If the index is empty, stage only known task paths:
-   `bash <helper> commit --message "type(scope): summary" -- path...`.
+   `git commit --message "type(scope): summary"`.
+4. If the index is empty, stage only known task paths, then commit:
+   `git add -- path...` and `git commit --message "type(scope): summary"`.
 
-Choose type, scope, message, and file selection yourself. The helper enforces the message,
-path, and repository-state checks.
+Choose type, scope, message, and file selection yourself. The Pre-commit checklist below
+defines the checks to satisfy before each commit leaves the agent.
 
 ## Scope and message
 
@@ -40,22 +39,40 @@ path, and repository-state checks.
 
 ## Inspect only when needed
 
-For pre-existing, mixed, or unexpectedly large changes, run `bash <helper> inspect`,
-then read only targeted diffs needed to determine intent. Read
-`references/conventional-commits.md` only when the type or breaking-change format is unclear.
+For pre-existing, mixed, or unexpectedly large changes, read only the target diffs needed
+to determine intent. Read `references/conventional-commits.md` only when the type or
+breaking-change format is unclear.
 
 ## If a hook fails
 
 Report the hook's output. Retry a normal commit only after an in-scope fix, revalidation,
-and confirmation that the failed attempt did not create a commit.
+and confirmation that the failed attempt did not create a commit (`git rev-parse HEAD`
+before and after).
 
-## Safety
+## Pre-commit checklist
 
-- Stay in the current repository. Never `cd`, ask for a path, or run an unscoped
-  `git add .`/`git add -A`.
-- Stop for explicit confirmation only when a sensitive path is selected for the commit,
-  the repository is on a detached `HEAD`, or ownership of uncommitted work cannot be
-  determined safely. After confirmation, pass the corresponding explicit override;
-  never infer that permission.
-- Keep history append-only: create one new commit and leave amend/reset/push/force/config
-  changes to an explicit user request. Never add co-author or AI attribution.
+Every commit satisfies all four before running:
+
+- **Scoped staging.** Never `git add .`/`git add -A` unscoped; stay in the current
+  repository and never `cd` or ask for a path.
+- **No mixed set.** With a non-empty index, commit it as given, never combined with
+  `git add`; path arguments to `git commit` silently drop other staged changes.
+- **Unclaimed work.** If a selected path is outside the current task and ownership of the
+  change is unclear, stop and ask before staging it.
+- **Clean subject.** One new commit, no amend/reset/push/force/config; never add co-author
+  or AI attribution. A commit subject that already exceeds 72 characters has failed this
+  line — rewrite it, do not commit it.
+
+## Safety stops
+
+Confirm with the user and name the reason before committing when any holds:
+
+- A sensitive path enters the commit: `.env*`, `*.pem`, `*.key`, credentials or
+  service-account JSON, private keys, or files matching an ignore-style secret pattern the
+  repo already uses.
+- The repository is on a detached `HEAD`.
+- The pre-commit checklist cannot be satisfied safely (unresolvable ownership, conflicting
+  index state, active merge/rebase).
+
+After an explicit confirmation, proceed with the corresponding commit. Never infer
+permission beyond the confirmed stop.

@@ -16,15 +16,14 @@ Each skill can also be installed on its own; the command is listed under every e
 
 ### git-commit
 
-Fast, autonomous Conventional Commits built around the Git index and the current task context. A bash helper handles compact inspection, safe explicit staging, message validation, and commit execution.
+Fast, autonomous Conventional Commits built around the Git index and the current task context. Plain Git commands with a pre-commit checklist covering safe staging, message validation, and safety stops.
 
 Commits the existing staged set as authoritative. When nothing is staged, it stages only the explicit paths changed for the task. It creates one cohesive commit by default and splits only genuinely independent changes.
 
 **Structure:**
 
-- `SKILL.md`: Fast-path policy, cohesion rules, and safety boundaries
-- `scripts/prepare_commit.sh`: Compact `inspect` mode and deterministic `commit` executor
-- `references/conventional-commits.md`: Optional type and breaking-change reference
+- `SKILL.md`: Fast-path policy, cohesion rules, pre-commit checklist, and safety boundaries
+- `references/`: Optional type and breaking-change reference
 
 **Install:**
 
