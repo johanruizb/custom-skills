@@ -51,12 +51,14 @@ before and after).
 
 ## Pre-commit checklist
 
-Every commit satisfies all four before running:
+Every commit satisfies each check before running:
 
 - **Scoped staging.** Never `git add .`/`git add -A` unscoped; stay in the current
   repository and never `cd` or ask for a path.
 - **No mixed set.** With a non-empty index, commit it as given, never combined with
   `git add`; path arguments to `git commit` silently drop other staged changes.
+- **Hooks run.** Plain `git commit --message` form, no additional flags; never
+  `--no-verify` (`-n`). For a failing hook, use *If a hook fails*.
 - **Unclaimed work.** If a selected path is outside the current task and ownership of the
   change is unclear, stop and ask before staging it.
 - **Clean subject.** One new commit, no amend/reset/push/force/config; never add co-author
