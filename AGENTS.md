@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Personal collection of 14 coding-agent skills, installable via [skills.sh](https://skills.sh). Each skill is a self-contained instruction package an agent loads on demand — no application code, no runtime. Everything an agent needs lives inside one skill directory.
+Personal collection of 15 coding-agent skills, installable via [skills.sh](https://skills.sh). Each skill is a self-contained instruction package an agent loads on demand — no application code, no runtime. Everything an agent needs lives inside one skill directory.
 
 Install (all or one):
 
@@ -37,7 +37,7 @@ Cross-skill relationships are declared in frontmatter as `related_skills`, never
 | `test-suite-improver/` | Test suite audit and rewrite |
 | `web-perf-tuning/` | Performance loop; per-stack playbooks in `references/<stack>.md` |
 | `investigate-before-edit/` | Pre-edit investigation discipline; real-case pitfalls in `references/` |
-| `code-documentation/`, `issue-enrichment/`, `release-to-github/`, `pr-test-checklist/`, `screaming-architecture-refactor/`, `prompt-enhancer/`, `init-deep/`, `anglicize-repo/`, `visual-feedback-loop/` | One-purpose instruction skills |
+| `code-documentation/`, `issue-enrichment/`, `release-to-github/`, `pr-test-checklist/`, `screaming-architecture-refactor/`, `prompt-enhancer/`, `init-deep/`, `anglicize-repo/`, `visual-feedback-loop/`, `fork-pr/` | One-purpose instruction skills |
 
 Root files: `README.md` (skill catalog), `LICENSE` (MIT), `.gitignore` (ignores `.omc/`, `dist/`, `.commandcode`, `.serena/`).
 

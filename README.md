@@ -190,6 +190,18 @@ npx skills add johanruizb/custom-skills --skill visual-feedback-loop --global
 
 **Usage:** Give the agent a reference (image, URL, or description) with your request. The agent builds a visual contract, shows the final capture next to the reference, and reports the closed delta list instead of "should look like you asked". Re-invoking it later resumes from `.feedback/`, reusing the app's capture recipe and the open deltas.
 
+### fork-pr
+
+Sync a fork's branch to its upstream parent in one pass. Pushes the branch to origin first (with confirmation around force pushes), then opens a PR in the original repo — or refreshes the existing one — regenerating its Conventional Commits title, its body (What / Changes / Badges / compare link), and one CI badge per workflow on the synced branch from the current state on every run.
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill fork-pr --global
+```
+
+**Usage:** Run it inside the fork's checkout. The agent verifies the parent repo, resolves the base branch, pushes, and shows the drafted title and body before creating; later runs refresh the same PR in place instead of opening duplicates.
+
 ## Requirements
 
 - Node.js >= 18 (for `npx skills`)
