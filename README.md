@@ -20,9 +20,11 @@ Fast, autonomous Conventional Commits built around the Git index and the current
 
 Commits the existing staged set as authoritative. When nothing is staged, it stages only the explicit paths changed for the task. It creates one cohesive commit by default and splits only genuinely independent changes.
 
+Every user-facing commit (`feat`, `fix`, `perf`, reverts, security) also extends the repo's existing changelog before the commit runs, so its entry rides inside the commit itself; entries follow Keep a Changelog 1.1.0 wherever the file's own format leaves it open, and the skill never creates the changelog. Commit conventions persist in `.commit/` at the repo root (`config.json` for machine values, `conventions.md` for the prose — gotchas and preferences the human corrected once), learned on the first run and reused by later ones; tool-generated changelogs (release-please, git-cliff) are left to their tools.
+
 **Structure:**
 
-- `SKILL.md`: Fast-path policy, cohesion rules, pre-commit checklist, and safety boundaries
+- `SKILL.md`: Fast-path policy, `.commit/` state, changelog maintenance, cohesion rules, pre-commit checklist, and safety boundaries
 - `references/`: Optional type and breaking-change reference
 
 **Install:**
@@ -31,7 +33,7 @@ Commits the existing staged set as authoritative. When nothing is staged, it sta
 npx skills add johanruizb/custom-skills --skill git-commit --global
 ```
 
-**Usage:** Explicitly ask Claude Code to commit the current changes. The skill reuses task context, inspects only when needed, and commits the staged set or explicit task paths without rereading the entire diff.
+**Usage:** Explicitly ask Claude Code to commit the current changes. The skill reuses task context, inspects only when needed, and commits the staged set or explicit task paths without rereading the entire diff. On the first run it learns the repo's conventions into `.commit/`; from then on the changelog entry and the state refresh join the commit.
 
 ### code-documentation
 
