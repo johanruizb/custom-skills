@@ -16,7 +16,7 @@ Each skill can also be installed on its own; the command is listed under every e
 
 ### git-commit
 
-Fast, autonomous Conventional Commits built around the Git index and the current task context. Plain Git commands with a pre-commit checklist covering safe staging, message validation, and safety stops.
+Fast, autonomous Conventional Commits built around the Git index and the current task context. Plain Git commands with commit invariants covering zero extra execution, safe staging, message validation, and safety stops.
 
 Commits the existing staged set as authoritative. When nothing is staged, it stages only the explicit paths changed for the task. It creates one cohesive commit by default and splits only genuinely independent changes.
 
@@ -24,7 +24,7 @@ Every user-facing commit (`feat`, `fix`, `perf`, reverts, security) also extends
 
 **Structure:**
 
-- `SKILL.md`: Fast-path policy, `.commit/` state, changelog maintenance, cohesion rules, pre-commit checklist, and safety boundaries
+- `SKILL.md`: Fast-path policy, `.commit/` state, changelog maintenance, cohesion rules, commit invariants, and safety boundaries
 - `references/`: Optional type and breaking-change reference
 
 **Install:**

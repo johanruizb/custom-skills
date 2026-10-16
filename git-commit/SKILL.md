@@ -2,7 +2,9 @@
 name: git-commit
 description: |
   Commit the current changes autonomously. Use when the user explicitly asks to commit
-  or invokes /git-commit. For message-only requests, use a commit-message skill instead.
+  or invokes /git-commit. Triggers: 'commit', 'haz el commit', 'commitea los cambios',
+  'haz un commit con esto', '/git-commit'. For message-only requests, use a commit-message
+  skill instead.
 license: MIT
 allowed-tools: Bash(git:*), Read, Write, Edit, Glob, Grep
 ---
@@ -11,6 +13,13 @@ allowed-tools: Bash(git:*), Read, Write, Edit, Glob, Grep
 
 Commit from the current task context. Keep an existing changelog current. Preserve
 every change outside the intended commit.
+
+**Execution perimeter:** This skill is strictly a packaging and recording step.
+The only permitted actions are inspecting git state, authoring `.commit/` and
+changelog entries, staging target paths, and running `git commit`. Never execute
+test suites (`npm test`, `pytest`, `cargo test`, etc.), linters, formatters, build
+commands, or app verification scripts. All repository validation belongs exclusively
+to git's native pre-commit hooks, which run automatically during `git commit`.
 
 ## State
 
@@ -76,8 +85,9 @@ When a run contradicts a line here, rewrite it; prose goes stale like paths do.
    wrote, then commit:
    `git add -- path...` and `git commit --message "type(scope): summary"`.
 
-Choose type, scope, message, and file selection yourself. The Pre-commit checklist below
-defines the checks to satisfy before each commit leaves the agent.
+Choose type, scope, message, and file selection yourself. The fast path is the complete
+command sequence: execute only the git and file operations listed above. The Commit
+invariants below define the rules to satisfy before each commit leaves the agent.
 
 ## Scope and message
 
@@ -115,7 +125,7 @@ above all — comes from the standard.
 - Append-only: a new bullet for this commit; existing lines and released sections
   stay untouched. `Unreleased` is release tooling's raw material.
 - Uncommitted human edits in the file: ask before staging — unclaimed work
-  (§ Pre-commit checklist).
+  (§ Commit invariants).
 
 Done when the entry stands under the right category, in the file's own format, and
 is staged with the commit it describes.
@@ -128,22 +138,26 @@ breaking-change format is unclear.
 
 ## If a hook fails
 
-Report the hook's output. Retry a normal commit only after an in-scope fix, revalidation,
-and confirmation that the failed attempt did not create a commit (`git rev-parse HEAD`
+Report the hook's output. Fix only the specific issue reported by the hook, stage the fix,
+and retry `git commit` without `--no-verify`. Do not run full test suites or unrelated
+checks. Confirm that the failed attempt did not create a commit (`git rev-parse HEAD`
 before and after).
 
-## Pre-commit checklist
+## Commit invariants
 
-Every commit satisfies each check before running:
+Every commit satisfies each invariant before running:
 
+- **Zero extra execution.** Never run test runners, linters, dev servers, or formatters
+  manually. Verification is handled by git hooks on `git commit`.
 - **Scoped staging.** Never `git add .`/`git add -A` unscoped; stay in the current
   repository and never `cd` or ask for a path.
 - **No mixed set.** With a non-empty index, the only `git add` allowed is what this
   run authored for the commit itself — the changelog entry and `.commit/` — never a
   task path; never path arguments to `git commit`, they silently drop other staged
   changes.
-- **Hooks run.** Plain `git commit --message` form, no additional flags; never
-  `--no-verify` (`-n`). For a failing hook, use *If a hook fails*.
+- **Native hooks run.** Plain `git commit --message` form, no additional flags; never
+  `--no-verify` (`-n`). Do not execute hooks manually before committing; let git invoke
+  them. For a failing hook, use *If a hook fails*.
 - **Unclaimed work.** If a selected path is outside the current task and ownership of the
   change is unclear, stop and ask before staging it.
 - **Clean subject.** One new commit, no amend/reset/push/force/config; never add co-author
@@ -158,7 +172,7 @@ Confirm with the user and name the reason before committing when any holds:
   service-account JSON, private keys, or files matching an ignore-style secret pattern the
   repo already uses.
 - The repository is on a detached `HEAD`.
-- The pre-commit checklist cannot be satisfied safely (unresolvable ownership, conflicting
+- The commit invariants cannot be satisfied safely (unresolvable ownership, conflicting
   index state, active merge/rebase).
 
 After an explicit confirmation, proceed with the corresponding commit. Never infer
