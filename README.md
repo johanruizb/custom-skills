@@ -45,15 +45,23 @@ Generate, update, or regenerate inline documentation (docstrings, JSDoc, comment
 npx skills add johanruizb/custom-skills --skill code-documentation --global
 ```
 
-### codebase-audit
+### code-health
 
-Deep audit of an entire codebase for performance, bugs, and/or security issues. Reviews all source code (not just diffs), discovers available tools at runtime, adapts to any harness, and optionally fixes selected findings.
+Deep audit and cleanup of an entire codebase: performance, bugs, security, duplication, dead code, unnecessary abstractions, and accidental complexity. Reviews all source code (not just diffs), discovers available tools at runtime, adapts to any harness, prioritizes findings by risk, and optionally applies and validates selected fixes. Merged from the former `codebase-audit` and `simplify-codebase` skills.
+
+**Structure:**
+
+- `SKILL.md`: Core methodology (discovery, planning, audit, consolidation, fix application, validation, reporting) and subagent strategy
+- `references/`: Harness adapters, analysis checklists, finding schema, and HTML report guide
+- `scripts/`: Duplicate detection (`detect-duplicates.py`) and standalone HTML report generation (`generate-html-report.py`)
 
 **Install:**
 
 ```bash
-npx skills add johanruizb/custom-skills --skill codebase-audit --global
+npx skills add johanruizb/custom-skills --skill code-health --global
 ```
+
+**Usage:** Ask the agent to audit, review, or find bugs, security issues, or performance bottlenecks in a codebase, or to simplify and deduplicate code. The skill maps modules, researches version-specific risks, and produces a structured report before prompting for which fixes to apply.
 
 ### release-to-github
 
@@ -127,16 +135,6 @@ Reorganize a specific subpath of a project to Screaming Architecture + feature-b
 
 ```bash
 npx skills add johanruizb/custom-skills --skill screaming-architecture-refactor --global
-```
-
-### simplify-codebase
-
-Analyze an entire codebase for accidental complexity: duplication, unnecessary abstractions, redundant dependencies, dead code, inconsistent patterns. Then propose and apply a prioritized simplification plan. Harness-agnostic: discovers available tools at runtime and adapts.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill simplify-codebase --global
 ```
 
 ### test-suite-improver
