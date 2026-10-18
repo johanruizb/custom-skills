@@ -77,16 +77,6 @@ npx skills add johanruizb/custom-skills --skill release-to-github --global
 
 **Usage:** Invoke `/release-to-github` in the project you want to release. Approve the proposed version, review the changelog section, and approve each publish step.
 
-### init-deep
-
-Deep repository-context initialization. Analyzes the repository and generates or updates a useful hierarchy of `AGENTS.md` files for coding agents based on actual repository architecture and conventions.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill init-deep --global
-```
-
 ### prompt-enhancer
 
 Rewrite and improve prompts to make them clear, actionable, and useful for ChatGPT, coding agents, design tools, product analysis, or any AI. Turns vague ideas, quick notes, or poorly written prompts into well-structured, ready-to-use instructions while preserving the original intent and technical terms.
