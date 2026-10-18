@@ -4,7 +4,7 @@ description: "Use when the user wants a deep audit or cleanup of an entire codeb
 license: MIT
 metadata:
   author: Hermes Agent
-  version: "2.1.0"
+  version: "2.1.1"
   hermes:
     tags: [audit, cleanup, performance, bugs, security, deduplication, dead-code, complexity, worktree, harness-agnostic]
     related_skills: [test-suite-improver, investigate-before-edit]
@@ -174,12 +174,14 @@ After presenting the report, ask the user which findings to fix (same ask mechan
 
 Audit-only runs skip this section; a worktree exists only when at least one fix is selected. Fix runs never edit the user's primary worktree or its checked-out branch. Create one linked worktree on a new branch from the audited commit, and treat it as the only fix workspace.
 
+**Branch standard**: every worktree branch is `code-health/audit-<YYYYMMDD-HHMMSS>` (UTC), e.g. `code-health/audit-20261017-153045`; it matches `^code-health/audit-[0-9]{8}-[0-9]{6}(-[0-9]+)?$`. The branch carries the fixed `code-health/audit-` prefix and the UTC timestamp; a collision suffix is the only allowed addition. Only an explicit user-provided name replaces this pattern. If the branch or worktree path exists, append `-2`, `-3`, ... to the timestamp. Validate with `git check-ref-format --branch <branch>` before creating the worktree.
+
 1. **Preflight**: base the worktree on the audited HEAD. The primary worktree must have no uncommitted source changes; exclude only the skill's own `.code-health-state.json` from the check. If it is otherwise dirty, stop before editing and ask the user to commit or stash, or explicitly approve in-place edits. Never stash, reset, checkout, or commit the user's existing changes to make the tree clean. A worktree contains tracked files only: if the audited code or its environment depends on untracked or ignored files, get explicit approval before copying anything.
-2. **Create**: pick a sibling path outside the repository (e.g. `<repo-parent>/<repo-name>-code-health-<timestamp>`, asking if the parent is not writable) and a new branch (`code-health/<timestamp>`; add a suffix if the branch or path exists). Run `git worktree add -b <branch> <path> <base-commit>`. Base on the audited HEAD unless the user names another ref; fetch before using a remote ref. Never reuse a branch checked out in another worktree and never switch branches in the primary worktree.
+2. **Create**: pick a sibling path outside the repository (e.g. `<repo-parent>/<repo-name>-code-health-audit-<timestamp>`, asking if the parent is not writable). Run `git worktree add -b <branch> <path> <base-commit>` with the branch from the standard above. Base on the audited HEAD unless the user names another ref; fetch before using a remote ref. Never reuse a branch checked out in another worktree and never switch branches in the primary worktree.
 3. **Verify**: `git -C <path> rev-parse --show-toplevel` resolves to `<path>`, `git -C <path> branch --show-current` equals `<branch>`, and the primary worktree's `git status --porcelain` shows no new source changes (state file excepted).
 4. **Use**: run all fix edits, re-reads, diffs, and validation commands with the worktree as the working directory. Give applying subagents the worktree path, never the primary root.
 5. **Record** in state: strategy=worktree, path, branch, base ref and commit, status.
-6. **Completion criterion**: a dedicated worktree exists on a new branch at the audited commit, the verification commands pass, and the primary worktree has no new source changes.
+6. **Completion criterion**: a dedicated worktree exists on a new branch at the audited commit that matches the branch standard (or the user's exact branch name), the verification commands pass, and the primary worktree has no new source changes.
 
 If git or `cmd_exec` is unavailable, or the user declines isolation: do not edit silently. Require explicit approval for in-place edits, record the limitation, and run audit-only if approval is refused.
 

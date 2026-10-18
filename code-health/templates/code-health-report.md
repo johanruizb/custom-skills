@@ -54,7 +54,7 @@ Grouped by category, in priority order. Each finding carries the full `reference
 ### Isolation
 
 - Worktree: [path]
-- Branch: [branch]
+- Branch: [branch (standard: code-health/audit-YYYYMMDD-HHMMSS)]
 - Base: [ref @ commit]
 - Primary worktree: no source changes (verified with `git status --porcelain`; audit state file excepted)
 

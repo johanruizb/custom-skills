@@ -81,7 +81,7 @@
       "properties": {
         "strategy": {"type": "string", "enum": ["none", "worktree", "in-place"]},
         "worktree_path": {"type": "string"},
-        "branch": {"type": "string"},
+        "branch": {"type": "string", "description": "Worktree branch: code-health/audit-<YYYYMMDD-HHMMSS> (UTC), or the exact name the user provided."},
         "base_ref": {"type": "string"},
         "base_commit": {"type": "string"},
         "created_at": {"type": "string", "format": "date-time"},
