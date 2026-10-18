@@ -51,6 +51,13 @@ Grouped by category, in priority order. Each finding carries the full `reference
 
 ## Fixes Applied
 
+### Isolation
+
+- Worktree: [path]
+- Branch: [branch]
+- Base: [ref @ commit]
+- Primary worktree: no source changes (verified with `git status --porcelain`; audit state file excepted)
+
 | ID | Title | Files | Change | Validation |
 |---|---|---|---|---|
 | [ID] | [title] | [paths] | [1-2 sentences] | passed / failed / reverted |

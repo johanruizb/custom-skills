@@ -47,11 +47,11 @@ npx skills add johanruizb/custom-skills --skill code-documentation --global
 
 ### code-health
 
-Deep audit and cleanup of an entire codebase: performance, bugs, security, duplication, dead code, unnecessary abstractions, and accidental complexity. Reviews all source code (not just diffs), discovers available tools at runtime, adapts to any harness, prioritizes findings by risk, and optionally applies and validates selected fixes. Merged from the former `codebase-audit` and `simplify-codebase` skills.
+Deep audit and cleanup of an entire codebase: performance, bugs, security, duplication, dead code, unnecessary abstractions, and accidental complexity. Reviews all source code (not just diffs), discovers available tools at runtime, adapts to any harness, prioritizes findings by risk, and optionally applies and validates selected fixes in an isolated git worktree on a dedicated branch. Merged from the former `codebase-audit` and `simplify-codebase` skills.
 
 **Structure:**
 
-- `SKILL.md`: Core methodology (discovery, planning, audit, consolidation, fix application, validation, reporting) and subagent strategy
+- `SKILL.md`: Core methodology (discovery, planning, audit, consolidation, worktree isolation, fix application, validation, reporting) and subagent strategy
 - `references/`: Harness adapters, analysis checklists, finding schema, and HTML report guide
 - `scripts/`: Duplicate detection (`detect-duplicates.py`) and standalone HTML report generation (`generate-html-report.py`)
 
@@ -61,7 +61,7 @@ Deep audit and cleanup of an entire codebase: performance, bugs, security, dupli
 npx skills add johanruizb/custom-skills --skill code-health --global
 ```
 
-**Usage:** Ask the agent to audit, review, or find bugs, security issues, or performance bottlenecks in a codebase, or to simplify and deduplicate code. The skill maps modules, researches version-specific risks, and produces a structured report before prompting for which fixes to apply.
+**Usage:** Ask the agent to audit, review, or find bugs, security issues, or performance bottlenecks in a codebase, or to simplify and deduplicate code. The skill maps modules, researches version-specific risks, and produces a structured report before prompting for which fixes to apply. Authorized fixes are applied in a dedicated worktree, leaving your checked-out branch untouched.
 
 ### release-to-github
 

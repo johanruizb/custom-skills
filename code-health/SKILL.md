@@ -1,12 +1,12 @@
 ---
 name: code-health
-description: "Use when the user wants a deep audit or cleanup of an entire codebase: performance, bugs, security, duplication, dead code, unnecessary abstractions, or complexity. Analyzes all source code (not just diffs), discovers available tools at runtime, adapts to any harness, and optionally fixes selected findings with validation."
+description: "Use when the user wants a deep audit or cleanup of an entire codebase: performance, bugs, security, duplication, dead code, unnecessary abstractions, or complexity. Analyzes all source code (not just diffs), discovers available tools at runtime, adapts to any harness, and optionally applies selected fixes with validation in an isolated git worktree."
 license: MIT
 metadata:
   author: Hermes Agent
-  version: "2.0.0"
+  version: "2.1.0"
   hermes:
-    tags: [audit, cleanup, performance, bugs, security, deduplication, dead-code, complexity, harness-agnostic]
+    tags: [audit, cleanup, performance, bugs, security, deduplication, dead-code, complexity, worktree, harness-agnostic]
     related_skills: [test-suite-improver, investigate-before-edit]
 ---
 
@@ -42,13 +42,14 @@ Don't use for:
 ## Phase 2: Project Discovery
 
 1. Find the repository root (look for `.git`, `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `pom.xml`, `build.gradle`, `requirements.txt`, `composer.json`, etc.).
-2. Map the directory structure using `file_find` and `dir_list`. Exclude: `node_modules`, `vendor`, `dist`, `build`, `.git`, `__pycache__`, `.venv`, `venv`, `target`, `.next`, `coverage`, and any user-specified exclusions.
-3. Identify languages, frameworks, build tools, test runners, and infrastructure from config files and dependency manifests. Read lockfiles and record exact versions. Do NOT assume a stack from file extensions.
-4. Read project conventions: AGENTS.md, CLAUDE.md, .cursorrules, README, contributing guides, lint configs. These encode rules the fixes must respect.
-5. Identify entry points, test directories, config directories, and documentation.
-6. Record validation commands: test runner, linter, type checker, build command. You will need these after every change.
-7. Divide the codebase into analyzable modules based on directory structure and logical boundaries.
-8. **Completion criterion**: a structured project map exists with technologies, versions, module list, entry points, test setup, validation commands, and exclusion list.
+2. When git is available, record the current branch, HEAD commit, working-tree cleanliness (`git status --porcelain`), and `git worktree list --porcelain`; these drive worktree isolation before Phase 8.
+3. Map the directory structure using `file_find` and `dir_list`. Exclude: `node_modules`, `vendor`, `dist`, `build`, `.git`, `__pycache__`, `.venv`, `venv`, `target`, `.next`, `coverage`, and any user-specified exclusions.
+4. Identify languages, frameworks, build tools, test runners, and infrastructure from config files and dependency manifests. Read lockfiles and record exact versions. Do NOT assume a stack from file extensions.
+5. Read project conventions: AGENTS.md, CLAUDE.md, .cursorrules, README, contributing guides, lint configs. These encode rules the fixes must respect.
+6. Identify entry points, test directories, config directories, and documentation.
+7. Record validation commands: test runner, linter, type checker, build command. You will need these after every change.
+8. Divide the codebase into analyzable modules based on directory structure and logical boundaries.
+9. **Completion criterion**: a structured project map exists with technologies, versions, module list, entry points, test setup, validation commands, exclusion list, and VCS isolation facts.
 
 ## Phase 3: Planning & User Configuration
 
@@ -65,10 +66,11 @@ Ask the user for (ask mechanism from the harness adapter; fallback to conversati
    - `audit-auto`: audit, then auto-fix all findings classified as safe.
    Default: `audit-select`.
 7. **Subagents**: use subagent parallelism if available. Default: yes when available.
+8. **Isolation**: for fix-capable modes, default is a dedicated git worktree on a new branch (see Worktree Isolation). If the primary worktree is dirty or git is unavailable, the user chooses: clean the tree, approve in-place edits, or audit-only.
 
-Present the plan (scope, modules, order, tools, subagent strategy, exclusions, limitations) to the user for confirmation (same ask mechanism).
+Present the plan (scope, modules, order, tools, subagent strategy, isolation, exclusions, limitations) to the user for confirmation (same ask mechanism).
 
-**Completion criterion**: user has confirmed focus areas, scope, mode, depth, and the plan is recorded.
+**Completion criterion**: user has confirmed focus areas, scope, mode, depth, isolation plan, and the plan is recorded.
 
 ## Phase 4: Technical Research
 
@@ -113,7 +115,7 @@ When subagents are available, split Phase 5 work by area or module:
 
 Each subagent returns structured findings only (no edits, no plans). Every finding must cite file:line, so the consolidator can verify it.
 
-**Pitfall**: Subagents can modify files as collateral damage. After all subagents return, run the project's diff/status check (`git diff --stat HEAD`, `git status --short` when git is available) and revert any unintended changes.
+**Pitfall**: Subagents can modify files as collateral damage. Record `git status --porcelain` before spawning them, then compare after; restore only paths that changed during the subagent run, never pre-existing user changes.
 
 The main agent: consolidates, deduplicates, verifies evidence, resolves contradictions. When subagents are NOT available: simulate the same separation by processing areas/modules sequentially within one agent, using the same input/output formats.
 
@@ -168,24 +170,38 @@ After presenting the report, ask the user which findings to fix (same ask mechan
 - Exclude specific IDs.
 - Audit-only (no fixes).
 
+## Worktree Isolation
+
+Audit-only runs skip this section; a worktree exists only when at least one fix is selected. Fix runs never edit the user's primary worktree or its checked-out branch. Create one linked worktree on a new branch from the audited commit, and treat it as the only fix workspace.
+
+1. **Preflight**: base the worktree on the audited HEAD. The primary worktree must have no uncommitted source changes; exclude only the skill's own `.code-health-state.json` from the check. If it is otherwise dirty, stop before editing and ask the user to commit or stash, or explicitly approve in-place edits. Never stash, reset, checkout, or commit the user's existing changes to make the tree clean. A worktree contains tracked files only: if the audited code or its environment depends on untracked or ignored files, get explicit approval before copying anything.
+2. **Create**: pick a sibling path outside the repository (e.g. `<repo-parent>/<repo-name>-code-health-<timestamp>`, asking if the parent is not writable) and a new branch (`code-health/<timestamp>`; add a suffix if the branch or path exists). Run `git worktree add -b <branch> <path> <base-commit>`. Base on the audited HEAD unless the user names another ref; fetch before using a remote ref. Never reuse a branch checked out in another worktree and never switch branches in the primary worktree.
+3. **Verify**: `git -C <path> rev-parse --show-toplevel` resolves to `<path>`, `git -C <path> branch --show-current` equals `<branch>`, and the primary worktree's `git status --porcelain` shows no new source changes (state file excepted).
+4. **Use**: run all fix edits, re-reads, diffs, and validation commands with the worktree as the working directory. Give applying subagents the worktree path, never the primary root.
+5. **Record** in state: strategy=worktree, path, branch, base ref and commit, status.
+6. **Completion criterion**: a dedicated worktree exists on a new branch at the audited commit, the verification commands pass, and the primary worktree has no new source changes.
+
+If git or `cmd_exec` is unavailable, or the user declines isolation: do not edit silently. Require explicit approval for in-place edits, record the limitation, and run audit-only if approval is refused.
+
 ## Phase 8: Fix Application
 
 For each selected finding:
 
-1. Re-read the current code at the finding location (it may have changed since audit).
-2. Analyze impact: what else depends on this code? Search for references. For renaming/removals, update every call site and any string/dynamic references.
-3. Check `source` references for correct fix approach if version-specific.
-4. Plan the minimal, safe change. Do NOT refactor unrelated code. When consolidating duplication or removing a pass-through, the change must beat the deletion test: inlining must leave the code simpler than the layer it replaced.
-5. Apply the change using `file_write` / file editing tools.
-6. Respect project conventions, style, and architecture detected in Phase 2. A consistent project pattern is a convention even if it looks unconventional. Flag only genuine inconsistency within the project.
-7. Run validation after each batch of 1-5 related changes, not just at the end: fastest check first (lint, typecheck), then the relevant test subset. If a change breaks tests, revert that specific change, record the regression, and move to the next independent change.
-8. Record: what was changed, which finding it resolves, the diff.
-9. Review the generated diff; revert or adjust changes with unexpected side effects.
-10. **Completion criterion**: each selected finding has a recorded fix with diff, or a documented reason it was skipped.
+1. Establish worktree isolation (see Worktree Isolation) before the first edit; record its path and branch.
+2. Re-read the current code at the finding location in the worktree (it may have changed since audit).
+3. Analyze impact: what else depends on this code? Search for references. For renaming/removals, update every call site and any string/dynamic references.
+4. Check `source` references for correct fix approach if version-specific.
+5. Plan the minimal, safe change. Do NOT refactor unrelated code. When consolidating duplication or removing a pass-through, the change must beat the deletion test: inlining must leave the code simpler than the layer it replaced.
+6. Apply the change using `file_write` / file editing tools.
+7. Respect project conventions, style, and architecture detected in Phase 2. A consistent project pattern is a convention even if it looks unconventional. Flag only genuine inconsistency within the project.
+8. Run validation in the worktree after each batch of 1-5 related changes, not just at the end: fastest check first (lint, typecheck), then the relevant test subset. If a change breaks tests, revert that specific change, record the regression, and move to the next independent change.
+9. Record: what was changed, which finding it resolves, the diff.
+10. Review the worktree diff (`git -C <path> diff`); revert or adjust changes with unexpected side effects.
+11. **Completion criterion**: each selected finding has a recorded fix with diff, or a documented reason it was skipped; every fix lives only in the isolated worktree.
 
 ## Phase 9: Validation
 
-After fixes, run all available checks via `cmd_exec`:
+After fixes, run all available checks via `cmd_exec` inside the worktree, with its path as the working directory:
 
 1. Test suite (project's test runner).
 2. Linters (project's linter config).
@@ -198,6 +214,8 @@ After fixes, run all available checks via `cmd_exec`:
 
 For projects whose test suite needs seeded data, write a focused script that imports the app and asserts each fix.
 
+A fresh worktree may lack installed dependencies, build caches, and local env files. Run the project's documented setup/install step there first. If the environment cannot be reproduced, classify validation `partial` or `impossible`, list what the user must run, and do not validate against the primary worktree.
+
 Classify validation result as one of:
 
 - **passed**: all checks ran and passed.
@@ -208,9 +226,15 @@ Classify validation result as one of:
 
 **Completion criterion:** validation result is classified and all executed check results are recorded.
 
+## Handoff & Cleanup
+
+Report the worktree path, branch, base commit, diff summary, and validation result. Do not merge, push, rebase, or remove the worktree without an explicit user request. Commit validated batches on the dedicated branch only when the user asked for commits; never commit in the primary worktree. After the user merges or abandons the branch, remove the worktree with `git worktree remove <path>` and prune stale metadata with `git worktree prune`; a dirty worktree requires explicit confirmation, and its branch stays preserved until the user decides.
+
 ## State & Resumption
 
-When `state_persist` is available, persist audit state to `.code-health-state.json` after each phase (schema and field meanings in `templates/code-health-state.json`): configuration, capability map, project map, modules analyzed/pending, findings with status, fixes applied, validation results, sources consulted, limitations. This enables resuming an interrupted run without re-analyzing completed modules.
+When `state_persist` is available, persist audit state to `.code-health-state.json` at the primary repo root after each phase (schema and field meanings in `templates/code-health-state.json`): configuration, capability map, project map, modules analyzed/pending, findings with status, isolation (worktree path, branch, base, status), fixes applied, validation results, sources consulted, limitations. The state file is audit metadata, not a fix: keep it out of commits and out of the isolation cleanliness check. This enables resuming an interrupted run without re-analyzing completed modules.
+
+On resume, re-verify that the recorded worktree exists and is on the recorded branch before editing; if it is missing, recreate it from the recorded base commit or ask the user.
 
 When `state_persist` is unavailable: keep findings in context and track progress via `task_manage`. Resumption is limited.
 
@@ -224,6 +248,9 @@ When `state_persist` is unavailable: keep findings in context and track progress
 ## Restrictions
 
 - Do NOT apply any change without explicit user authorization. `audit-auto` is the only exception: it auto-fixes only confidence=confirmed AND fix_risk=low findings.
+- Do NOT edit source files in the primary worktree, switch its branch, or commit to it during a fix run. Fixes go only in the isolated worktree; merge, push, rebase, and removal require explicit authorization.
+- Do NOT stash, reset, or commit the user's existing changes to obtain a clean base. Ask the user to commit or stash, approve in-place edits, or run audit-only.
+- Do NOT validate against the primary worktree while a worktree is active.
 - Do NOT modify production code beyond the minimal safe fix for a confirmed finding.
 - Do NOT claim validation passed if it was not executed.
 - Do NOT assume tools, commands, or frameworks exist before inspecting the project.

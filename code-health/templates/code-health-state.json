@@ -75,6 +75,20 @@
         "exclusions": {"type": "array", "items": {"type": "string"}}
       }
     },
+    "isolation": {
+      "type": "object",
+      "description": "Fix-run isolation. strategy=none for audit-only runs.",
+      "properties": {
+        "strategy": {"type": "string", "enum": ["none", "worktree", "in-place"]},
+        "worktree_path": {"type": "string"},
+        "branch": {"type": "string"},
+        "base_ref": {"type": "string"},
+        "base_commit": {"type": "string"},
+        "created_at": {"type": "string", "format": "date-time"},
+        "status": {"type": "string", "enum": ["planned", "active", "merged", "removed", "abandoned"]},
+        "setup_notes": {"type": "string"}
+      }
+    },
     "version_risks": {
       "type": "array",
       "description": "Version-specific risk profile from Phase 4",
