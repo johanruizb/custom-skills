@@ -4,10 +4,9 @@ description: "Use when the user wants a deep audit or cleanup of an entire codeb
 license: MIT
 metadata:
   author: Hermes Agent
-  version: "2.2.1"
+  version: "2.2.2"
   hermes:
     tags: [audit, cleanup, performance, bugs, security, deduplication, dead-code, complexity, worktree, harness-agnostic]
-    related_skills: [investigate-before-edit]
 ---
 
 # Code Health Audit

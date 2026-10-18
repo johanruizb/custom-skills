@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Personal collection of 12 coding-agent skills, installable via [skills.sh](https://skills.sh). Each skill is a self-contained instruction package an agent loads on demand — no application code, no runtime. Everything an agent needs lives inside one skill directory.
+Personal collection of 11 coding-agent skills, installable via [skills.sh](https://skills.sh). Each skill is a self-contained instruction package an agent loads on demand — no application code, no runtime. Everything an agent needs lives inside one skill directory.
 
 Install (all or one):
 
@@ -35,7 +35,6 @@ Cross-skill relationships are declared in frontmatter as `related_skills`, never
 | `git-commit/` | Conventional Commits from task context + staged index |
 | `code-health/` | Whole-codebase audit + simplification, merged from former `codebase-audit` + `simplify-codebase` |
 | `web-perf-tuning/` | Performance loop; per-stack playbooks in `references/<stack>.md` |
-| `investigate-before-edit/` | Pre-edit investigation discipline; real-case pitfalls in `references/` |
 | `code-documentation/`, `release-to-github/`, `screaming-architecture-refactor/`, `prompt-enhancer/`, `init-deep/`, `anglicize-repo/`, `visual-feedback-loop/`, `fork-pr/` | One-purpose instruction skills |
 
 Root files: `README.md` (skill catalog), `LICENSE` (MIT), `.gitignore` (ignores `.omc/`, `dist/`, `.commandcode`, `.serena/`).
@@ -51,7 +50,7 @@ git log --oneline -12                                            # history conve
 
 ## Code Conventions & Common Patterns
 
-**Frontmatter (SKILL.md):** every skill starts with `---`-delimited YAML. Required: `name` — must equal the directory name verbatim (invariant held across all 12) — and `description` in English, model-facing, listing the distinct trigger branches, including Spanish trigger phrases when users speak Spanish to that skill. Always `license: MIT`. Optional: `allowed-tools` (restricting tool surface — git-commit, anglicize-repo, release-to-github use it), `metadata: {author, version, platforms, hermes: {tags, related_skills}}` with bump-worthy semantic version.
+**Frontmatter (SKILL.md):** every skill starts with `---`-delimited YAML. Required: `name` — must equal the directory name verbatim (invariant held across all 11) — and `description` in English, model-facing, listing the distinct trigger branches, including Spanish trigger phrases when users speak Spanish to that skill. Always `license: MIT`. Optional: `allowed-tools` (restricting tool surface — git-commit, anglicize-repo, release-to-github use it), `metadata: {author, version, platforms, hermes: {tags, related_skills}}` with bump-worthy semantic version.
 
 **Body structure** (recurring across the collection): `# <skill name>` → `## Overview` → `## When to Use` (trigger branches; plus a "Don't use when…" exclusion) → numbered `## Phase N: <Name>` steps, each ending in an explicit **Completion criterion** → `## Common Pitfalls` → `## Verification/Completion Checklist`. Long bodies (200–350 lines) push per-case material into `references/` files pointed at from the step that needs it; the SKILL.md body stays the ordered path.
 

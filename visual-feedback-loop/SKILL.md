@@ -4,11 +4,10 @@ description: "Use whenever a change affects what the user will see (UI, layout, 
 license: MIT
 metadata:
   author: johanruizb, Hermes Agent
-  version: "1.2.0"
+  version: "1.2.1"
   platforms: [linux, macos, windows]
   hermes:
     tags: [visual-verification, screenshot, design-fidelity, ui-qa, feedback-loop, state-persistence, harness-agnostic]
-    related_skills: [investigate-before-edit]
 ---
 
 # Visual Feedback Loop

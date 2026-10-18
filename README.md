@@ -87,16 +87,6 @@ Deep repository-context initialization. Analyzes the repository and generates or
 npx skills add johanruizb/custom-skills --skill init-deep --global
 ```
 
-### investigate-before-edit
-
-Use before any code modification. Forces an investigation phase that inspects the codebase with harness tools before editing, so decisions are backed by evidence rather than assumptions. Presents a research summary and asks for confirmation on destructive or ambiguous changes.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill investigate-before-edit --global
-```
-
 ### prompt-enhancer
 
 Rewrite and improve prompts to make them clear, actionable, and useful for ChatGPT, coding agents, design tools, product analysis, or any AI. Turns vague ideas, quick notes, or poorly written prompts into well-structured, ready-to-use instructions while preserving the original intent and technical terms.
