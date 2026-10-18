@@ -97,26 +97,6 @@ Use before any code modification. Forces an investigation phase that inspects th
 npx skills add johanruizb/custom-skills --skill investigate-before-edit --global
 ```
 
-### issue-enrichment
-
-Use when a GitHub issue or feature request is too brief to implement. Investigates the codebase and rewrites the issue with the technical context a developer needs, preserving the original scope. Screenshots from the body and comments are carried into the enriched issue with a one-line description of the interface they show.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill issue-enrichment --global
-```
-
-### pr-test-checklist
-
-Analyze changes in one or more Pull Requests and generate a manual testing checklist for the application. Reviews the actual diff and source code to produce actionable, traceable tests free of assumptions. Does not perform a full regression: only validates what changed and its direct side effects.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill pr-test-checklist --global
-```
-
 ### prompt-enhancer
 
 Rewrite and improve prompts to make them clear, actionable, and useful for ChatGPT, coding agents, design tools, product analysis, or any AI. Turns vague ideas, quick notes, or poorly written prompts into well-structured, ready-to-use instructions while preserving the original intent and technical terms.
@@ -135,16 +115,6 @@ Reorganize a specific subpath of a project to Screaming Architecture + feature-b
 
 ```bash
 npx skills add johanruizb/custom-skills --skill screaming-architecture-refactor --global
-```
-
-### test-suite-improver
-
-Audit a project's test suite, evaluate the quality of every existing test, then improve the suite by writing valuable tests, fixing broken ones, and removing ones that add no value. Harness-agnostic.
-
-**Install:**
-
-```bash
-npx skills add johanruizb/custom-skills --skill test-suite-improver --global
 ```
 
 ### web-perf-tuning
