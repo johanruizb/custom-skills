@@ -51,12 +51,19 @@ Grouped by category, in priority order. Each finding carries the full `reference
 
 ## Fixes Applied
 
+### Selection
+
+- Method: [all_safe | critical_high | confirmed | by_id | by_category | by_module | all_except | audit_only]
+- Findings: [resolved finding IDs]
+- Risky findings: [included | excluded | none]
+
 ### Isolation
 
-- Worktree: [path]
-- Branch: [branch (standard: `code-health/audit-<mode>-YYYYMMDD-HHMMSS`)]
-- Base: [ref @ commit]
-- Primary worktree: no source changes (verified with `git status --porcelain`; audit state file excepted)
+- Strategy: [worktree | in-place | audit-only]
+- Worktree: [path or n/a]
+- Branch: [branch (standard: `code-health/audit-<mode>-YYYYMMDD-HHMMSS`) or n/a]
+- Base: [ref @ commit or n/a]
+- Primary worktree: no source changes (verified with `git status --porcelain`; audit state file excepted) or in-place approved
 
 | ID | Title | Files | Change | Validation |
 |---|---|---|---|---|

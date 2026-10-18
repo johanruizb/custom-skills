@@ -67,12 +67,24 @@
       "required": ["areas", "scope", "depth", "mode", "html_report"],
       "properties": {
         "areas": {"type": "array", "items": {"type": "string", "enum": ["performance", "bugs", "security", "simplification"]}},
-        "scope": {"type": "string", "description": "entire-repo, or comma-separated paths"},
+        "scope": {"type": "string", "description": "entire-repo, or comma-separated paths/modules"},
+        "scope_mode": {"type": "string", "enum": ["entire-repo", "folders", "modules"], "description": "Canonical scope method; scope holds the paths/modules when not entire-repo."},
         "depth": {"type": "string", "enum": ["quick", "standard", "exhaustive"]},
         "mode": {"type": "string", "enum": ["audit-only", "audit-select", "audit-auto"]},
         "html_report": {"type": "boolean"},
         "use_subagents": {"type": "boolean"},
         "exclusions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "answers": {
+      "type": "object",
+      "description": "Canonical answers for decision questions not represented in config. Values come from references/user-questions.md, not labels.",
+      "properties": {
+        "plan_confirmation": {"type": "string", "enum": ["proceed", "adjust_scope", "adjust_areas", "adjust_mode", "adjust_isolation", "cancel"]},
+        "fix_selection_method": {"type": "string", "enum": ["all_safe", "critical_high", "confirmed", "by_id", "by_category", "by_module", "all_except", "audit_only"]},
+        "fix_selection_detail": {"type": "array", "items": {"type": "string"}},
+        "risky_confirmation": {"type": "string", "enum": ["safe_only", "include_risky", "cancel"]},
+        "fix_blocked": {"type": "string", "enum": ["resolve", "in_place", "audit_only"]}
       }
     },
     "isolation": {
