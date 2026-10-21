@@ -63,6 +63,24 @@ npx skills add johanruizb/custom-skills --skill code-health --global
 
 **Usage:** Ask the agent to audit, review, or find bugs, security issues, or performance bottlenecks in a codebase, or to simplify and deduplicate code. The skill maps modules, researches version-specific risks, and produces a structured report before prompting for which fixes to apply. Setup and fix selection use a fixed question catalog, so the same decision offers the same options on every run. Authorized fixes are applied in a dedicated worktree on a recognizable `code-health/audit-<mode>-<timestamp>` branch, leaving your checked-out branch untouched.
 
+### goal-runner
+
+Turn a request into a verifiable goal and drive it to completion without check-ins. Freezes a contract before any work — one goal sentence, observable done criteria, a runnable gate per criterion, no-goals, constraints, assumptions, and a budget — then loops plan → act → verify → record until every gate is green. State lives in `.goal/<slug>/` (contract, plan and next action, append-only evidence, optional handoff), so a new session resumes from the folder alone, re-runs the recorded gate fresh — every gate when the goal was marked done — and never asks the user to re-explain the goal. It hands off exactly once — on missing access, an invalidating ambiguity, or a spent budget — with options and a recommendation, and it never marks a gate green from memory, weakens a gate to pass, or closes a turn asking whether to continue.
+
+**Structure:**
+
+- `SKILL.md`: Goal contract, gate proof, autonomous loop, cold start, handoff rules, and anti-false-done checks
+- `references/`: Contract authoring, loop mechanics and no-progress guards, handoff anatomy, harness adapters
+- `templates/`: `GOAL.md`, `STATE.md`, and `HANDOFF.md`
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill goal-runner --global
+```
+
+**Usage:** Ask for a goal ("keep going until it's done") or point the agent at an existing `.goal/<slug>/` folder. The first run writes and freezes the contract, proves the gates can fail, and works the loop; later runs resume from the state files. The final report maps every criterion to its gate, command output, and evidence line, with residual risks called out.
+
 ### release-to-github
 
 Cut a standardized release for any repository. A survey step reads each project's conventions first (version file, changelog, tag style, publish target, release tooling), so the same skill fits every project without per-repo configuration.

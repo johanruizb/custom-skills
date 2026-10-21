@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Personal collection of 10 coding-agent skills, installable via [skills.sh](https://skills.sh). Each skill is a self-contained instruction package an agent loads on demand — no application code, no runtime. Everything an agent needs lives inside one skill directory.
+Personal collection of 11 coding-agent skills, installable via [skills.sh](https://skills.sh). Each skill is a self-contained instruction package an agent loads on demand — no application code, no runtime. Everything an agent needs lives inside one skill directory.
 
 Install (all or one):
 
@@ -24,7 +24,7 @@ repo/<skill>/scripts/*.py        # optional helper tools the agent runs directly
 
 Flow: skills.sh installs the directory into a runtime's skill root (`~/.agents/skills/`, `~/.claude/skills/`) → the agent's skill router matches the frontmatter `description` against the task → loads `SKILL.md` → follows its instructions, reading `references/` or running `scripts/` only when the text points there.
 
-Architecture pattern inside heavy skills (code-health, web-perf-tuning): **Core + Adapters**. The `SKILL.md` core is written in harness-neutral capability terms (`file_read`, `cmd_exec`, `state_persist`); per-harness behavior lives in `references/harness-adapters.md`. Keep that split when adding skills: core logic must never name a specific tool.
+Architecture pattern inside heavy skills (code-health, web-perf-tuning, goal-runner): **Core + Adapters**. The `SKILL.md` core is written in harness-neutral capability terms (`file_read`, `cmd_exec`, `state_persist`); per-harness behavior lives in `references/harness-adapters.md`. Keep that split when adding skills: core logic must never name a specific tool.
 
 Cross-skill relationships are declared in frontmatter as `related_skills`, never by file imports.
 
@@ -35,6 +35,7 @@ Cross-skill relationships are declared in frontmatter as `related_skills`, never
 | `git-commit/` | Conventional Commits from task context + staged index |
 | `code-health/` | Whole-codebase audit + simplification, merged from former `codebase-audit` + `simplify-codebase` |
 | `web-perf-tuning/` | Performance loop; per-stack playbooks in `references/<stack>.md` |
+| `goal-runner/` | Verifiable goal contract and autonomous loop; resumable state in `.goal/<slug>/` |
 | `code-documentation/`, `release-to-github/`, `screaming-architecture-refactor/`, `prompt-enhancer/`, `anglicize-repo/`, `visual-feedback-loop/`, `fork-pr/` | One-purpose instruction skills |
 
 Root files: `README.md` (skill catalog), `LICENSE` (MIT), `.gitignore` (ignores `.omc/`, `dist/`, `.commandcode`, `.serena/`).
