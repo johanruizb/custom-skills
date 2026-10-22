@@ -3,7 +3,7 @@ name: code-health
 description: "Use when the user wants a deep audit or cleanup of an entire codebase: performance, bugs, security, duplication, dead code, unnecessary abstractions, or complexity. Analyzes all source code (not just diffs), discovers available tools at runtime, adapts to any harness, and optionally applies selected fixes with validation in an isolated git worktree."
 license: MIT
 metadata:
-  author: Hermes Agent
+  author: johanruizb, OpenCode
   version: "2.2.2"
   hermes:
     tags: [audit, cleanup, performance, bugs, security, deduplication, dead-code, complexity, worktree, harness-agnostic]

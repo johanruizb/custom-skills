@@ -4,7 +4,7 @@ description: "Sync a fork's branch upstream: push it to origin, then open a PR i
 license: MIT
 allowed-tools: Bash(git:*), Bash(gh:*), Read, Write, Glob, Grep
 metadata:
-  author: johanruizb, Hermes Agent
+  author: johanruizb, OpenCode
   version: "1.0.0"
   platforms: [linux, macos, windows]
   hermes:

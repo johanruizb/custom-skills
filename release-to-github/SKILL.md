@@ -3,6 +3,8 @@ name: release-to-github
 description: "Cut a standardized release: bump the version, write the changelog, commit, tag, and branch. Use when the user asks to release, publish, or tag a new version."
 license: MIT
 allowed-tools: Bash(git:*), Bash(gh:*), Bash(npm version:*), Read, Write, Edit, Glob, Grep
+metadata:
+  author: johanruizb, OpenCode
 ---
 
 # release-to-github

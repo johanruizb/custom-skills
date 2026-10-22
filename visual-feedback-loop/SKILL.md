@@ -3,7 +3,7 @@ name: visual-feedback-loop
 description: "Use whenever a change affects what the user will see (UI, layout, styling, charts, reports, PDFs, generated images) or the user provides a screenshot, mockup, or reference URL of how something should look, or says it does not look like what they asked for. Runs the visual feedback loop persisted in the project's `.feedback/` folder, so a later run resumes instead of starting over. Triggers: 'no se ve como lo pedí', 'hazlo como esta imagen', 'verifícalo visualmente', 'sigue el loop visual'."
 license: MIT
 metadata:
-  author: johanruizb, Hermes Agent
+  author: johanruizb, OpenCode
   version: "1.2.1"
   platforms: [linux, macos, windows]
   hermes:

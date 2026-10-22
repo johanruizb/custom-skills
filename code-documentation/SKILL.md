@@ -3,7 +3,7 @@ name: code-documentation
 description: "Use when the user asks to generate, update, or regenerate inline documentation (docstrings, JSDoc, comments) across a codebase, in incremental or full-regeneration mode. Validates that docs match the code without changing behavior."
 license: MIT
 metadata:
-  author: Hermes Agent
+  author: johanruizb, OpenCode
   version: "1.1.0"
   platforms: [linux, macos, windows]
   hermes:

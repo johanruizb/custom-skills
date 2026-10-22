@@ -3,7 +3,7 @@ name: goal-runner
 description: "Turn a request into a verifiable goal and drive it to completion without check-ins. Use when the user says 'define una meta', 'hazlo autónomo', 'no me pidas confirmación', 'trabaja hasta terminarlo', 'sigue sin parar', 'goal', 'keep going', 'do not stop until done', or asks to resume a goal from `.goal/`. Freezes a contract with observable done criteria and a runnable gate per criterion, persists plan, progress, and append-only evidence in `.goal/<slug>/`, and lets a new session resume from disk without re-explaining anything."
 license: MIT
 metadata:
-  author: johanruizb, Hermes Agent
+  author: johanruizb, OpenCode
   version: "0.1.0"
   platforms: [linux, macos, windows]
   hermes:

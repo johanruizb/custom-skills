@@ -6,6 +6,8 @@ description: |
   English. Covers prose, comments, identifiers, and file names.
 license: MIT
 allowed-tools: Read, Glob, Grep, Edit, Write, Bash(git:*), Bash(rg:*)
+metadata:
+  author: johanruizb, OpenCode
 ---
 
 # anglicize-repo

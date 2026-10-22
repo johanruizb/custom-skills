@@ -3,7 +3,7 @@ name: screaming-architecture-refactor
 description: "Reorganize a project subpath into Screaming Architecture: capability-first folders that collocate components, services, models, tests, and their imports. Use for feature-folder migration or restructuring, including incremental analyze/apply/verify runs on one directory at a time."
 license: MIT
 metadata:
-  author: Hermes Agent
+  author: johanruizb, OpenCode
   version: "1.1.0"
   platforms: [linux, macos, windows]
   hermes:

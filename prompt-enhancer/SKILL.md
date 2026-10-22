@@ -3,7 +3,7 @@ name: prompt-enhancer
 description: "Rewrites vague, rough, or unclear prompts into structured, ready-to-copy prompts, preserving intent and technical terms. Trigger: 'improve/rewrite/polish this prompt', 'mejora/reescribe/pule este prompt'."
 license: MIT
 metadata:
-  author: johanruizb, Hermes Agent
+  author: johanruizb, OpenCode
   version: "1.4.0"
   platforms: [linux, macos, windows]
   hermes:

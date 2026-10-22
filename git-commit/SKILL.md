@@ -7,6 +7,8 @@ description: |
   skill instead.
 license: MIT
 allowed-tools: Bash(git:*), Read, Write, Edit, Glob, Grep
+metadata:
+  author: johanruizb, OpenCode
 ---
 
 # git-commit
