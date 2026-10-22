@@ -3,7 +3,7 @@ name: codegraph
 description: "Use CodeGraph correctly in a project that has a `.codegraph/` index, or when the user mentions CodeGraph / code graph / grafo de código. Routes structural questions (understand, locate, trace, survey, pre-edit impact) to `codegraph_explore` over MCP when available, or `codegraph explore` on the CLI, before grep/glob/read; treats the returned source as already read; enforces freshness, per-project indexes, and the rule that indexing is the user's decision. Triggers: 'usa codegraph', 'consulta el grafo', 'cómo funciona codegraph', 'code graph', 'why didn't you use codegraph'."
 license: MIT
 metadata:
-  author: johanruizb, Hermes Agent
+  author: johanruizb, OpenCode
   version: "1.0.0"
   platforms: [linux, macos, windows]
   hermes:
