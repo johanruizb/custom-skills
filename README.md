@@ -63,6 +63,23 @@ npx skills add johanruizb/custom-skills --skill code-health --global
 
 **Usage:** Ask the agent to audit, review, or find bugs, security issues, or performance bottlenecks in a codebase, or to simplify and deduplicate code. The skill maps modules, researches version-specific risks, and produces a structured report before prompting for which fixes to apply. Setup and fix selection use a fixed question catalog, so the same decision offers the same options on every run. Authorized fixes are applied in a dedicated worktree on a recognizable `code-health/audit-<mode>-<timestamp>` branch, leaving your checked-out branch untouched.
 
+### codegraph
+
+Use a project's CodeGraph index correctly: route structural questions to `codegraph_explore` (MCP) or `codegraph explore` (CLI) before grep/read, treat the returned source as already read, respect freshness banners and per-project indexes, and keep index building a user decision.
+
+**Structure:**
+
+- `SKILL.md`: Preflight, graph-first routing, query craft, trust/freshness, edit loop, receipt, pitfalls, checklist
+- `references/`: Exact CLI/MCP commands, status fields, failure messages, and freshness banners
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill codegraph --global
+```
+
+**Usage:** Ask the agent to explain, locate, trace, or change code in a project with a `.codegraph/` index. The skill checks the indexed project path, picks MCP or CLI, answers from the graph before grep/read, and reports the CodeGraph call it used. In CLI-only mode it syncs after edits before trusting the graph's structure.
+
 ### goal-runner
 
 Turn a request into a verifiable goal and drive it to completion without check-ins. Freezes a contract before any work — one goal sentence, observable done criteria, a runnable gate per criterion, no-goals, constraints, assumptions, and a budget — then loops plan → act → verify → record until every gate is green. State lives in `.goal/<slug>/` (contract, plan and next action, append-only evidence, optional handoff), so a new session resumes from the folder alone, re-runs the recorded gate fresh — every gate when the goal was marked done — and never asks the user to re-explain the goal. It hands off exactly once — on missing access, an invalidating ambiguity, or a spent budget — with options and a recommendation, and it never marks a gate green from memory, weakens a gate to pass, or closes a turn asking whether to continue.
