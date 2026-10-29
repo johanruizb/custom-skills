@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Personal collection of 12 coding-agent skills, installable via [skills.sh](https://skills.sh). Each skill is a self-contained instruction package an agent loads on demand — no application code, no runtime. Everything an agent needs lives inside one skill directory.
+Personal collection of 13 coding-agent skills, installable via [skills.sh](https://skills.sh). Each skill is a self-contained instruction package an agent loads on demand — no application code, no runtime. Everything an agent needs lives inside one skill directory.
 
 Install (all or one):
 
@@ -37,6 +37,7 @@ Cross-skill relationships are declared in frontmatter as `related_skills`, never
 | `codegraph/` | Project-indexed code navigation; graph-first queries, freshness, MCP/CLI routing |
 | `web-perf-tuning/` | Performance loop; per-stack playbooks in `references/<stack>.md` |
 | `goal-runner/` | Verifiable goal contract and autonomous loop; resumable state in `.goal/<slug>/` |
+| `ui-coherence/` | App-wide visual consistency audit + improvement loop; resumable state in `.ui/` |
 | `code-documentation/`, `release-to-github/`, `screaming-architecture-refactor/`, `prompt-enhancer/`, `anglicize-repo/`, `visual-feedback-loop/`, `fork-pr/` | One-purpose instruction skills |
 
 Root files: `README.md` (skill catalog), `LICENSE` (MIT), `.gitignore` (ignores `.omc/`, `dist/`, `.commandcode`, `.serena/`).

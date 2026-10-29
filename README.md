@@ -175,6 +175,24 @@ npx skills add johanruizb/custom-skills --skill visual-feedback-loop --global
 
 **Usage:** Give the agent a reference (image, URL, or description) with your request. The agent builds a visual contract, shows the final capture next to the reference, and reports the closed delta list instead of "should look like you asked". Re-invoking it later resumes from `.feedback/`, reusing the app's capture recipe and the open deltas.
 
+### ui-coherence
+
+Keep every screen of an app reading as one product across sessions, models, and agents. The skill adopts the project's existing design source (`DESIGN.md`, tokens, theme) instead of duplicating it, then runs a persisted loop: inventory screens, shared components, and their consumers; audit seven dimensions of visual consistency; classify every difference as a justified deviation, an accident, or a system gap; fix shared tokens/components before screens; and validate every affected screen with real captures. State lives in a committed `.ui/` folder (`state.md` + `backlog.md`), so a cold start resumes at the next backlog item instead of re-auditing the app.
+
+**Structure:**
+
+- `SKILL.md`: The loop (load → inventory → audit → prioritize → implement shared-first → validate → persist), the classification rule, modes, stop criteria, and the pitfalls that turn coherence into uniformity
+- `references/audit-checklist.md`: What to compare per dimension, accidental vs justified examples, and the evidence standard for a finding
+- `templates/`: Skeletons for `.ui/state.md`, `.ui/backlog.md`, and a design system when the project has none
+
+**Install:**
+
+```bash
+npx skills add johanruizb/custom-skills --skill ui-coherence --global
+```
+
+**Usage:** Ask to audit the whole app, unify duplicated components, improve one screen without breaking the rest, or continue the design cycle. An ambiguous request starts in audit mode and changes no code until the backlog exists. The agent reports which screens were validated and what remains open; a shared component change revalidates every consumer.
+
 ### fork-pr
 
 Sync a fork's branch to its upstream parent in one pass. Pushes the branch to origin first (with confirmation around force pushes), then opens a PR in the original repo — or refreshes the existing one — regenerating its Conventional Commits title, its body (What / Changes / Badges / compare link), and one CI badge per workflow on the synced branch from the current state on every run.
